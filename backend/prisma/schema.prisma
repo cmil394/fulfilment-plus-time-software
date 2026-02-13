@@ -51,13 +51,13 @@ model Activity {
 }
 
 model TimeLog {
-  id          String    @id @default(uuid())
+  id          String
   userId      String
   companyId   String
   activityId  String
   startTime   DateTime
   endTime     DateTime?
-  duration    Int?      // Duration in seconds
+  duration    Int?      // Seconds
   notes       String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -73,45 +73,8 @@ model TimeLog {
   @@map("time_logs")
 }
 
-model WeeklyReport {
-  id          String   @id @default(uuid())
-  userId      String
-  weekStart   DateTime
-  weekEnd     DateTime
-  totalHours  Float
-  totalCost   Float?
-  reportData  Json     // Stores breakdown by company/activity
-  createdAt   DateTime @default(now())
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, weekStart])
-  @@index([weekStart])
-  @@map("weekly_reports")
-}
-
-model CompanyReport {
-  id          String   @id @default(uuid())
-  companyId   String
-  weekStart   DateTime
-  weekEnd     DateTime
-  totalHours  Float
-  totalCost   Float?
-  reportData  Json     // Stores breakdown by employee/activity
-  createdAt   DateTime @default(now())
-  
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
-  @@unique([companyId, weekStart])
-  @@index([weekStart])
-  @@map("company_reports")
-}
-
 enum Role {
   ADMIN
-  TEAM_MANAGER
-  WH_MANAGER
-  PICKER
   EMPLOYEE
 }
 
