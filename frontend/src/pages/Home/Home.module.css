@@ -16,14 +16,16 @@
 }
 
 .title{
-    font-size: 38px;
+    font-size: 40px;
+    font-weight: 500;
     color: #000000;
 }
 
 .subtitle{
     font-size: 20px;
-    color: #000000c2;
-    margin-top: -12px;
+    font-weight: 400;
+    color: #000000cc;
+    margin-top: -15px;
 }
 
 .authContainer {
@@ -71,6 +73,7 @@
     padding: 30px;
     padding-top: 15px;
     background: #0067B1;
+    min-height: 380px;
 }
 
 .form {
@@ -80,7 +83,7 @@
 
 .form label {
     color: white;
-    font-size: 14px;
+    font-size: 16px;
     margin-bottom: 8px;
     margin-top: 8px;
 }
@@ -103,16 +106,18 @@
 }
 
 .submitButton {
-    margin-top: 20px;
-    padding: 12px 20px;
+    margin-top: 17px;
+    padding: 9px 20px;
     background: white;
-    color: #0067B1;
+    color: #000000dc;
     border: none;
     border-radius: 4px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    align-self: center;
+    min-width: 130px;
 }
 
 .submitButton:hover {
