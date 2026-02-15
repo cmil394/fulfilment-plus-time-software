@@ -8,69 +8,17 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  password      String
-  firstName     String
-  lastName      String
-  role          Role     @default(EMPLOYEE)
-  status        UserStatus @default(PENDING)
-  averageCost   Float?   @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  timeLogs      TimeLog[]
-  weeklyReports WeeklyReport[]
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  firstName String
+  lastName  String
+  role      Role       @default(EMPLOYEE)
+  status    UserStatus @default(PENDING)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   
   @@map("users")
-}
-
-model Company {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  timeLogs  TimeLog[]
-  reports   CompanyReport[]
-  
-  @@map("companies")
-}
-
-model Activity {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  timeLogs  TimeLog[]
-  
-  @@map("activities")
-}
-
-model TimeLog {
-  id          String
-  userId      String
-  companyId   String
-  activityId  String
-  startTime   DateTime
-  endTime     DateTime?
-  duration    Int?      // Seconds
-  notes       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  activity    Activity  @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  
-  @@index([userId])
-  @@index([companyId])
-  @@index([activityId])
-  @@index([startTime])
-  @@map("time_logs")
 }
 
 enum Role {
