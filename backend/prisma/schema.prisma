@@ -7,18 +7,77 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Users/Authentication
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  password  String
-  firstName String
-  lastName  String
-  role      Role       @default(EMPLOYEE)
-  status    UserStatus @default(PENDING)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  
+  id         String     @id @default(uuid())
+  email      String     @unique
+  password   String
+  fullName   String
+  role       Role       @default(EMPLOYEE)
+  status     UserStatus @default(PENDING)
+  hourlyRate Decimal?   @db.Decimal(10, 2) // Optional for cost calculations
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  timeEntries TimeEntry[]
+
   @@map("users")
+}
+
+// Customers
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tasks       Task[]
+  timeEntries TimeEntry[]
+
+  @@map("customers")
+}
+
+// Tasks (belongs to customer)
+model Task {
+  id          String   @id @default(uuid())
+  customerId  String
+  name        String
+  description String?
+  fixedRate   Decimal? @db.Decimal(10, 2) // Optional for per-task pricing
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  timeEntries TimeEntry[]
+
+  @@map("tasks")
+}
+
+// Time Entries
+model TimeEntry {
+  id              String    @id @default(uuid())
+  userId          String
+  customerId      String
+  taskId          String
+  startTime       DateTime  @default(now())
+  endTime         DateTime? // NULL = timer still running
+  durationSeconds Int? // Calculated when timer stops
+  notes           String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id])
+  task     Task     @relation(fields: [taskId], references: [id])
+
+  @@index([userId])
+  @@index([customerId])
+  @@index([taskId])
+  @@index([startTime])
+  @@index([endTime])
+  @@map("time_entries")
 }
 
 enum Role {
