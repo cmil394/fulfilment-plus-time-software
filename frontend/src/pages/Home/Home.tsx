@@ -1,16 +1,103 @@
 import { useState } from "react";
+import type { FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar.tsx";
+import { authService } from "../../services/auth.service";
+import type { RegisterData, LoginData } from "../../services/auth.service";
+import { useAuth } from "../../context/AuthContext";
 import styles from "./Home.module.css";
 
 function Home() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+  const { setAuth } = useAuth();
+  const navigate = useNavigate();
+
+  // Login form state
+  const [loginData, setLoginData] = useState<LoginData>({
+    email: "",
+    password: "",
+  });
+
+  // Register form state
+  const [registerData, setRegisterData] = useState<RegisterData>({
+    email: "",
+    fullname: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const handleLoginSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      const response = await authService.login(loginData);
+      setAuth(response.data.user, response.data.token);
+      setSuccess(response.message);
+
+      // Redirect after successful login
+      setTimeout(() => navigate("/"), 1000);
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message || "Login failed. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      const response = await authService.register(registerData);
+      setSuccess(response.message);
+
+      // Optionally auto-login after registration
+      setAuth(response.data.user, response.data.token);
+
+      // Clear form
+      setRegisterData({
+        email: "",
+        fullname: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      // Switch to login tab after a delay or redirect
+      setTimeout(() => navigate("/"), 2000);
+    } catch (err: any) {
+      if (err.response?.data?.errors) {
+        // Handle validation errors
+        const errorMessages = err.response.data.errors
+          .map((e: any) => e.message)
+          .join(", ");
+        setError(errorMessages);
+      } else {
+        setError(
+          err.response?.data?.message ||
+            "Registration failed. Please try again.",
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.home}>
       <Navbar />
       <div className={styles.brand}>
         <img
-          src="/src/assets/icons/image.png"
+          src="/src/assets/icons/fulfillmentplus_icon_b2.png"
           alt="Fulfillment Plus Logo"
           className={styles.brandLogo}
         />
@@ -24,27 +111,44 @@ function Home() {
         <div className={styles.tabs}>
           <button
             className={`${styles.tab} ${activeTab === "login" ? styles.activeTab : ""}`}
-            onClick={() => setActiveTab("login")}
+            onClick={() => {
+              setActiveTab("login");
+              setError("");
+              setSuccess("");
+            }}
           >
             Login
           </button>
           <button
             className={`${styles.tab} ${activeTab === "register" ? styles.activeTab : ""}`}
-            onClick={() => setActiveTab("register")}
+            onClick={() => {
+              setActiveTab("register");
+              setError("");
+              setSuccess("");
+            }}
           >
             Register
           </button>
         </div>
 
+        {error && <div className={styles.error}>{error}</div>}
+        {success && <div className={styles.success}>{success}</div>}
+
         <div className={styles.formContainer}>
           {activeTab === "login" ? (
-            <form className={styles.form}>
+            <form className={styles.form} onSubmit={handleLoginSubmit}>
               <label htmlFor="login-email">Email</label>
               <input
                 type="email"
                 id="login-email"
                 name="email"
                 className={styles.input}
+                value={loginData.email}
+                onChange={(e) =>
+                  setLoginData({ ...loginData, email: e.target.value })
+                }
+                required
+                disabled={loading}
               />
 
               <label htmlFor="login-password">Password</label>
@@ -53,27 +157,50 @@ function Home() {
                 id="login-password"
                 name="password"
                 className={styles.input}
+                value={loginData.password}
+                onChange={(e) =>
+                  setLoginData({ ...loginData, password: e.target.value })
+                }
+                required
+                disabled={loading}
               />
 
-              <button type="submit" className={styles.submitButton}>
-                Login
+              <button
+                type="submit"
+                className={styles.submitButton}
+                disabled={loading}
+              >
+                {loading ? "Logging in..." : "Login"}
               </button>
             </form>
           ) : (
-            <form className={styles.form}>
+            <form className={styles.form} onSubmit={handleRegisterSubmit}>
               <label htmlFor="register-email">Email</label>
               <input
                 type="email"
                 id="register-email"
                 name="email"
                 className={styles.input}
+                value={registerData.email}
+                onChange={(e) =>
+                  setRegisterData({ ...registerData, email: e.target.value })
+                }
+                required
+                disabled={loading}
               />
+
               <label htmlFor="register-fullname">Full Name</label>
               <input
                 type="text"
                 id="register-fullname"
                 name="fullname"
                 className={styles.input}
+                value={registerData.fullname}
+                onChange={(e) =>
+                  setRegisterData({ ...registerData, fullname: e.target.value })
+                }
+                required
+                disabled={loading}
               />
 
               <label htmlFor="register-password">Password</label>
@@ -82,6 +209,12 @@ function Home() {
                 id="register-password"
                 name="password"
                 className={styles.input}
+                value={registerData.password}
+                onChange={(e) =>
+                  setRegisterData({ ...registerData, password: e.target.value })
+                }
+                required
+                disabled={loading}
               />
 
               <label htmlFor="register-confirm">Confirm Password</label>
@@ -90,10 +223,23 @@ function Home() {
                 id="register-confirm"
                 name="confirmPassword"
                 className={styles.input}
+                value={registerData.confirmPassword}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                required
+                disabled={loading}
               />
 
-              <button type="submit" className={styles.submitButton}>
-                Register
+              <button
+                type="submit"
+                className={styles.submitButton}
+                disabled={loading}
+              >
+                {loading ? "Registering..." : "Register"}
               </button>
             </form>
           )}
