@@ -1,128 +1,128 @@
-.brand{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-top: 60px;
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 60px;
 }
 
 .brandLogo {
-    width: 100px;
-    margin-bottom: 0px;
+  width: 100px;
+  margin-bottom: 0px;
 }
 
-.plus{
-    color: #1467ae;
+.plus {
+  color: #1467ae;
 }
 
-.title{
-    margin-top: 0px;
-    font-size: 40px;
-    font-weight: 500;
-    color: #000000;
+.title {
+  margin-top: 0px;
+  font-size: 40px;
+  font-weight: 500;
+  color: #000000;
 }
 
-.subtitle{
-    font-size: 20px;
-    font-weight: 400;
-    color: #000000cc;
-    margin-top: -15px;
+.subtitle {
+  font-size: 20px;
+  font-weight: 400;
+  color: #000000cc;
+  margin-top: -15px;
 }
 
 .authContainer {
-    max-width: 550px;
-    margin: 40px auto;
-    background: white;
-    border-radius: 3px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin-top: 10px;
+  max-width: 550px;
+  margin: 40px auto;
+  background: white;
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
 }
 
 .tabs {
-    display: flex;
-    background: #1467ae;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.863);
+  display: flex;
+  background: #1467ae;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.863);
 }
 
 .tab {
-    flex: 1;
-    padding: 15px 20px;
-    background: transparent;
-    border: none;
-    border-right: 2px solid rgba(255, 255, 255, 0.692);
-    color: white;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  flex: 1;
+  padding: 15px 20px;
+  background: transparent;
+  border: none;
+  border-right: 2px solid rgba(255, 255, 255, 0.692);
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .tab:last-child {
-    border-right: none;
+  border-right: none;
 }
 
-.tab:hover {
-    background: rgba(255, 255, 255, 0.1);
+.tab:hover:not(.activeTab) {
+  background: rgba(0, 0, 0, 0.274);
 }
 
 .activeTab {
-    background: #e0eeff;
+  background: #3a93ff;
 }
 
 .formContainer {
-    padding: 30px;
-    padding-top: 15px;
-    background: #0067B1;
-    min-height: 380px;
+  padding: 30px;
+  padding-top: 15px;
+  background: #0067b1;
+  min-height: 380px;
 }
 
 .form {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .form label {
-    color: white;
-    font-size: 16px;
-    margin-bottom: 8px;
-    margin-top: 8px;
+  color: white;
+  font-size: 16px;
+  margin-bottom: 8px;
+  margin-top: 8px;
 }
 
 .form label:first-of-type {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 .input {
-    padding: 12px 12px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    margin-bottom: 8px;
-    outline: none;
+  padding: 12px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 8px;
+  outline: none;
 }
 
 .input:focus {
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
 .submitButton {
-    margin-top: 17px;
-    padding: 9px 20px;
-    background: white;
-    color: #000000dc;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    align-self: center;
-    min-width: 130px;
+  margin-top: 17px;
+  padding: 9px 20px;
+  background: white;
+  color: #000000dc;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  align-self: center;
+  min-width: 130px;
 }
 
 .submitButton:hover {
-    background: #f0f0f0;
+  background: #f0f0f0;
 }
 
 .error {
