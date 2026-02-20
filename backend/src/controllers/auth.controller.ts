@@ -214,3 +214,123 @@ export const getProfile = async (req: Request, res: Response) => {
     });
   }
 };
+
+// ── Admin handlers ────────────────────────────────────────────────────────────
+
+export const getPendingUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: { status: "PENDING" },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        status: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return res.status(200).json({
+      status: "success",
+      data: { users, total: users.length },
+    });
+  } catch (error: unknown) {
+    console.error("Get pending users error:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to fetch pending users",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+export const approveUser = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+
+    const user = await prisma.user.findUnique({ where: { id } });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "User not found" });
+    }
+
+    if (user.status === "APPROVED") {
+      return res
+        .status(400)
+        .json({ status: "error", message: "User is already approved" });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { status: "APPROVED" },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        status: true,
+        updatedAt: true,
+      },
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: "User approved successfully",
+      data: { user: updatedUser },
+    });
+  } catch (error: unknown) {
+    console.error("Approve user error:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to approve user",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+export const rejectUser = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+
+    const user = await prisma.user.findUnique({ where: { id } });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "User not found" });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { status: "REJECTED" },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        status: true,
+        updatedAt: true,
+      },
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: "User rejected",
+      data: { user: updatedUser },
+    });
+  } catch (error: unknown) {
+    console.error("Reject user error:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to reject user",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
