@@ -8,7 +8,7 @@ export const seedAdmin = async () => {
   const adminPassword = process.env.ADMIN_PASSWORD;
 
   if (!adminEmail || !adminPassword) {
-    console.warn("⚠ ADMIN_EMAIL / ADMIN_PASSWORD not set");
+    console.warn("ADMIN_EMAIL / ADMIN_PASSWORD not set");
     return;
   }
 
@@ -17,7 +17,7 @@ export const seedAdmin = async () => {
   });
 
   if (existingAdmin) {
-    console.log("✅ Admin already exists");
+    console.log("Admin already exists");
     return;
   }
 

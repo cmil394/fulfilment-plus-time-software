@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
 import authRoutes from "./routes/auth.routes";
+import customerRoutes from "./routes/customer.routes";
 import { seedAdmin } from "./utils/seed.admin";
 
 dotenv.config();
@@ -22,6 +23,7 @@ app.get("/api/health", (req, res) => {
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/customers", customerRoutes);
 
 // Test database connection
 app.get("/api/db-test", async (req, res) => {
@@ -44,17 +46,17 @@ app.get("/api/db-test", async (req, res) => {
 const startServer = async () => {
   try {
     await prisma.$connect();
-    console.log("✅ Database connected");
+    console.log("Database connected");
 
     await seedAdmin();
 
     app.listen(PORT, () => {
-      console.log(`✅ Server running on http://localhost:${PORT}`);
-      console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-      console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
+      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Health check: http://localhost:${PORT}/api/health`);
+      console.log(`Auth endpoints: http://localhost:${PORT}/api/auth`);
     });
   } catch (error) {
-    console.error("❌ Startup failure:", error);
+    console.error("Startup failure:", error);
     process.exit(1);
   }
 };

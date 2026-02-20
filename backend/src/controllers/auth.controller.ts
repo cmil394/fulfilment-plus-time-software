@@ -215,7 +215,7 @@ export const getProfile = async (req: Request, res: Response) => {
   }
 };
 
-// ── Admin handlers ────────────────────────────────────────────────────────────
+// Admin handlers
 
 export const getPendingUsers = async (req: Request, res: Response) => {
   try {
