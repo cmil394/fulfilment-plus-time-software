@@ -15,6 +15,8 @@ model User {
   fullName   String
   role       Role       @default(EMPLOYEE)
   status     UserStatus @default(PENDING)
+  firstName  String?
+  lastName   String?
   hourlyRate Decimal?   @db.Decimal(10, 2) // Optional for cost calculations
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt

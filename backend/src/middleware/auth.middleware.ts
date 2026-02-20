@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { verifyToken, JWTPayload } from '../utils/auth';
+import { Request, Response, NextFunction } from "express";
+import { verifyToken, JWTPayload } from "../utils/auth";
 
 export interface AuthRequest extends Request {
   user?: JWTPayload;
@@ -8,15 +8,15 @@ export interface AuthRequest extends Request {
 export const authMiddleware = (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
-        status: 'error',
-        message: 'No token provided'
+        status: "error",
+        message: "No token provided",
       });
     }
 
@@ -25,8 +25,8 @@ export const authMiddleware = (
 
     if (!decoded) {
       return res.status(401).json({
-        status: 'error',
-        message: 'Invalid or expired token'
+        status: "error",
+        message: "Invalid or expired token",
       });
     }
 
@@ -34,8 +34,8 @@ export const authMiddleware = (
     next();
   } catch (error) {
     return res.status(401).json({
-      status: 'error',
-      message: 'Authentication failed'
+      status: "error",
+      message: "Authentication failed",
     });
   }
 };
@@ -43,19 +43,19 @@ export const authMiddleware = (
 export const adminMiddleware = (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   if (!req.user) {
     return res.status(401).json({
-      status: 'error',
-      message: 'Authentication required'
+      status: "error",
+      message: "Authentication required",
     });
   }
 
-  if (req.user.role !== 'ADMIN') {
+  if (req.user.role !== "ADMIN") {
     return res.status(403).json({
-      status: 'error',
-      message: 'Admin access required'
+      status: "error",
+      message: "Admin access required",
     });
   }
 
