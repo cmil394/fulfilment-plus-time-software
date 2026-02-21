@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import authRoutes from "./routes/auth.routes";
 import customerRoutes from "./routes/customer.routes";
 import taskRoutes from "./routes/task.routes";
+import timeEntryRoutes from "./routes/time-entry.routes";
 import { seedAdmin } from "./utils/seed.admin";
 
 dotenv.config();
@@ -26,6 +27,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/time-entries", timeEntryRoutes);
 
 // Test database connection
 app.get("/api/db-test", async (req, res) => {
