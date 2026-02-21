@@ -15,6 +15,8 @@ const router = express.Router();
 router.post("/", authMiddleware, adminMiddleware, createCustomer);
 router.patch("/:id", authMiddleware, adminMiddleware, updateCustomer);
 router.delete("/:id", authMiddleware, adminMiddleware, deleteCustomer);
+
+// Read routes (accessible to authenticated users)
 router.get("/", authMiddleware, getCustomers);
 router.get("/:id", authMiddleware, getCustomerById);
 

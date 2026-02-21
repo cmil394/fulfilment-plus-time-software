@@ -29,11 +29,24 @@ export const deleteCustomer = async (id: string) => {
 };
 
 export const getCustomers = async () => {
-  return prisma.customer.findMany();
+  return prisma.customer.findMany({
+    include: {
+      tasks: {
+        select: { name: true },
+      },
+    },
+  });
 };
 
 export const getCustomerById = async (id: string) => {
-  const customer = await prisma.customer.findUnique({ where: { id } });
+  const customer = await prisma.customer.findUnique({
+    where: { id },
+    include: {
+      tasks: {
+        select: { name: true },
+      },
+    },
+  });
   if (!customer) throw new NotFoundError("Customer not found");
   return customer;
 };
