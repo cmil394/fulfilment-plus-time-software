@@ -68,3 +68,79 @@ export const getMyEntries = async (userId: string) => {
     },
   });
 };
+
+export const getEntriesByUser = async (userId: string) => {
+  const entries = await prisma.timeEntry.findMany({
+    where: { userId, endTime: { not: null } },
+    orderBy: { startTime: "desc" },
+    include: {
+      task: { select: { name: true } },
+      customer: { select: { id: true, name: true } },
+    },
+  });
+
+  // Group by customer
+  const grouped = entries.reduce(
+    (acc, entry) => {
+      const customerId = entry.customer.id;
+      if (!acc[customerId]) {
+        acc[customerId] = {
+          customer: entry.customer,
+          totalSeconds: 0,
+          entries: [],
+        };
+      }
+      acc[customerId].entries.push(entry);
+      acc[customerId].totalSeconds += entry.durationSeconds ?? 0;
+      return acc;
+    },
+    {} as Record<
+      string,
+      {
+        customer: { id: string; name: string };
+        totalSeconds: number;
+        entries: typeof entries;
+      }
+    >,
+  );
+
+  return Object.values(grouped);
+};
+
+export const getEntriesByCustomer = async (customerId: string) => {
+  const entries = await prisma.timeEntry.findMany({
+    where: { customerId, endTime: { not: null } },
+    orderBy: { startTime: "desc" },
+    include: {
+      task: { select: { name: true } },
+      user: { select: { id: true, fullName: true } },
+    },
+  });
+
+  // Group by user
+  const grouped = entries.reduce(
+    (acc, entry) => {
+      const userId = entry.user.id;
+      if (!acc[userId]) {
+        acc[userId] = {
+          user: entry.user,
+          totalSeconds: 0,
+          entries: [],
+        };
+      }
+      acc[userId].entries.push(entry);
+      acc[userId].totalSeconds += entry.durationSeconds ?? 0;
+      return acc;
+    },
+    {} as Record<
+      string,
+      {
+        user: { id: string; fullName: string };
+        totalSeconds: number;
+        entries: typeof entries;
+      }
+    >,
+  );
+
+  return Object.values(grouped);
+};

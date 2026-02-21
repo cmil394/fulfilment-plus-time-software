@@ -75,3 +75,39 @@ export const getMyEntries = async (
     next(err);
   }
 };
+
+export const getEntriesByUser = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const entries = await timeEntryService.getEntriesByUser(
+      req.params.userId as string,
+    );
+    res.status(200).json({
+      status: "success",
+      data: entries,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getEntriesByCustomer = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const entries = await timeEntryService.getEntriesByCustomer(
+      req.params.customerId as string,
+    );
+    res.status(200).json({
+      status: "success",
+      data: entries,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
