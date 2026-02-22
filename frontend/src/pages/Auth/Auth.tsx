@@ -2,12 +2,12 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar.tsx";
-import { authService } from "../../services/auth.service";
-import type { RegisterData, LoginData } from "../../services/auth.service";
-import { useAuth } from "../../context/AuthContext";
-import styles from "./Home.module.css";
+import { authService } from "../../services/auth.service.ts";
+import type { RegisterData, LoginData } from "../../services/auth.service.ts";
+import { useAuth } from "../../context/AuthContext.tsx";
+import styles from "./Auth.module.css";
 
-function Home() {
+function Auth() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
@@ -279,4 +279,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Auth;
