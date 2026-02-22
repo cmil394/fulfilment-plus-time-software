@@ -39,7 +39,7 @@ function Navbar() {
         </li>
         <li>
           <a href="/projects" className={styles.navLink}>
-            Projects
+            Customers
           </a>
         </li>
         <li>

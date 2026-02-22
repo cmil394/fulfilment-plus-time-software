@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Auth from "./Auth/Auth";
-import Landing from "./Landing/Landing";
+import Customers from "./Customers/Customers";
 
 function Home() {
   const { user } = useAuth();
@@ -13,12 +13,12 @@ function Home() {
         element={!user ? <Auth /> : <Navigate to="/dashboard" />}
       />
       <Route
-        path="/dashboard"
-        element={user ? <Landing /> : <Navigate to="/login" />}
+        path="/customers"
+        element={user ? <Customers /> : <Navigate to="/login" />}
       />
       <Route
         path="*"
-        element={<Navigate to={user ? "/dashboard" : "/login"} />}
+        element={<Navigate to={user ? "/customers" : "/login"} />}
       />
     </Routes>
   );
