@@ -1,5 +1,5 @@
 .customersTitle {
-  font-size: 24px;
+  font-size: 42px;
   margin-top: 70px;
   margin-bottom: 30px;
   text-align: center;
@@ -8,8 +8,13 @@
 .customerList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 15px;
   align-items: center;
+  background-color: #1467ae;
+  border-radius: 12px;
+  padding: 40px;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .customerCard {
@@ -17,8 +22,8 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background-color: #1467ae;
-  color: white;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
   border-radius: 8px;
   padding: 4px 16px;
   width: 620px;
@@ -32,11 +37,12 @@
   flex: 1;
   text-align: left;
   font-size: 26px;
+  margin-left: 5px;
 }
 
 .customerIcon {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
 }
