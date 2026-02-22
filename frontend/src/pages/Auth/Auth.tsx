@@ -1,10 +1,15 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+
 import Navbar from "../../components/Navbar/Navbar.tsx";
+
 import { authService } from "../../services/auth.service.ts";
-import type { RegisterData, LoginData } from "../../services/auth.service.ts";
+
 import { useAuth } from "../../context/AuthContext.tsx";
+
+import type { RegisterData, LoginData } from "../../services/auth.service.ts";
+
 import styles from "./Auth.module.css";
 
 function Auth() {

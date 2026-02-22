@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext.tsx";
 import styles from "./Navbar.module.css";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { logout, user } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -52,7 +54,11 @@ function Navbar() {
         </li>
       </ul>
 
-      <button className={styles.signOutBtn}>Sign Out</button>
+      {user && (
+        <button className={styles.logOutBtn} onClick={logout}>
+          Log Out
+        </button>
+      )}
     </nav>
   );
 }
