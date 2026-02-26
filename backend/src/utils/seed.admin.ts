@@ -1,7 +1,8 @@
-import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "./auth";
+import { prisma } from "../lib/prisma";
+import { config } from "dotenv";
 
-const prisma = new PrismaClient();
+config();
 
 export const seedAdmin = async () => {
   const adminEmail = process.env.ADMIN_EMAIL;
@@ -37,3 +38,7 @@ export const seedAdmin = async () => {
 
   console.log("🔥 Admin account created");
 };
+
+seedAdmin()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());

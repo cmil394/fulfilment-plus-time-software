@@ -21,7 +21,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.1",
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^7.4.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -38,7 +38,8 @@
     "@types/node": "^22.10.1",
     "@types/pg": "^8.16.0",
     "prisma": "^7.4.1",
+    "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.9.3"
   }
 }
