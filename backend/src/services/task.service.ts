@@ -1,7 +1,7 @@
 import { prisma } from "../lib/prisma";
 import { CreateTaskInput, UpdateTaskInput } from "../validators/task.validator";
 import { NotFoundError } from "../utils/errors";
-import { Decimal } from "@prisma/client/runtime/library";
+import Decimal from "decimal.js";
 
 export const createTask = async (data: CreateTaskInput) => {
   const customer = await prisma.customer.findUnique({
