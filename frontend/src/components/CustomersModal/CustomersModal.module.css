@@ -8,7 +8,9 @@
   padding: 24px;
   width: fit-content;
   margin: 0 auto;
-  max-height: 600px;
+  max-height: calc(
+    100vh - 64px - 70px - 30px - 42px - 30px
+  ); /* viewport - navbar - margins - title */
   overflow-y: auto;
 }
 
@@ -74,7 +76,7 @@
   .board {
     width: 90vw;
     padding: 16px;
-    max-height: 65vh;
+    max-height: calc(100vh - 200px);
   }
 
   .searchBar {
@@ -101,7 +103,8 @@
   .board {
     width: 95vw;
     padding: 12px;
-    max-height: 60vh;
+    max-height: calc(100vh - 180px);
+    border-radius: 0px;
   }
 
   .searchBar {
