@@ -12,6 +12,7 @@
     100vh - 64px - 70px - 30px - 42px - 30px
   ); /* viewport - navbar - margins - title */
   overflow-y: auto;
+  margin-bottom: 25px;
 }
 
 .searchBar {
@@ -36,7 +37,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background-color: #ffffff;
+  background-color: #eeeeee;
   color: #000000;
   border-radius: 8px;
   padding: 4px 16px;
