@@ -4,6 +4,7 @@ import {
   updateCustomerSchema,
 } from "../validators/customer.validator";
 import * as customerService from "../services/customer.service";
+import { sortObjectKeys } from "../utils/helpers";
 
 export const createCustomer = async (
   req: Request,
@@ -16,6 +17,46 @@ export const createCustomer = async (
     res.status(201).json({
       status: "success",
       message: "Customer created successfully",
+      data: customer,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getCustomers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const customers = await customerService.getCustomers();
+
+    const sortedCustomers = customers.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    res.status(200).json({
+      status: "success",
+      message: "Customers retrieved successfully",
+      data: sortedCustomers,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getCustomerById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const customer = await customerService.getCustomerById(
+      req.params.id as string,
+    );
+    res.status(200).json({
+      status: "success",
+      message: "Customer retrieved successfully",
       data: customer,
     });
   } catch (err) {
@@ -54,42 +95,6 @@ export const deleteCustomer = async (
     res.status(200).json({
       status: "success",
       message: "Customer deleted successfully",
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const getCustomers = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const customers = await customerService.getCustomers();
-    res.status(200).json({
-      status: "success",
-      message: "Customers retrieved successfully",
-      data: customers,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const getCustomerById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const customer = await customerService.getCustomerById(
-      req.params.id as string,
-    );
-    res.status(200).json({
-      status: "success",
-      message: "Customer retrieved successfully",
-      data: customer,
     });
   } catch (err) {
     next(err);
