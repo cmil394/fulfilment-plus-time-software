@@ -175,7 +175,7 @@ function TasksModal({ customerId, onBack }: Props) {
               )}
             </div>
 
-            <span className={styles.taskStatus}>{task.status}</span>
+            {/* <span className={styles.taskStatus}>{task.status}</span> */}
           </div>
         ))
       )}

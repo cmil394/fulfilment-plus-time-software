@@ -113,7 +113,7 @@
   display: flex;
   align-items: center;
 }
- 
+
 .descPopup {
   position: absolute;
   bottom: calc(100% + 8px);
@@ -128,7 +128,7 @@
   max-width: 320px;
   animation: popupFadeIn 0.15s ease;
 }
- 
+
 @keyframes popupFadeIn {
   from {
     opacity: 0;
@@ -139,7 +139,7 @@
     transform: translateY(0);
   }
 }
- 
+
 .descPopupText {
   margin: 0;
   font-size: 0.875rem;
@@ -148,7 +148,7 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
- 
+
 .descPopupClose {
   position: absolute;
   top: 6px;
@@ -161,7 +161,7 @@
   color: #999;
   padding: 0;
 }
- 
+
 .descPopupClose:hover {
   color: #333;
 }
@@ -201,9 +201,100 @@
   font-size: 14px;
 }
 
-
 .timer {
   font-family: monospace;
   font-size: 15px;
   min-width: 70px;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .board {
+    width: 90vw;
+    padding: 16px;
+    max-height: calc(100vh - 200px);
+  }
+
+  .customerName {
+    font-size: 28px;
+  }
+
+  .taskCard {
+    width: 100%;
+    box-sizing: border-box;
+    height: auto;
+    min-height: 60px;
+  }
+
+  .taskTitle {
+    font-size: 18px;
+  }
+
+  .searchBar {
+    font-size: 15px;
+  }
+
+  .descPopup {
+    max-width: 260px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .board {
+    width: 95vw;
+    padding: 12px;
+    max-height: calc(100vh - 180px);
+    border-radius: 0px;
+  }
+
+  .customerName {
+    font-size: 22px;
+  }
+
+  .topRow {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .backBtn {
+    font-size: 14px;
+  }
+
+  .searchBar {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+
+  .taskCard {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    height: auto;
+    min-height: 56px;
+  }
+
+  .taskTitle {
+    font-size: 15px;
+  }
+
+  .descBtnIcon {
+    width: 18px;
+  }
+
+  .descPopup {
+    min-width: 160px;
+    max-width: 220px;
+  }
+
+  .startBtn,
+  .stopBtn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .timer {
+    font-size: 13px;
+    min-width: 58px;
+  }
 }
