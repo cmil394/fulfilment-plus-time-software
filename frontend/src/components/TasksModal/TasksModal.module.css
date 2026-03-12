@@ -85,75 +85,32 @@
   margin: 2px 0 0;
 }
 
-.taskStatus {
-  padding: 6px 14px;
-  font-size: 14px;
-  border-radius: 6px;
-  background: black;
-  color: white;
-  white-space: nowrap;
-}
-
-.taskActions {
+.titleRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.startBtn {
-  padding: 8px 16px;
-  background: #22c55e;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.stopBtn {
-  padding: 8px 16px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.descBtn {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: background 0.15s ease;
-}
-
-.descBtn:hover {
-  background: rgba(0, 0, 0, 0.06);
+  gap: 6px;
 }
 
 .descBtnIcon {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  margin-left: 5px;
   display: block;
+}
+
+.descBtnIcon:hover {
+  cursor: pointer;
 }
 
 .descWrapper {
   position: relative;
-  display: inline-flex;
+  display: flex;
   align-items: center;
 }
  
 .descPopup {
   position: absolute;
   bottom: calc(100% + 8px);
-  right: 0;
+  left: 0;
   z-index: 100;
   background: #fff;
   border: 1px solid #e0e0e0;
@@ -201,6 +158,42 @@
 .descPopupClose:hover {
   color: #333;
 }
+
+.taskStatus {
+  padding: 6px 14px;
+  font-size: 14px;
+  border-radius: 6px;
+  background: black;
+  color: white;
+  white-space: nowrap;
+}
+
+.taskActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.startBtn {
+  padding: 8px 16px;
+  background: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.stopBtn {
+  padding: 8px 16px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
 
 .timer {
   font-family: monospace;

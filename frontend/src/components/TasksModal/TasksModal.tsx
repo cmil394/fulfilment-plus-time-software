@@ -3,7 +3,6 @@ import { taskService } from "../../services/task.service.ts";
 import type { Task } from "../../services/task.service.ts";
 import styles from "./TasksModal.module.css";
 import backarrow from "../../assets/icons/backarrow.svg";
-import infoIcon from "../../assets/icons/info.png";
 
 interface Props {
   customerId: string;
@@ -119,39 +118,36 @@ function TasksModal({ customerId, onBack }: Props) {
         filtered.map((task) => (
           <div key={task.id} className={styles.taskCard}>
             <div className={styles.taskInfo}>
-              <p className={styles.taskTitle}>{task.name}</p>
-            </div>
-            <div className={styles.taskActions}>
-              <div className={styles.descWrapper}>
-                <button
-                  className={styles.descBtn}
-                  onClick={() => togglePopup(task.id)}
-                  title="View description"
-                >
+              <div className={styles.titleRow}>
+                <p className={styles.taskTitle}>{task.name}</p>
+                <div className={styles.descWrapper}>
                   <img
-                    src={infoIcon}
-                    alt="Description icon"
+                    src="/info.svg"
+                    alt="info"
                     className={styles.descBtnIcon}
+                    onClick={() => togglePopup(task.id)}
                   />
-                </button>
-
-                {openPopup === task.id && (
-                  <div className={styles.descPopup} ref={popupRef}>
-                    <button
-                      className={styles.descPopupClose}
-                      onClick={() => setOpenPopup(null)}
-                      aria-label="Close"
-                    >
-                      ×
-                    </button>
-                    <p className={styles.descPopupText}>
-                      {task.description
-                        ? task.description
-                        : "No description available."}
-                    </p>
-                  </div>
-                )}
+                  {openPopup === task.id && (
+                    <div className={styles.descPopup} ref={popupRef}>
+                      <button
+                        className={styles.descPopupClose}
+                        onClick={() => setOpenPopup(null)}
+                        aria-label="Close"
+                      >
+                        ×
+                      </button>
+                      <p className={styles.descPopupText}>
+                        {task.description
+                          ? task.description
+                          : "No description available."}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
+            </div>
+
+            <div className={styles.taskActions}>
               {activeTimers[task.id] !== undefined ? (
                 <>
                   <span className={styles.timer}>
