@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { taskService } from "../../services/task.service.ts";
+import { customerService } from "../../services/customer.service.ts";
 import type { Task } from "../../services/task.service.ts";
 import styles from "./TasksModal.module.css";
 import backarrow from "../../assets/icons/backarrow.svg";
@@ -16,6 +17,7 @@ function TasksModal({ customerId, onBack }: Props) {
   const [search, setSearch] = useState("");
   const [activeTimers, setActiveTimers] = useState<Record<number, number>>({});
   const [openPopup, setOpenPopup] = useState<number | null>(null);
+  const [customerName, setCustomerName] = useState<string>("");
   const intervalRefs = useRef<Record<number, ReturnType<typeof setInterval>>>(
     {},
   );
@@ -26,6 +28,8 @@ function TasksModal({ customerId, onBack }: Props) {
       try {
         const data = await taskService.getByCustomer(customerId);
         setTasks(data);
+        const customer = await customerService.getById(customerId);
+        setCustomerName(customer.name);
       } catch (err) {
         console.error(err);
         setError("Failed to fetch tasks.");
@@ -96,6 +100,7 @@ function TasksModal({ customerId, onBack }: Props) {
 
   return (
     <div className={styles.board}>
+      <h2 className={styles.customerName}>{customerName}</h2>
       <div className={styles.topRow}>
         <button onClick={onBack} className={styles.backBtn}>
           <img src={backarrow} alt="back" className={styles.backArrow} />

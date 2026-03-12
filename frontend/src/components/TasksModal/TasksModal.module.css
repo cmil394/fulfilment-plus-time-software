@@ -13,6 +13,13 @@
   position: relative;
 }
 
+.customerName {
+  color: white;
+  font-size: 36px;
+  align-self: center;
+  margin: 4px 0px;
+}
+
 .topRow {
   display: flex;
   align-items: center;
