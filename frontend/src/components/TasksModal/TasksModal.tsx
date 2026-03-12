@@ -3,6 +3,7 @@ import { taskService } from "../../services/task.service.ts";
 import type { Task } from "../../services/task.service.ts";
 import styles from "./TasksModal.module.css";
 import backarrow from "../../assets/icons/backarrow.svg";
+import infoIcon from "../../assets/icons/info.png";
 
 interface Props {
   customerId: string;
@@ -15,10 +16,11 @@ function TasksModal({ customerId, onBack }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [activeTimers, setActiveTimers] = useState<Record<number, number>>({});
-  const [expandedDesc, setExpandedDesc] = useState<Record<number, boolean>>({});
+  const [openPopup, setOpenPopup] = useState<number | null>(null);
   const intervalRefs = useRef<Record<number, ReturnType<typeof setInterval>>>(
     {},
   );
+  const popupRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -40,6 +42,17 @@ function TasksModal({ customerId, onBack }: Props) {
     };
   }, [customerId]);
 
+  // Close popup
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
+        setOpenPopup(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleStart = (taskId: number) => {
     setActiveTimers((prev) => ({ ...prev, [taskId]: 0 }));
     intervalRefs.current[taskId] = setInterval(() => {
@@ -60,8 +73,8 @@ function TasksModal({ customerId, onBack }: Props) {
     });
   };
 
-  const toggleDesc = (taskId: number) => {
-    setExpandedDesc((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
+  const togglePopup = (taskId: number) => {
+    setOpenPopup((prev) => (prev === taskId ? null : taskId));
   };
 
   const formatTime = (seconds: number) => {
@@ -107,22 +120,38 @@ function TasksModal({ customerId, onBack }: Props) {
           <div key={task.id} className={styles.taskCard}>
             <div className={styles.taskInfo}>
               <p className={styles.taskTitle}>{task.name}</p>
-              {expandedDesc[task.id] && task.description && (
-                <p className={styles.taskDesc}>{task.description}</p>
-              )}
             </div>
-
             <div className={styles.taskActions}>
-              {task.description && (
+              <div className={styles.descWrapper}>
                 <button
                   className={styles.descBtn}
-                  onClick={() => toggleDesc(task.id)}
-                  title="Toggle description"
+                  onClick={() => togglePopup(task.id)}
+                  title="View description"
                 >
-                  {expandedDesc[task.id] ? "▲" : "▼"}
+                  <img
+                    src={infoIcon}
+                    alt="Description icon"
+                    className={styles.descBtnIcon}
+                  />
                 </button>
-              )}
 
+                {openPopup === task.id && (
+                  <div className={styles.descPopup} ref={popupRef}>
+                    <button
+                      className={styles.descPopupClose}
+                      onClick={() => setOpenPopup(null)}
+                      aria-label="Close"
+                    >
+                      ×
+                    </button>
+                    <p className={styles.descPopupText}>
+                      {task.description
+                        ? task.description
+                        : "No description available."}
+                    </p>
+                  </div>
+                )}
+              </div>
               {activeTimers[task.id] !== undefined ? (
                 <>
                   <span className={styles.timer}>

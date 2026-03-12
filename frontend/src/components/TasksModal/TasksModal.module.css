@@ -121,13 +121,85 @@
 }
 
 .descBtn {
-  padding: 8px 10px;
-  background: #6b7280;
-  color: white;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: none;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.descBtn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.descBtnIcon {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.descWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+ 
+.descPopup {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 12px 36px 12px 14px;
+  min-width: 220px;
+  max-width: 320px;
+  animation: popupFadeIn 0.15s ease;
+}
+ 
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+ 
+.descPopupText {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #444;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+ 
+.descPopupClose {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+}
+ 
+.descPopupClose:hover {
+  color: #333;
 }
 
 .timer {
