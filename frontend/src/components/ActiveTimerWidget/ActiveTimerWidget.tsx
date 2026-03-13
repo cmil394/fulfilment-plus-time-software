@@ -27,13 +27,31 @@ export default function ActiveTimerWidget() {
   const offset = useRef({ x: 0, y: 0 });
   const widgetRef = useRef<HTMLDivElement>(null);
 
+  const clampPos = (x: number, y: number) => {
+    const widget = widgetRef.current;
+    if (!widget) return { x, y };
+    const maxX = window.innerWidth - widget.offsetWidth;
+    const maxY = window.innerHeight - widget.offsetHeight;
+    return {
+      x: Math.min(Math.max(0, x), maxX),
+      y: Math.min(Math.max(0, y), maxY),
+    };
+  };
+
+  useEffect(() => {
+    const onResize = () => {
+      setPos((prev) => clampPos(prev.x, prev.y));
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!dragging.current) return;
-      setPos({
-        x: e.clientX - offset.current.x,
-        y: e.clientY - offset.current.y,
-      });
+      const rawX = e.clientX - offset.current.x;
+      const rawY = e.clientY - offset.current.y;
+      setPos(clampPos(rawX, rawY));
     };
     const onUp = () => {
       dragging.current = false;
