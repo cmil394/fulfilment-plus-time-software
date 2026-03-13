@@ -20,6 +20,7 @@ function TasksModal({ customerId, onBack }: Props) {
   const [activeTaskId, setActiveTaskId] = useState<number | null>(null);
   const [openPopup, setOpenPopup] = useState<number | null>(null);
   const [customerName, setCustomerName] = useState<string>("");
+  const [shakeTaskId, setShakeTaskId] = useState<number | null>(null);
   const intervalRefs = useRef<Record<number, ReturnType<typeof setInterval>>>(
     {},
   );
@@ -78,10 +79,17 @@ function TasksModal({ customerId, onBack }: Props) {
 
   // Timer start and stops
   const handleStart = async (taskId: number) => {
+    if (activeTaskId !== null && activeTaskId !== taskId) {
+      setShakeTaskId(taskId);
+      setTimeout(() => setShakeTaskId(null), 400);
+      return;
+    }
+
     try {
       await timeEntryService.startTimer(taskId);
       setActiveTaskId(taskId);
       setActiveTimers((prev) => ({ ...prev, [taskId]: 0 }));
+
       intervalRefs.current[taskId] = setInterval(() => {
         setActiveTimers((prev) => ({
           ...prev,
@@ -200,9 +208,9 @@ function TasksModal({ customerId, onBack }: Props) {
                 </>
               ) : (
                 <button
-                  className={styles.startBtn}
-                  // Disable Start if another task's timer is already running
-                  disabled={activeTaskId !== null && activeTaskId !== task.id}
+                  className={`${styles.startBtn} ${
+                    shakeTaskId === task.id ? styles.shake : ""
+                  }`}
                   onClick={() => handleStart(task.id)}
                 >
                   Start
