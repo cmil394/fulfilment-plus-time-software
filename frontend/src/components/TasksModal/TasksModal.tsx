@@ -4,6 +4,7 @@ import { customerService } from "../../services/customer.service.ts";
 import type { Task } from "../../services/task.service.ts";
 import { useActiveTimer } from "../../context/ActiveTimerContext.tsx";
 import styles from "./TasksModal.module.css";
+import titleStyles from "./../CSS Components/titles.module.css";
 import backarrow from "../../assets/icons/backarrow.svg";
 
 interface Props {
@@ -95,7 +96,7 @@ function TasksModal({ customerId, onBack }: Props) {
 
   return (
     <div className={styles.board}>
-      <h2 className={styles.customerName}>{customerName}</h2>
+      <h2 className={titleStyles.subheading1}>{customerName}</h2>
       <div className={styles.topRow}>
         <button onClick={onBack} className={styles.backBtn}>
           <img src={backarrow} alt="back" className={styles.backArrow} />

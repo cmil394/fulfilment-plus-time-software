@@ -5,8 +5,24 @@ import titleStyles from "./../../components/CSS Components/titles.module.css";
 function Dashboard() {
   return (
     <div className={styles.dashboardContainer}>
-      <Navbar></Navbar>
+      <Navbar />
       <h1 className={titleStyles.pageTitle1}>Dashboard</h1>
+      <div className={styles.tabsRow}>
+        <div className={styles.customersTab}>
+          <h2 className={titleStyles.subheading1}>Customers</h2>
+        </div>
+        <div className={styles.historyTab}>
+          <h2 className={titleStyles.subheading1}>History</h2>
+        </div>
+        <div className={styles.rightStack}>
+          <div className={styles.profileTab}>
+            <h2 className={titleStyles.subheading1}>Profile</h2>
+          </div>
+          <div className={styles.reportsTab}>
+            <h2 className={titleStyles.subheading1}>Reports</h2>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
