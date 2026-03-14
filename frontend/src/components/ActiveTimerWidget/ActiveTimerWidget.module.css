@@ -18,7 +18,7 @@
   cursor: grabbing;
 }
 
-/* ── Header ── */
+/* Header */
 .header {
   display: flex;
   align-items: center;
@@ -50,7 +50,7 @@
   color: rgba(255, 255, 255, 0.75);
 }
 
-/* ── Pulse dot ── */
+/* Pulse dot */
 .pulse {
   display: inline-block;
   width: 8px;
@@ -74,7 +74,7 @@
   }
 }
 
-/* ── Time display ── */
+/* Time display */
 .time {
   font-size: 32px;
   font-weight: 700;
@@ -85,7 +85,7 @@
   margin-bottom: 10px;
 }
 
-/* ── Meta ── */
+/* Meta */
 .meta {
   display: flex;
   flex-direction: column;
@@ -110,7 +110,7 @@
   text-overflow: ellipsis;
 }
 
-/* ── Stop button ── */
+/* Stop button */
 .stopBtn {
   width: 100%;
   padding: 8px;
