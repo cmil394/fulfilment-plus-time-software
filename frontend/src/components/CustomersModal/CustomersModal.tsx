@@ -9,9 +9,10 @@ const AVATAR =
 
 interface Props {
   compact?: boolean;
+  onSelectCustomer?: (id: string) => void;
 }
 
-function CustomersModal({ compact = false }: Props) {
+function CustomersModal({ compact = false, onSelectCustomer }: Props) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +38,14 @@ function CustomersModal({ compact = false }: Props) {
   const filteredCustomers = customers.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()),
   );
+
+  const handleTasksClick = (id: string) => {
+    if (compact && onSelectCustomer) {
+      onSelectCustomer(id);
+    } else {
+      navigate(`/tasks/${id}`);
+    }
+  };
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
@@ -86,7 +95,7 @@ function CustomersModal({ compact = false }: Props) {
             </p>
             <button
               className={compact ? styles.viewBtnCompact : styles.viewBtn}
-              onClick={() => navigate(`/tasks/${customer.id}`)}
+              onClick={() => handleTasksClick(String(customer.id))}
             >
               Tasks
             </button>

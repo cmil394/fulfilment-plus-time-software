@@ -10,9 +10,10 @@ import backarrow from "../../assets/icons/backarrow.svg";
 interface Props {
   customerId: string;
   onBack: () => void;
+  compact?: boolean;
 }
 
-function TasksModal({ customerId, onBack }: Props) {
+function TasksModal({ customerId, onBack, compact = false }: Props) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,39 +96,53 @@ function TasksModal({ customerId, onBack }: Props) {
   if (error) return <p>{error}</p>;
 
   return (
-    <div className={styles.board}>
-      <h2 className={titleStyles.subheading1}>{customerName}</h2>
+    <div className={compact ? styles.boardCompact : styles.board}>
+      {!compact && <h2 className={titleStyles.subheading1}>{customerName}</h2>}
       <div className={styles.topRow}>
         <button onClick={onBack} className={styles.backBtn}>
           <img src={backarrow} alt="back" className={styles.backArrow} />
           Back
         </button>
+        {compact && (
+          <span className={styles.compactCustomerName}>{customerName}</span>
+        )}
         <input
           type="text"
           placeholder="Search tasks..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className={styles.searchBar}
+          className={compact ? styles.searchBarCompact : styles.searchBar}
         />
       </div>
 
       {filtered.length === 0 ? (
-        <div className={styles.taskCard}>
+        <div className={compact ? styles.taskCardCompact : styles.taskCard}>
           <p className={styles.taskTitle}>No tasks found.</p>
         </div>
       ) : (
         filtered.map((task) => {
           const isActive = activeTimer?.taskId === task.id;
           return (
-            <div key={task.id} className={styles.taskCard}>
+            <div
+              key={task.id}
+              className={compact ? styles.taskCardCompact : styles.taskCard}
+            >
               <div className={styles.taskInfo}>
                 <div className={styles.titleRow}>
-                  <p className={styles.taskTitle}>{task.name}</p>
+                  <p
+                    className={
+                      compact ? styles.taskTitleCompact : styles.taskTitle
+                    }
+                  >
+                    {task.name}
+                  </p>
                   <div className={styles.descWrapper}>
                     <img
                       src="/info.svg"
                       alt="info"
-                      className={styles.descBtnIcon}
+                      className={
+                        compact ? styles.descBtnIconCompact : styles.descBtnIcon
+                      }
                       onClick={() => togglePopup(task.id)}
                     />
                     {openPopup === task.id && (
@@ -154,10 +169,7 @@ function TasksModal({ customerId, onBack }: Props) {
                     <span className={styles.timer}>
                       {formatTime(elapsedSeconds)}
                     </span>
-                    <button
-                      className={styles.stopBtn}
-                      onClick={() => handleStop()}
-                    >
+                    <button className={styles.stopBtn} onClick={handleStop}>
                       Stop
                     </button>
                   </>
