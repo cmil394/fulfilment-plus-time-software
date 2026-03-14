@@ -20,6 +20,7 @@ function TasksModal({ customerId, onBack, compact = false }: Props) {
   const [search, setSearch] = useState("");
   const [customerName, setCustomerName] = useState<string>("");
   const [openPopup, setOpenPopup] = useState<number | null>(null);
+  const [shakeTaskId, setShakeTaskId] = useState<number | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
 
   const { activeTimer, elapsedSeconds, startTimer, stopTimer } =
@@ -45,7 +46,6 @@ function TasksModal({ customerId, onBack, compact = false }: Props) {
     fetchTasks();
   }, [customerId]);
 
-  // Close popup on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
@@ -57,6 +57,11 @@ function TasksModal({ customerId, onBack, compact = false }: Props) {
   }, []);
 
   const handleStart = async (taskId: number) => {
+    if (activeTimer !== null) {
+      setShakeTaskId(taskId);
+      setTimeout(() => setShakeTaskId(null), 450);
+      return;
+    }
     try {
       await startTimer(taskId);
     } catch (err: any) {
@@ -101,11 +106,8 @@ function TasksModal({ customerId, onBack, compact = false }: Props) {
       <div className={styles.topRow}>
         <button onClick={onBack} className={styles.backBtn}>
           <img src={backarrow} alt="back" className={styles.backArrow} />
-          Back
+          {compact ? customerName : "Back"}
         </button>
-        {compact && (
-          <span className={styles.compactCustomerName}>{customerName}</span>
-        )}
         <input
           type="text"
           placeholder="Search tasks..."
@@ -175,8 +177,7 @@ function TasksModal({ customerId, onBack, compact = false }: Props) {
                   </>
                 ) : (
                   <button
-                    className={styles.startBtn}
-                    disabled={activeTimer !== null && !isActive}
+                    className={`${styles.startBtn} ${shakeTaskId === task.id ? styles.shake : ""}`}
                     onClick={() => handleStart(task.id)}
                   >
                     Start

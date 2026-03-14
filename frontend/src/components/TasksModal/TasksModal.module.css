@@ -1,4 +1,4 @@
-/* ─── Board ─────────────────────────────────────────────────────────────── */
+/* Board */
 
 .board {
   display: flex;
@@ -31,7 +31,7 @@
   box-sizing: border-box;
 }
 
-/* ─── Customer Name ──────────────────────────────────────────────────────── */
+/* Customer Name */
 
 .customerName {
   color: white;
@@ -40,15 +40,7 @@
   margin: 4px 0px;
 }
 
-.compactCustomerName {
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* ─── Top Row ────────────────────────────────────────────────────────────── */
+/* Top Row  */
 
 .topRow {
   display: flex;
@@ -56,6 +48,7 @@
   gap: 12px;
   width: 100%;
   margin-bottom: 15px;
+  position: relative;
 }
 
 .backBtn {
@@ -177,14 +170,15 @@
   display: block;
 }
 
-.descBtnIcon:hover {
-  cursor: pointer;
-}
-
 .descBtnIconCompact {
-  width: 16px;
+  width: 18px;
   margin-left: 5px;
   display: block;
+}
+
+.descBtnIcon:hover,
+.descBtnIconCompact:hover {
+  cursor: pointer;
 }
 
 .descWrapper {
@@ -288,6 +282,13 @@
   font-family: monospace;
   font-size: 15px;
   min-width: 70px;
+}
+
+.compactTopRight {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
 }
 
 /* Shake */
