@@ -108,7 +108,7 @@ export const getUserProfile = async (userId: string) => {
 };
 
 // Admin
-export const getAllUsers = async () => {
+export const getAllAcceptedUsers = async () => {
   const users = await prisma.user.findMany({
     where: { status: "APPROVED" },
     select: publicUserSelect,

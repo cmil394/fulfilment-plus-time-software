@@ -58,14 +58,13 @@ export const getProfile = async (
 
 // Admin
 
-export const getAllUsers = async (
+export const getAllAcceptedUsers = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
-  console.log("getAllUsers hit");
   try {
-    const data = await authService.getAllUsers();
+    const data = await authService.getAllAcceptedUsers();
     res.status(200).json({ status: "success", data });
   } catch (err) {
     next(err);

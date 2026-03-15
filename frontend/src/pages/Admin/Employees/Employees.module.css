@@ -33,3 +33,30 @@
 .table tr:hover {
   background: #f0f0f0;
 }
+
+.tabs {
+  display: flex;
+  border-bottom: 1.5px solid #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 8px 18px;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1.5px;
+  cursor: pointer;
+  color: #888;
+}
+
+.tab:hover {
+  color: #333;
+}
+
+.tabActive {
+  color: #111;
+  border-bottom: 2px solid #111;
+  font-weight: 500;
+}
