@@ -1,0 +1,35 @@
+.grid {
+  background-color: blue;
+}
+
+.tableHeader {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.tableCount {
+  align-self: center;
+  margin-top: -35px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.table th {
+  background: #f5f5f5;
+  font-weight: bold;
+}
+
+.table tr:hover {
+  background: #f0f0f0;
+}
