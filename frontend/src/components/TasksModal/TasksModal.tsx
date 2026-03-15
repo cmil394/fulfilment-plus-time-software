@@ -121,77 +121,81 @@ function TasksModal({ customerId, onBack, compact = false }: Props) {
         />
       </div>
 
-      {filtered.length === 0 ? (
-        <div className={compact ? styles.taskCardCompact : styles.taskCard}>
-          <p className={styles.taskTitle}>No tasks found.</p>
-        </div>
-      ) : (
-        filtered.map((task) => {
-          const isActive = activeTimer?.taskId === task.id;
-          return (
-            <div
-              key={task.id}
-              className={compact ? styles.taskCardCompact : styles.taskCard}
-            >
-              <div className={styles.taskInfo}>
-                <div className={styles.titleRow}>
-                  <p
-                    className={
-                      compact ? styles.taskTitleCompact : styles.taskTitle
-                    }
-                  >
-                    {task.name}
-                  </p>
-                  <div className={styles.descWrapper}>
-                    <img
-                      src="/info.svg"
-                      alt="info"
+      <div className={styles.taskList}>
+        {filtered.length === 0 ? (
+          <div className={compact ? styles.taskCardCompact : styles.taskCard}>
+            <p className={styles.taskTitle}>No tasks found.</p>
+          </div>
+        ) : (
+          filtered.map((task) => {
+            const isActive = activeTimer?.taskId === task.id;
+            return (
+              <div
+                key={task.id}
+                className={compact ? styles.taskCardCompact : styles.taskCard}
+              >
+                <div className={styles.taskInfo}>
+                  <div className={styles.titleRow}>
+                    <p
                       className={
-                        compact ? styles.descBtnIconCompact : styles.descBtnIcon
+                        compact ? styles.taskTitleCompact : styles.taskTitle
                       }
-                      onClick={() => togglePopup(task.id)}
-                    />
-                    {openPopup === task.id && (
-                      <div className={styles.descPopup} ref={popupRef}>
-                        <button
-                          className={styles.descPopupClose}
-                          onClick={() => setOpenPopup(null)}
-                          aria-label="Close"
-                        >
-                          ×
-                        </button>
-                        <p className={styles.descPopupText}>
-                          {task.description ?? "No description available."}
-                        </p>
-                      </div>
-                    )}
+                    >
+                      {task.name}
+                    </p>
+                    <div className={styles.descWrapper}>
+                      <img
+                        src="/info.svg"
+                        alt="info"
+                        className={
+                          compact
+                            ? styles.descBtnIconCompact
+                            : styles.descBtnIcon
+                        }
+                        onClick={() => togglePopup(task.id)}
+                      />
+                      {openPopup === task.id && (
+                        <div className={styles.descPopup} ref={popupRef}>
+                          <button
+                            className={styles.descPopupClose}
+                            onClick={() => setOpenPopup(null)}
+                            aria-label="Close"
+                          >
+                            ×
+                          </button>
+                          <p className={styles.descPopupText}>
+                            {task.description ?? "No description available."}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className={styles.taskActions}>
-                {isActive ? (
-                  <>
-                    <span className={styles.timer}>
-                      {formatTime(elapsedSeconds)}
-                    </span>
-                    <button className={styles.stopBtn} onClick={handleStop}>
-                      Stop
+                <div className={styles.taskActions}>
+                  {isActive ? (
+                    <>
+                      <span className={styles.timer}>
+                        {formatTime(elapsedSeconds)}
+                      </span>
+                      <button className={styles.stopBtn} onClick={handleStop}>
+                        Stop
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className={`${styles.startBtn} ${shakeTaskId === task.id ? styles.shake : ""}`}
+                      onClick={() => handleStart(task.id)}
+                    >
+                      Start
                     </button>
-                  </>
-                ) : (
-                  <button
-                    className={`${styles.startBtn} ${shakeTaskId === task.id ? styles.shake : ""}`}
-                    onClick={() => handleStart(task.id)}
-                  >
-                    Start
-                  </button>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })
-      )}
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }
