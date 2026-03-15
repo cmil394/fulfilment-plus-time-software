@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { taskService } from "../../services/task.service.ts";
 import { customerService } from "../../services/customer.service.ts";
 import type { Task } from "../../services/task.service.ts";
@@ -13,13 +14,19 @@ interface Props {
   compact?: boolean;
 }
 
+interface PopupState {
+  id: number;
+  x: number;
+  y: number;
+}
+
 function TasksModal({ customerId, onBack, compact = false }: Props) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [customerName, setCustomerName] = useState<string>("");
-  const [openPopup, setOpenPopup] = useState<number | null>(null);
+  const [openPopup, setOpenPopup] = useState<PopupState | null>(null);
   const [shakeTaskId, setShakeTaskId] = useState<number | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
 
@@ -78,8 +85,17 @@ function TasksModal({ customerId, onBack, compact = false }: Props) {
     }
   };
 
-  const togglePopup = (taskId: number) => {
-    setOpenPopup((prev) => (prev === taskId ? null : taskId));
+  const togglePopup = (taskId: number, e: React.MouseEvent) => {
+    if (openPopup?.id === taskId) {
+      setOpenPopup(null);
+      return;
+    }
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setOpenPopup({
+      id: taskId,
+      x: rect.left,
+      y: rect.top,
+    });
   };
 
   const formatTime = (seconds: number) => {
@@ -152,22 +168,8 @@ function TasksModal({ customerId, onBack, compact = false }: Props) {
                             ? styles.descBtnIconCompact
                             : styles.descBtnIcon
                         }
-                        onClick={() => togglePopup(task.id)}
+                        onClick={(e) => togglePopup(task.id, e)}
                       />
-                      {openPopup === task.id && (
-                        <div className={styles.descPopup} ref={popupRef}>
-                          <button
-                            className={styles.descPopupClose}
-                            onClick={() => setOpenPopup(null)}
-                            aria-label="Close"
-                          >
-                            ×
-                          </button>
-                          <p className={styles.descPopupText}>
-                            {task.description ?? "No description available."}
-                          </p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -196,6 +198,34 @@ function TasksModal({ customerId, onBack, compact = false }: Props) {
           })
         )}
       </div>
+
+      {/* Description Popup */}
+      {openPopup &&
+        createPortal(
+          <div
+            ref={popupRef}
+            className={styles.descPopup}
+            style={{
+              position: "fixed",
+              top: openPopup.y - 8,
+              left: openPopup.x,
+              transform: "translateY(-100%)",
+            }}
+          >
+            <button
+              className={styles.descPopupClose}
+              onClick={() => setOpenPopup(null)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <p className={styles.descPopupText}>
+              {tasks.find((t) => t.id === openPopup.id)?.description ??
+                "No description available."}
+            </p>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

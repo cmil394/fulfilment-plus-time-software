@@ -250,16 +250,12 @@
 }
 
 .descWrapper {
-  position: relative;
   display: flex;
   align-items: center;
 }
 
 .descPopup {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 0;
-  z-index: 100;
+  z-index: 9999;
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -273,11 +269,11 @@
 @keyframes popupFadeIn {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(calc(-100% + 4px));
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(-100%);
   }
 }
 
