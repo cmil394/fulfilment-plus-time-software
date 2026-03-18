@@ -4,7 +4,7 @@ import styles from "./Employees.module.css";
 import tableStyles from "./../../../components/CSS Components/titles.module.css";
 import { authService } from "../../../services/auth.service";
 import type { User } from "../../../services/auth.service";
-import { Eye, Pencil } from "lucide-react";
+import { Eye, Pencil, Check, X } from "lucide-react";
 
 type Tab = "employees" | "pending";
 type SortField =
@@ -15,6 +15,13 @@ type SortField =
   | "role"
   | "createdAt";
 type SortDir = "asc" | "desc";
+
+interface EditDraft {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+}
 
 function Employees() {
   const [activeTab, setActiveTab] = useState<Tab>("employees");
@@ -28,6 +35,11 @@ function Employees() {
   );
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Inline edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [empSortField, setEmpSortField] = useState<SortField>("index");
   const [empSortDir, setEmpSortDir] = useState<SortDir>("asc");
@@ -75,6 +87,48 @@ function Employees() {
       fetchPendingUsers();
     }
   }, [activeTab]);
+
+  // Edit handlers
+  const handleStartEdit = (employee: User) => {
+    setEditingId(employee.id);
+    setEditDraft({
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+      email: employee.email,
+      role: employee.role,
+    });
+    setSaveError(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditDraft(null);
+    setSaveError(null);
+  };
+
+  const handleConfirmEdit = async (userId: string) => {
+    if (!editDraft) return;
+    setActionLoading(userId);
+    setSaveError(null);
+    try {
+      await authService.updateUser(userId, editDraft);
+      // Update local state so the table reflects changes immediately
+      setEmployees((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, ...editDraft } : u)),
+      );
+      setEditingId(null);
+      setEditDraft(null);
+    } catch (err) {
+      console.error("Failed to update user:", err);
+      setSaveError("Failed to save changes. Please try again.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDraftChange = (field: keyof EditDraft, value: string) => {
+    setEditDraft((prev) => (prev ? { ...prev, [field]: value } : prev));
+  };
 
   const handleApprove = async (userId: string) => {
     setActionLoading(userId);
@@ -223,6 +277,7 @@ function Employees() {
 
         {activeTab === "employees" && (
           <>
+            {saveError && <p className={styles.errorMsg}>{saveError}</p>}
             {loading ? (
               <p>Loading employees...</p>
             ) : employees.length === 0 ? (
@@ -284,32 +339,135 @@ function Employees() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedEmployees.map((employee) => (
-                    <tr key={employee.id}>
-                      <td>{employeeOrder.get(employee.id)}.</td>
-                      <td>{employee.firstName}</td>
-                      <td>{employee.lastName}</td>
-                      <td>{employee.email}</td>
-                      <td>
-                        <span className={styles.roleBadge}>
-                          {employee.role}
-                        </span>
-                      </td>
-                      <td>
-                        {new Date(employee.createdAt).toLocaleDateString()}
-                      </td>
-                      <td>
-                        <button className={styles.viewBtn}>
-                          <Eye size={16} />
-                        </button>
-                      </td>
-                      <td>
-                        <button className={styles.editBtn}>
-                          <Pencil size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {sortedEmployees.map((employee) => {
+                    const isEditing = editingId === employee.id;
+                    const isSaving = actionLoading === employee.id;
+
+                    return (
+                      <tr
+                        key={employee.id}
+                        className={isEditing ? styles.editingRow : ""}
+                      >
+                        <td>{employeeOrder.get(employee.id)}.</td>
+
+                        {/* First Name */}
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className={styles.editInput}
+                              value={editDraft!.firstName}
+                              onChange={(e) =>
+                                handleDraftChange("firstName", e.target.value)
+                              }
+                              disabled={isSaving}
+                            />
+                          ) : (
+                            employee.firstName
+                          )}
+                        </td>
+
+                        {/* Last Name */}
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className={styles.editInput}
+                              value={editDraft!.lastName}
+                              onChange={(e) =>
+                                handleDraftChange("lastName", e.target.value)
+                              }
+                              disabled={isSaving}
+                            />
+                          ) : (
+                            employee.lastName
+                          )}
+                        </td>
+
+                        {/* Email */}
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className={styles.editInput}
+                              type="email"
+                              value={editDraft!.email}
+                              onChange={(e) =>
+                                handleDraftChange("email", e.target.value)
+                              }
+                              disabled={isSaving}
+                            />
+                          ) : (
+                            employee.email
+                          )}
+                        </td>
+
+                        {/* Role */}
+                        <td>
+                          {isEditing ? (
+                            <select
+                              className={styles.editInput}
+                              value={editDraft!.role}
+                              onChange={(e) =>
+                                handleDraftChange("role", e.target.value)
+                              }
+                              disabled={isSaving}
+                            >
+                              <option value="ADMIN">ADMIN</option>
+                              <option value="EMPLOYEE">EMPLOYEE</option>
+                            </select>
+                          ) : (
+                            <span className={styles.roleBadge}>
+                              {employee.role}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Date (not editable) */}
+                        <td>
+                          {new Date(employee.createdAt).toLocaleDateString()}
+                        </td>
+
+                        {/* View */}
+                        <td>
+                          <button
+                            className={styles.viewBtn}
+                            disabled={isEditing}
+                          >
+                            <Eye size={16} />
+                          </button>
+                        </td>
+
+                        {/* Edit / Confirm / Cancel */}
+                        <td>
+                          {isEditing ? (
+                            <div className={styles.editActions}>
+                              <button
+                                className={styles.confirmBtn}
+                                onClick={() => handleConfirmEdit(employee.id)}
+                                disabled={isSaving}
+                                title="Confirm"
+                              >
+                                {isSaving ? "..." : <Check size={16} />}
+                              </button>
+                              <button
+                                className={styles.cancelBtn}
+                                onClick={handleCancelEdit}
+                                disabled={isSaving}
+                                title="Cancel"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              className={styles.editBtn}
+                              onClick={() => handleStartEdit(employee)}
+                            >
+                              <Pencil size={16} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}

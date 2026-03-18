@@ -153,3 +153,43 @@
   text-align: center;
   width: 40px;
 }
+
+.editingRow td {
+  background-color: #f0f7ff;
+}
+
+.editInput {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.editActions {
+  display: flex;
+  gap: 4px;
+}
+
+.confirmBtn {
+  color: green;
+  background: none;
+  border: 1px solid green;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.cancelBtn {
+  color: #000000;
+  background: none;
+  border: 1px solid #000000;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.errorMsg {
+  color: red;
+  margin-bottom: 8px;
+}

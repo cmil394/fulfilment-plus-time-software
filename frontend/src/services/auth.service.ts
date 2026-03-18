@@ -73,6 +73,8 @@ export const authService = {
     return response.data;
   },
 
+  updateUser: (id: string, data: Partial<User>) =>
+    api.patch(`/auth/admin/users/${id}`, data),
   approveUser: (id: string) => api.patch(`/auth/admin/users/${id}/approve`),
   rejectUser: (id: string) => api.patch(`/auth/admin/users/${id}/reject`),
 
