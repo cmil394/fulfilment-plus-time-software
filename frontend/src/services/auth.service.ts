@@ -73,6 +73,17 @@ export const authService = {
     return response.data;
   },
 
+  getCurrentUserId: (): string | null => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.id ?? payload.sub ?? payload.userId ?? null;
+    } catch {
+      return null;
+    }
+  },
+
   updateUser: (id: string, data: Partial<User>) =>
     api.patch(`/auth/admin/users/${id}`, data),
   approveUser: (id: string) => api.patch(`/auth/admin/users/${id}/approve`),

@@ -40,6 +40,9 @@ function Employees() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [currentUserId] = useState<string | null>(() =>
+    authService.getCurrentUserId(),
+  );
 
   const [empSortField, setEmpSortField] = useState<SortField>("index");
   const [empSortDir, setEmpSortDir] = useState<SortDir>("asc");
@@ -408,7 +411,9 @@ function Employees() {
                               onChange={(e) =>
                                 handleDraftChange("role", e.target.value)
                               }
-                              disabled={isSaving}
+                              disabled={
+                                isSaving || currentUserId === employee.id
+                              }
                             >
                               <option value="ADMIN">ADMIN</option>
                               <option value="EMPLOYEE">EMPLOYEE</option>
