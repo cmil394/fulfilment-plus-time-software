@@ -60,6 +60,9 @@ export const authService = {
     return response.data;
   },
 
+  approveUser: (id: string) => api.patch(`/auth/admin/users/${id}/approve`),
+  rejectUser: (id: string) => api.patch(`/auth/admin/users/${id}/reject`),
+
   logout: () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");

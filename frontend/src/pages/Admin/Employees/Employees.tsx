@@ -3,7 +3,7 @@ import Navbar from "../../../components/Navbar/Navbar";
 import styles from "./Employees.module.css";
 import tableStyles from "./../../../components/CSS Components/titles.module.css";
 import { authService } from "../../../services/auth.service";
-import type { User } from "../../../services/auth.service"; // adjust path
+import type { User } from "../../../services/auth.service";
 
 type Tab = "employees" | "pending";
 
@@ -11,8 +11,8 @@ function Employees() {
   const [activeTab, setActiveTab] = useState<Tab>("employees");
   const [pendingUsers, setPendingUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // Fetch pending users when the component mounts or activeTab changes
   useEffect(() => {
     if (activeTab === "pending") {
       setLoading(true);
@@ -32,6 +32,32 @@ function Employees() {
     }
   }, [activeTab]);
 
+  const handleApprove = async (userId: string) => {
+    setActionLoading(userId);
+    try {
+      await authService.approveUser(userId);
+      // Remove from pending list after approval
+      setPendingUsers((prev) => prev.filter((u) => u.id !== userId));
+    } catch (err) {
+      console.error("Failed to approve user:", err);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async (userId: string) => {
+    setActionLoading(userId);
+    try {
+      await authService.rejectUser(userId);
+      // Remove from pending list after rejection
+      setPendingUsers((prev) => prev.filter((u) => u.id !== userId));
+    } catch (err) {
+      console.error("Failed to reject user:", err);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   return (
     <div className={styles.employeesContainer}>
       <Navbar />
@@ -47,17 +73,13 @@ function Employees() {
 
         <div className={styles.tabs}>
           <button
-            className={`${styles.tab} ${
-              activeTab === "employees" ? styles.tabActive : ""
-            }`}
+            className={`${styles.tab} ${activeTab === "employees" ? styles.tabActive : ""}`}
             onClick={() => setActiveTab("employees")}
           >
             Employees
           </button>
           <button
-            className={`${styles.tab} ${
-              activeTab === "pending" ? styles.tabActive : ""
-            }`}
+            className={`${styles.tab} ${activeTab === "pending" ? styles.tabActive : ""}`}
             onClick={() => setActiveTab("pending")}
           >
             Pending employees
@@ -139,10 +161,20 @@ function Employees() {
                         <span>{user.status}</span>
                       </td>
                       <td>
-                        <button>Approve</button>
+                        <button
+                          onClick={() => handleApprove(user.id)}
+                          disabled={actionLoading === user.id}
+                        >
+                          {actionLoading === user.id ? "..." : "Approve"}
+                        </button>
                       </td>
                       <td>
-                        <button>Reject</button>
+                        <button
+                          onClick={() => handleReject(user.id)}
+                          disabled={actionLoading === user.id}
+                        >
+                          {actionLoading === user.id ? "..." : "Reject"}
+                        </button>
                       </td>
                     </tr>
                   ))}
