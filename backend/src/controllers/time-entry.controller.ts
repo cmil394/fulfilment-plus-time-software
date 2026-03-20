@@ -1,6 +1,9 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "../middleware/auth.middleware";
-import { startTimerSchema } from "../validators/time-entry.validator";
+import {
+  startTimerSchema,
+  adminCreateEntrySchema,
+} from "../validators/time-entry.validator";
 import * as timeEntryService from "../services/time-entry.service";
 import { UnauthorizedError } from "../utils/errors";
 
@@ -161,6 +164,36 @@ export const deleteEntriesByCustomer = async (
       status: "success",
       message: `Deleted ${result.count} time entries for customer`,
       data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const adminCreateEntry = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    if (!req.user?.userId) throw new UnauthorizedError();
+
+    if (req.user.role !== "ADMIN") {
+      throw new UnauthorizedError(
+        "Only admins can create entries for other users",
+      );
+    }
+
+    const data = adminCreateEntrySchema.parse(req.body);
+    const entry = await timeEntryService.adminCreateEntry(
+      req.user.userId,
+      data,
+    );
+
+    res.status(201).json({
+      status: "success",
+      message: "Time entry created successfully",
+      data: entry,
     });
   } catch (err) {
     next(err);

@@ -25,4 +25,6 @@ router.delete(
   timeEntryController.deleteEntriesByCustomer,
 );
 
+router.post("/time-entries/admin/create", timeEntryController.adminCreateEntry);
+
 export default router;
