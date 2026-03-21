@@ -1,43 +1,23 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
+import { AuthRequest } from "../middleware/auth.middleware";
 import {
   createCustomerSchema,
   updateCustomerSchema,
 } from "../validators/customer.validator";
 import * as customerService from "../services/customer.service";
 
-export const createCustomer = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const data = createCustomerSchema.parse(req.body);
-    const customer = await customerService.createCustomer(data);
-    res.status(201).json({
-      status: "success",
-      message: "Customer created successfully",
-      data: customer,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
+// Read
 export const getCustomers = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
     const customers = await customerService.getCustomers();
-
-    const sortedCustomers = customers.sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
     res.status(200).json({
       status: "success",
       message: "Customers retrieved successfully",
-      data: sortedCustomers,
+      data: customers,
     });
   } catch (err) {
     next(err);
@@ -45,7 +25,7 @@ export const getCustomers = async (
 };
 
 export const getCustomerById = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
@@ -63,8 +43,27 @@ export const getCustomerById = async (
   }
 };
 
+// Write
+export const createCustomer = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const data = createCustomerSchema.parse(req.body);
+    const customer = await customerService.createCustomer(data);
+    res.status(201).json({
+      status: "success",
+      message: "Customer created successfully",
+      data: customer,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const updateCustomer = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
@@ -85,7 +84,7 @@ export const updateCustomer = async (
 };
 
 export const deleteCustomer = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {

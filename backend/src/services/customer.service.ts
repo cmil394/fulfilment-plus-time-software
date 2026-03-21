@@ -5,6 +5,36 @@ import {
 } from "../validators/customer.validator";
 import { NotFoundError } from "../utils/errors";
 
+// Read
+
+export const getCustomers = async () => {
+  const customers = await prisma.customer.findMany({
+    include: {
+      tasks: {
+        select: { name: true },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  return customers;
+};
+
+export const getCustomerById = async (id: string) => {
+  const customer = await prisma.customer.findUnique({
+    where: { id },
+    include: {
+      tasks: {
+        select: { name: true },
+      },
+    },
+  });
+
+  if (!customer) throw new NotFoundError("Customer not found");
+  return customer;
+};
+
+// Write
 export const createCustomer = async (data: CreateCustomerInput) => {
   return prisma.customer.create({
     data: { name: data.name },
@@ -26,27 +56,4 @@ export const deleteCustomer = async (id: string) => {
   if (!existing) throw new NotFoundError("Customer not found");
 
   await prisma.customer.delete({ where: { id } });
-};
-
-export const getCustomers = async () => {
-  return prisma.customer.findMany({
-    include: {
-      tasks: {
-        select: { name: true },
-      },
-    },
-  });
-};
-
-export const getCustomerById = async (id: string) => {
-  const customer = await prisma.customer.findUnique({
-    where: { id },
-    include: {
-      tasks: {
-        select: { name: true },
-      },
-    },
-  });
-  if (!customer) throw new NotFoundError("Customer not found");
-  return customer;
 };

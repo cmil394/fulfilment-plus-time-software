@@ -1,12 +1,68 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
+import { AuthRequest } from "../middleware/auth.middleware";
 import {
   createTaskSchema,
   updateTaskSchema,
 } from "../validators/task.validator";
 import * as taskService from "../services/task.service";
 
+// Read
+export const getTasks = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const tasks = await taskService.getTasks();
+    res.status(200).json({
+      status: "success",
+      message: "Tasks retrieved successfully",
+      data: tasks,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getTaskById = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const task = await taskService.getTaskById(req.params.id as string);
+    res.status(200).json({
+      status: "success",
+      message: "Task retrieved successfully",
+      data: task,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getTasksByCustomer = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const tasks = await taskService.getTasksByCustomer(
+      req.params.customerId as string,
+    );
+    res.status(200).json({
+      status: "success",
+      message: "Tasks retrieved successfully",
+      data: tasks,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Write
 export const createTask = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
@@ -16,75 +72,15 @@ export const createTask = async (
     res.status(201).json({
       status: "success",
       message: "Task created successfully",
-      task,
+      data: task,
     });
   } catch (err) {
     next(err);
   }
 };
-
-export const getTasks = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const tasks = await taskService.getTasks();
-    res.status(200).json({
-      status: "success",
-      message: "Tasks retrieved successfully",
-      tasks,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const getTaskById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const task = await taskService.getTaskById(req.params.id as string);
-    res.status(200).json({
-      status: "success",
-      message: "Task retrieved successfully",
-      task,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const getTasksByCustomer = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const tasks = await taskService.getTasksByCustomer(
-      req.params.customerId as string
-    );
-
-    // Sort tasks alphabetically
-    const sortedTasks = tasks.sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-
-    res.status(200).json({
-      status: "success",
-      message: "Tasks retrieved successfully",
-      tasks: sortedTasks,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
 
 export const updateTask = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
@@ -94,7 +90,7 @@ export const updateTask = async (
     res.status(200).json({
       status: "success",
       message: "Task updated successfully",
-      task,
+      data: task,
     });
   } catch (err) {
     next(err);
@@ -102,7 +98,7 @@ export const updateTask = async (
 };
 
 export const deleteTask = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {

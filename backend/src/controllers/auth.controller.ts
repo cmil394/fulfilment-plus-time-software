@@ -1,12 +1,14 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "../middleware/auth.middleware";
-import { registerSchema, loginSchema } from "../validators/auth.validator";
+import {
+  registerSchema,
+  loginSchema,
+  adminUpdateUserSchema,
+} from "../validators/auth.validator";
 import * as authService from "../services/auth.service";
 import { UnauthorizedError } from "../utils/errors";
-import { adminUpdateUserSchema } from "../validators/auth.validator";
 
 // Auth
-
 export const register = async (
   req: AuthRequest,
   res: Response,
@@ -43,6 +45,7 @@ export const login = async (
   }
 };
 
+// User
 export const getProfile = async (
   req: AuthRequest,
   res: Response,

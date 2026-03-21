@@ -5,6 +5,7 @@ import {
 } from "../validators/time-entry.validator";
 import { NotFoundError, ConflictError } from "../utils/errors";
 
+// Timer
 export const startTimer = async (userId: string, data: StartTimerInput) => {
   // Check task exists and get customerId from it
   const task = await prisma.task.findUnique({ where: { id: data.taskId } });
@@ -69,6 +70,7 @@ export const getActiveTimer = async (userId: string) => {
   return { ...entry, durationSeconds: elapsedSeconds };
 };
 
+// User
 export const getMyEntries = async (userId: string) => {
   return prisma.timeEntry.findMany({
     where: { userId },
@@ -80,6 +82,7 @@ export const getMyEntries = async (userId: string) => {
   });
 };
 
+// Admin
 export const getEntriesByUser = async (userId: string) => {
   const entries = await prisma.timeEntry.findMany({
     where: { userId, endTime: { not: null } },
@@ -156,22 +159,6 @@ export const getEntriesByCustomer = async (customerId: string) => {
   return Object.values(grouped);
 };
 
-export const deleteAllEntries = async () => {
-  return prisma.timeEntry.deleteMany({});
-};
-
-export const deleteEntriesByUser = async (userId: string) => {
-  return prisma.timeEntry.deleteMany({
-    where: { userId },
-  });
-};
-
-export const deleteEntriesByCustomer = async (customerId: string) => {
-  return prisma.timeEntry.deleteMany({
-    where: { customerId },
-  });
-};
-
 export const adminCreateEntry = async (
   adminId: string,
   data: AdminCreateEntryInput,
@@ -226,4 +213,16 @@ export const adminCreateEntry = async (
       user: { select: { id: true, firstName: true, lastName: true } },
     },
   });
+};
+
+export const deleteAllEntries = async () => {
+  return prisma.timeEntry.deleteMany({});
+};
+
+export const deleteEntriesByUser = async (userId: string) => {
+  return prisma.timeEntry.deleteMany({ where: { userId } });
+};
+
+export const deleteEntriesByCustomer = async (customerId: string) => {
+  return prisma.timeEntry.deleteMany({ where: { customerId } });
 };

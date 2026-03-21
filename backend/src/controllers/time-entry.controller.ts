@@ -7,6 +7,7 @@ import {
 import * as timeEntryService from "../services/time-entry.service";
 import { UnauthorizedError } from "../utils/errors";
 
+// Timer
 export const startTimer = async (
   req: AuthRequest,
   res: Response,
@@ -61,6 +62,7 @@ export const getActiveTimer = async (
   }
 };
 
+// User
 export const getMyEntries = async (
   req: AuthRequest,
   res: Response,
@@ -79,6 +81,7 @@ export const getMyEntries = async (
   }
 };
 
+// Admin
 export const getEntriesByUser = async (
   req: AuthRequest,
   res: Response,
@@ -109,6 +112,28 @@ export const getEntriesByCustomer = async (
     res.status(200).json({
       status: "success",
       data: entries,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const adminCreateEntry = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    if (!req.user?.userId) throw new UnauthorizedError();
+    const data = adminCreateEntrySchema.parse(req.body);
+    const entry = await timeEntryService.adminCreateEntry(
+      req.user.userId,
+      data,
+    );
+    res.status(201).json({
+      status: "success",
+      message: "Time entry created successfully",
+      data: entry,
     });
   } catch (err) {
     next(err);
@@ -164,36 +189,6 @@ export const deleteEntriesByCustomer = async (
       status: "success",
       message: `Deleted ${result.count} time entries for customer`,
       data: result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const adminCreateEntry = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    if (!req.user?.userId) throw new UnauthorizedError();
-
-    if (req.user.role !== "ADMIN") {
-      throw new UnauthorizedError(
-        "Only admins can create entries for other users",
-      );
-    }
-
-    const data = adminCreateEntrySchema.parse(req.body);
-    const entry = await timeEntryService.adminCreateEntry(
-      req.user.userId,
-      data,
-    );
-
-    res.status(201).json({
-      status: "success",
-      message: "Time entry created successfully",
-      data: entry,
     });
   } catch (err) {
     next(err);

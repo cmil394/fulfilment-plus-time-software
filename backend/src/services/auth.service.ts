@@ -1,6 +1,10 @@
 import { prisma } from "../lib/prisma";
 import { hashPassword, comparePassword, generateToken } from "../utils/auth";
-import { RegisterInput, LoginInput } from "../validators/auth.validator";
+import {
+  RegisterInput,
+  LoginInput,
+  AdminUpdateUserInput,
+} from "../validators/auth.validator";
 import {
   ConflictError,
   UnauthorizedError,
@@ -8,7 +12,6 @@ import {
   NotFoundError,
   AppError,
 } from "../utils/errors";
-import { AdminUpdateUserInput } from "../validators/auth.validator";
 
 // Selects
 const publicUserSelect = {
@@ -37,7 +40,7 @@ export const registerUser = async (data: RegisterInput) => {
     throw new ConflictError("Email already registered");
   }
 
-  // TODO: Change prisma to include middle names
+  // TODO: Update Prisma schema to support middle names
   const nameParts = data.fullname.trim().split(" ");
   const firstName = nameParts[0];
   const middleNames = nameParts.slice(1, -1).join(" ");
@@ -91,6 +94,7 @@ export const loginUser = async (data: LoginInput) => {
   return { user: userWithoutPassword, token };
 };
 
+// User
 export const getUserProfile = async (userId: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
