@@ -241,3 +241,75 @@
 .modalCancelBtn:hover {
   background: #f5f5f5;
 }
+
+/* Create row */
+.createRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.createBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.createBtn:hover {
+  background-color: #1d4ed8;
+}
+
+/* Create form */
+.createForm {
+  background: var(--surface, #f9fafb);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.createFormTitle {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 14px 0;
+}
+
+.createFormFields {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.createFormField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.createFormLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted, #6b7280);
+}
+
+.required {
+  color: #ef4444;
+}
+
+.createFormActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}

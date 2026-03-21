@@ -7,8 +7,9 @@ export interface Customer {
   createdAt: string;
 }
 
-export interface UpdateCustomerDto {
+export interface CustomerDto {
   name: string;
+  phone?: number;
   email?: string;
 }
 
@@ -23,7 +24,12 @@ export const adminCustomerService = {
     return response.data.data;
   },
 
-  update: async (id: string, data: UpdateCustomerDto): Promise<Customer> => {
+  create: async (data: CustomerDto): Promise<Customer> => {
+    const response = await api.post("/customers", data);
+    return response.data.data;
+  },
+
+  update: async (id: string, data: CustomerDto): Promise<Customer> => {
     const response = await api.patch(`/customers/${id}`, data);
     return response.data.data;
   },

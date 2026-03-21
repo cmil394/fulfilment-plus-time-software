@@ -5,12 +5,22 @@ import tableStyles from "./../../../components/CSS Components/titles.module.css"
 import {
   adminCustomerService,
   type Customer,
-  type UpdateCustomerDto,
-} from "./../../../services/admincustomer.service";
-import { Eye, Pencil, Check, X, AlertTriangle, Trash2 } from "lucide-react";
+  type CustomerDto,
+} from "./../../../services/admin-customer.service";
+import {
+  Eye,
+  Pencil,
+  Check,
+  X,
+  AlertTriangle,
+  Trash2,
+  UserPlus,
+} from "lucide-react";
 
 type SortField = "index" | "name" | "email" | "createdAt";
 type SortDir = "asc" | "desc";
+
+const EMPTY_CREATE: CustomerDto = { name: "", email: "", phone: 0 };
 
 function AdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -21,9 +31,15 @@ function AdminCustomers() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Create form state
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createDraft, setCreateDraft] = useState<CustomerDto>(EMPTY_CREATE);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
   // Inline edit state
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editDraft, setEditDraft] = useState<UpdateCustomerDto | null>(null);
+  const [editDraft, setEditDraft] = useState<CustomerDto | null>(null);
 
   // Confirm edit modal
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -55,6 +71,47 @@ function AdminCustomers() {
     fetchCustomers();
   }, []);
 
+  // Create handlers
+  const handleOpenCreate = () => {
+    setCreateDraft(EMPTY_CREATE);
+    setCreateError(null);
+    setShowCreateForm(true);
+  };
+
+  const handleCancelCreate = () => {
+    setShowCreateForm(false);
+    setCreateDraft(EMPTY_CREATE);
+    setCreateError(null);
+  };
+
+  const handleCreateDraftChange = (field: keyof CustomerDto, value: string) => {
+    setCreateDraft((prev: CustomerDto | null) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCreateSubmit = async () => {
+    if (!createDraft.name.trim()) {
+      setCreateError("Name is required.");
+      return;
+    }
+    setCreateLoading(true);
+    setCreateError(null);
+    try {
+      const newCustomer = await adminCustomerService.create(createDraft);
+      setCustomers((prev) => {
+        const updated = [...prev, newCustomer];
+        setCustomerOrder(new Map(updated.map((c, i) => [c.id, i + 1])));
+        return updated;
+      });
+      setShowCreateForm(false);
+      setCreateDraft(EMPTY_CREATE);
+    } catch (err) {
+      console.error("Failed to create customer:", err);
+      setCreateError("Failed to create customer. Please try again.");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   // Edit handlers
   const handleStartEdit = (customer: Customer) => {
     setEditingId(customer.id);
@@ -68,8 +125,10 @@ function AdminCustomers() {
     setSaveError(null);
   };
 
-  const handleDraftChange = (field: keyof UpdateCustomerDto, value: string) => {
-    setEditDraft((prev) => (prev ? { ...prev, [field]: value } : prev));
+  const handleDraftChange = (field: keyof CustomerDto, value: string) => {
+    setEditDraft((prev: CustomerDto | null) =>
+      prev ? { ...prev, [field]: value } : prev,
+    );
   };
 
   const handleRequestConfirm = (customerId: string) => {
@@ -186,6 +245,80 @@ function AdminCustomers() {
             {`${customers.length} Customer${customers.length !== 1 ? "s" : ""}`}
           </h3>
         </div>
+
+        {/* Create Customer Button */}
+        <div className={styles.createRow}>
+          <button className={styles.createBtn} onClick={handleOpenCreate}>
+            <UserPlus size={16} />
+            Create Customer
+          </button>
+        </div>
+
+        {/* Inline Create Form */}
+        {showCreateForm && (
+          <div className={styles.createForm}>
+            <h4 className={styles.createFormTitle}>New Customer</h4>
+            <div className={styles.createFormFields}>
+              <div className={styles.createFormField}>
+                <label className={styles.createFormLabel}>
+                  Name <span className={styles.required}>*</span>
+                </label>
+                <input
+                  className={styles.editInput}
+                  placeholder="Full name"
+                  value={createDraft.name}
+                  onChange={(e) =>
+                    handleCreateDraftChange("name", e.target.value)
+                  }
+                  disabled={createLoading}
+                />
+              </div>
+              <div className={styles.createFormField}>
+                <label className={styles.createFormLabel}>Email</label>
+                <input
+                  className={styles.editInput}
+                  type="email"
+                  placeholder="email@example.com"
+                  value={createDraft.email ?? ""}
+                  onChange={(e) =>
+                    handleCreateDraftChange("email", e.target.value)
+                  }
+                  disabled={createLoading}
+                />
+              </div>
+              <div className={styles.createFormField}>
+                <label className={styles.createFormLabel}>Phone</label>
+                <input
+                  className={styles.editInput}
+                  type="tel"
+                  placeholder="+1 234 567 8900"
+                  value={createDraft.phone ?? ""}
+                  onChange={(e) =>
+                    handleCreateDraftChange("phone", e.target.value)
+                  }
+                  disabled={createLoading}
+                />
+              </div>
+            </div>
+            {createError && <p className={styles.errorMsg}>{createError}</p>}
+            <div className={styles.createFormActions}>
+              <button
+                className={styles.modalCancelBtn}
+                onClick={handleCancelCreate}
+                disabled={createLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.modalConfirmBtn}
+                onClick={handleCreateSubmit}
+                disabled={createLoading}
+              >
+                {createLoading ? "Creating..." : "Create Customer"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {saveError && <p className={styles.errorMsg}>{saveError}</p>}
 
