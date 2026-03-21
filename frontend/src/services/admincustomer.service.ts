@@ -1,0 +1,34 @@
+import api from "./api";
+
+export interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  createdAt: string;
+}
+
+export interface UpdateCustomerDto {
+  name: string;
+  email?: string;
+}
+
+export const adminCustomerService = {
+  getAll: async (): Promise<Customer[]> => {
+    const response = await api.get("/customers");
+    return response.data.data;
+  },
+
+  getById: async (id: string): Promise<Customer> => {
+    const response = await api.get(`/customers/${id}`);
+    return response.data.data;
+  },
+
+  update: async (id: string, data: UpdateCustomerDto): Promise<Customer> => {
+    const response = await api.patch(`/customers/${id}`, data);
+    return response.data.data;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/customers/${id}`);
+  },
+};
