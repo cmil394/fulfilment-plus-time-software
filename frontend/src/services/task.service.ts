@@ -13,6 +13,6 @@ export const taskService = {
     const response = await api.get(`/tasks/customer/${customerId}`);
     console.log(response.data);
 
-    return Array.isArray(response.data.tasks) ? response.data.tasks : [];
+    return Array.isArray(response.data.data) ? response.data.data : [];
   },
 };
