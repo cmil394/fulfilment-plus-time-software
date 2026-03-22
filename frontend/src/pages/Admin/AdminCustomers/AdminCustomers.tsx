@@ -17,7 +17,13 @@ import {
   UserPlus,
 } from "lucide-react";
 
-type SortField = "index" | "name" | "email" | "createdAt";
+type SortField =
+  | "index"
+  | "name"
+  | "ownerName"
+  | "email"
+  | "phone"
+  | "createdAt";
 type SortDir = "asc" | "desc";
 
 const EMPTY_CREATE: CustomerDto = {
@@ -156,7 +162,16 @@ function AdminCustomers() {
     try {
       await adminCustomerService.update(customerId, editDraft);
       setCustomers((prev) =>
-        prev.map((c) => (c.id === customerId ? { ...c, ...editDraft } : c)),
+        prev.map((c) =>
+          c.id === customerId
+            ? {
+                ...c,
+                ...editDraft,
+                phone:
+                  editDraft.phone != null ? String(editDraft.phone) : undefined,
+              }
+            : c,
+        ),
       );
       setEditingId(null);
       setEditDraft(null);
@@ -274,8 +289,10 @@ function AdminCustomers() {
             <thead>
               <tr>
                 <SortableTh field="index">#</SortableTh>
-                <SortableTh field="name">Name</SortableTh>
+                <SortableTh field="name">Company Name</SortableTh>
+                <SortableTh field="ownerName">Owners Name</SortableTh>
                 <SortableTh field="email">Email</SortableTh>
+                <SortableTh field="phone">Phone Number</SortableTh>
                 <SortableTh field="createdAt">Date Registered</SortableTh>
                 <th>View</th>
                 <th>Edit</th>
@@ -310,6 +327,23 @@ function AdminCustomers() {
                       )}
                     </td>
 
+                    {/* Owners Name */}
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className={styles.editInput}
+                          type="text"
+                          value={editDraft!.ownerName ?? ""}
+                          onChange={(e) =>
+                            handleDraftChange("ownerName", e.target.value)
+                          }
+                          disabled={isSaving}
+                        />
+                      ) : (
+                        (customer.ownerName ?? "—")
+                      )}
+                    </td>
+
                     {/* Email */}
                     <td>
                       {isEditing ? (
@@ -324,6 +358,23 @@ function AdminCustomers() {
                         />
                       ) : (
                         (customer.email ?? "—")
+                      )}
+                    </td>
+
+                    {/* Phone Number */}
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className={styles.editInput}
+                          type="tel"
+                          value={editDraft!.phone ?? ""}
+                          onChange={(e) =>
+                            handleDraftChange("phone", e.target.value)
+                          }
+                          disabled={isSaving}
+                        />
+                      ) : (
+                        (customer.phone ?? "—")
                       )}
                     </td>
 
