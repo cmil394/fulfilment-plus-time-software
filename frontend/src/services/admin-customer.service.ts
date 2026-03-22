@@ -3,12 +3,14 @@ import api from "./api";
 export interface Customer {
   id: string;
   name: string;
+  ownerName: string;
   email?: string;
   createdAt: string;
 }
 
 export interface CustomerDto {
   name: string;
+  ownerName: string;
   phone?: number;
   email?: string;
 }

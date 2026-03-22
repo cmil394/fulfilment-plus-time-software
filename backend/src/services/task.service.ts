@@ -68,7 +68,7 @@ export const createTask = async (data: CreateTaskInput) => {
       customerId: data.customerId,
       name: data.name,
       description: data.description,
-      fixedRate: data.fixedRate ? new Decimal(data.fixedRate) : null,
+      // fixedRate: data.fixedRate ? new Decimal(data.fixedRate) : null,
     },
   });
 };
@@ -82,7 +82,7 @@ export const updateTask = async (id: string, data: UpdateTaskInput) => {
     data: {
       name: data.name,
       description: data.description,
-      fixedRate: data.fixedRate ? new Decimal(data.fixedRate) : undefined,
+      // fixedRate: data.fixedRate ? new Decimal(data.fixedRate) : undefined,
       active: data.active,
     },
   });

@@ -20,7 +20,12 @@ import {
 type SortField = "index" | "name" | "email" | "createdAt";
 type SortDir = "asc" | "desc";
 
-const EMPTY_CREATE: CustomerDto = { name: "", email: "", phone: undefined };
+const EMPTY_CREATE: CustomerDto = {
+  name: "",
+  ownerName: "",
+  email: "",
+  phone: undefined,
+};
 
 function AdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -85,7 +90,7 @@ function AdminCustomers() {
   };
 
   const handleCreateDraftChange = (field: keyof CustomerDto, value: string) => {
-    setCreateDraft((prev: CustomerDto | null) => ({ ...prev, [field]: value }));
+    setCreateDraft((prev) => ({ ...prev, [field]: value }) as CustomerDto);
   };
 
   const handleCreateSubmit = async () => {
@@ -115,7 +120,11 @@ function AdminCustomers() {
   // Edit handlers
   const handleStartEdit = (customer: Customer) => {
     setEditingId(customer.id);
-    setEditDraft({ name: customer.name, email: customer.email });
+    setEditDraft({
+      name: customer.name,
+      ownerName: customer.ownerName,
+      email: customer.email,
+    });
     setSaveError(null);
   };
 
@@ -398,6 +407,20 @@ function AdminCustomers() {
                   value={createDraft.name}
                   onChange={(e) =>
                     handleCreateDraftChange("name", e.target.value)
+                  }
+                  disabled={createLoading}
+                />
+              </div>
+              <div className={styles.createFormField}>
+                <label className={styles.createFormLabel}>
+                  Owner Name <span className={styles.required}>*</span>
+                </label>
+                <input
+                  className={styles.editInput}
+                  placeholder="Owners name"
+                  value={createDraft.ownerName}
+                  onChange={(e) =>
+                    handleCreateDraftChange("ownerName", e.target.value)
                   }
                   disabled={createLoading}
                 />

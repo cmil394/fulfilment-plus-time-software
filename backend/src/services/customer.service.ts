@@ -37,7 +37,12 @@ export const getCustomerById = async (id: string) => {
 // Write
 export const createCustomer = async (data: CreateCustomerInput) => {
   return prisma.customer.create({
-    data: { name: data.name },
+    data: {
+      name: data.name,
+      ownerName: data.ownerName,
+      email: data.email,
+      phone: data.phone,
+    },
   });
 };
 
