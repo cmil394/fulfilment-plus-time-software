@@ -170,7 +170,7 @@
   background: #fff;
   border-radius: 12px;
   padding: 1.5rem;
-  width: 360px;
+  width: 420px;
   max-width: 90vw;
   border: 0.5px solid #ddd;
   text-align: center;
@@ -189,6 +189,14 @@
 
 .modalIcon {
   color: #b45309;
+}
+
+.modalIconCreate {
+  color: #2563eb;
+}
+
+.modalIconWrap:has(.modalIconCreate) {
+  background: #eff6ff;
 }
 
 .modalTitle {
@@ -214,6 +222,7 @@
 .modalActions {
   display: flex;
   gap: 8px;
+  margin-top: 1.25rem;
 }
 
 .modalCancelBtn,
@@ -224,7 +233,7 @@
   font-size: 14px;
   cursor: pointer;
   border: 1px solid #ccc;
-  background: #fff;
+  background: #e6e6e6;
 }
 
 .modalConfirmBtn {
@@ -245,8 +254,8 @@
 /* Create row */
 .createRow {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 12px;
+  justify-content: flex-start;
+  margin-bottom: 0px;
 }
 
 .createBtn {
@@ -257,7 +266,7 @@
   background-color: #2563eb;
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px 10px 0px 0px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -268,33 +277,18 @@
   background-color: #1d4ed8;
 }
 
-/* Create form */
-.createForm {
-  background: var(--surface, #f9fafb);
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 16px;
-}
-
-.createFormTitle {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0 0 14px 0;
-}
-
+/* Create form fields (reused inside modal) */
 .createFormFields {
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  flex-wrap: wrap;
+  text-align: left;
 }
 
 .createFormField {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  flex: 1;
-  min-width: 180px;
 }
 
 .createFormLabel {
@@ -305,11 +299,4 @@
 
 .required {
   color: #ef4444;
-}
-
-.createFormActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 16px;
 }

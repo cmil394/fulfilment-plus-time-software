@@ -20,7 +20,7 @@ import {
 type SortField = "index" | "name" | "email" | "createdAt";
 type SortDir = "asc" | "desc";
 
-const EMPTY_CREATE: CustomerDto = { name: "", email: "", phone: 0 };
+const EMPTY_CREATE: CustomerDto = { name: "", email: "", phone: undefined };
 
 function AdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -254,72 +254,6 @@ function AdminCustomers() {
           </button>
         </div>
 
-        {/* Inline Create Form */}
-        {showCreateForm && (
-          <div className={styles.createForm}>
-            <h4 className={styles.createFormTitle}>New Customer</h4>
-            <div className={styles.createFormFields}>
-              <div className={styles.createFormField}>
-                <label className={styles.createFormLabel}>
-                  Name <span className={styles.required}>*</span>
-                </label>
-                <input
-                  className={styles.editInput}
-                  placeholder="Full name"
-                  value={createDraft.name}
-                  onChange={(e) =>
-                    handleCreateDraftChange("name", e.target.value)
-                  }
-                  disabled={createLoading}
-                />
-              </div>
-              <div className={styles.createFormField}>
-                <label className={styles.createFormLabel}>Email</label>
-                <input
-                  className={styles.editInput}
-                  type="email"
-                  placeholder="email@example.com"
-                  value={createDraft.email ?? ""}
-                  onChange={(e) =>
-                    handleCreateDraftChange("email", e.target.value)
-                  }
-                  disabled={createLoading}
-                />
-              </div>
-              <div className={styles.createFormField}>
-                <label className={styles.createFormLabel}>Phone</label>
-                <input
-                  className={styles.editInput}
-                  type="tel"
-                  placeholder="+1 234 567 8900"
-                  value={createDraft.phone ?? ""}
-                  onChange={(e) =>
-                    handleCreateDraftChange("phone", e.target.value)
-                  }
-                  disabled={createLoading}
-                />
-              </div>
-            </div>
-            {createError && <p className={styles.errorMsg}>{createError}</p>}
-            <div className={styles.createFormActions}>
-              <button
-                className={styles.modalCancelBtn}
-                onClick={handleCancelCreate}
-                disabled={createLoading}
-              >
-                Cancel
-              </button>
-              <button
-                className={styles.modalConfirmBtn}
-                onClick={handleCreateSubmit}
-                disabled={createLoading}
-              >
-                {createLoading ? "Creating..." : "Create Customer"}
-              </button>
-            </div>
-          </div>
-        )}
-
         {saveError && <p className={styles.errorMsg}>{saveError}</p>}
 
         {loading ? (
@@ -444,6 +378,77 @@ function AdminCustomers() {
           </table>
         )}
       </div>
+
+      {/* Create Customer Modal */}
+      {showCreateForm && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <div className={styles.modalIconWrap}>
+              <UserPlus size={22} className={styles.modalIconCreate} />
+            </div>
+            <p className={styles.modalTitle}>New Customer</p>
+            <div className={styles.createFormFields}>
+              <div className={styles.createFormField}>
+                <label className={styles.createFormLabel}>
+                  Name <span className={styles.required}>*</span>
+                </label>
+                <input
+                  className={styles.editInput}
+                  placeholder="Full name"
+                  value={createDraft.name}
+                  onChange={(e) =>
+                    handleCreateDraftChange("name", e.target.value)
+                  }
+                  disabled={createLoading}
+                />
+              </div>
+              <div className={styles.createFormField}>
+                <label className={styles.createFormLabel}>Email</label>
+                <input
+                  className={styles.editInput}
+                  type="email"
+                  placeholder="email@example.com"
+                  value={createDraft.email ?? ""}
+                  onChange={(e) =>
+                    handleCreateDraftChange("email", e.target.value)
+                  }
+                  disabled={createLoading}
+                />
+              </div>
+              <div className={styles.createFormField}>
+                <label className={styles.createFormLabel}>Phone</label>
+                <input
+                  className={styles.editInput}
+                  type="tel"
+                  placeholder="+027 123 4567"
+                  value={createDraft.phone ?? ""}
+                  onChange={(e) =>
+                    handleCreateDraftChange("phone", e.target.value)
+                  }
+                  disabled={createLoading}
+                />
+              </div>
+            </div>
+            {createError && <p className={styles.errorMsg}>{createError}</p>}
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancelBtn}
+                onClick={handleCancelCreate}
+                disabled={createLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.modalConfirmBtn}
+                onClick={handleCreateSubmit}
+                disabled={createLoading}
+              >
+                {createLoading ? "Creating..." : "Create Customer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirm Edit Modal */}
       {showConfirmModal && (
