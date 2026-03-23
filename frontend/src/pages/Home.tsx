@@ -6,6 +6,7 @@ import Customers from "./Customers/Customers";
 import Employees from "./Admin/Employees/Employees";
 import AdminCustomers from "./Admin/AdminCustomers/AdminCustomers";
 import Tasks from "./Tasks/Tasks";
+import AdminTasks from "./Admin/AdminTasks/AdminTasks";
 
 function Home() {
   const { user, loading } = useAuth();
@@ -30,6 +31,12 @@ function Home() {
         path="/admin/customers"
         element={
           user?.role === "Admin" ? <AdminCustomers /> : <Navigate to="/login" />
+        }
+      />
+      <Route
+        path="/admin/tasks"
+        element={
+          user?.role === "Admin" ? <AdminTasks /> : <Navigate to="/login" />
         }
       />
       <Route

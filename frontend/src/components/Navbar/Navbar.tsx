@@ -66,12 +66,20 @@ function Navbar() {
                 Employees
               </a>
             </li>
-            <li className={styles.noRightBorder}>
+            <li>
               <a
                 href="/admin/customers"
                 className={`${styles.navLink} ${location.pathname === "/admin/customers" ? styles.active : ""}`}
               >
                 Manage Customers
+              </a>
+            </li>
+            <li className={styles.noRightBorder}>
+              <a
+                href="/admin/tasks"
+                className={`${styles.navLink} ${location.pathname === "/admin/tasks" ? styles.active : ""}`}
+              >
+                Manage Tasks
               </a>
             </li>
           </>
