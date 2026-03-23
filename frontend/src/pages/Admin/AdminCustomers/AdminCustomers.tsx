@@ -16,6 +16,7 @@ import {
   Trash2,
   UserPlus,
 } from "lucide-react";
+import CustomerViewModal from "./../../../components/CustomerViewModal/CustomerViewModal";
 
 type SortField =
   | "index"
@@ -59,6 +60,9 @@ function AdminCustomers() {
   // Delete modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  // View modal ← ADD
+  const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
 
   // Sort state
   const [sortField, setSortField] = useState<SortField>("index");
@@ -380,9 +384,14 @@ function AdminCustomers() {
                     {/* Date (not editable) */}
                     <td>{new Date(customer.createdAt).toLocaleDateString()}</td>
 
-                    {/* View */}
+                    {/* View ← UPDATED */}
                     <td>
-                      <button className={styles.viewBtn} disabled={isEditing}>
+                      <button
+                        className={styles.viewBtn}
+                        onClick={() => setViewingCustomer(customer)}
+                        disabled={isEditing}
+                        title="View"
+                      >
                         <Eye size={16} />
                       </button>
                     </td>
@@ -581,6 +590,14 @@ function AdminCustomers() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* View Customer Modal ← ADD */}
+      {viewingCustomer && (
+        <CustomerViewModal
+          customer={viewingCustomer}
+          onClose={() => setViewingCustomer(null)}
+        />
       )}
     </div>
   );
