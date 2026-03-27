@@ -123,7 +123,6 @@ function CustomerViewModal({ customer, onClose }: Props) {
                     <th>#</th>
                     <th>Name</th>
                     <th>Description</th>
-                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -135,13 +134,6 @@ function CustomerViewModal({ customer, onClose }: Props) {
                         {task.description || (
                           <span className={styles.noDesc}>—</span>
                         )}
-                      </td>
-                      <td>
-                        <span
-                          className={`${styles.statusBadge} ${styles[`status_${task.status?.toLowerCase().replace(/\s+/g, "_")}`]}`}
-                        >
-                          {task.status ?? "—"}
-                        </span>
                       </td>
                     </tr>
                   ))}
