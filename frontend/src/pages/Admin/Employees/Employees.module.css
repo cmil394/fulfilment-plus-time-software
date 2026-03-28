@@ -278,3 +278,65 @@
 .modalCancelBtn:hover {
   background: #f5f5f5;
 }
+
+/* Responsive Table */
+.tableWrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .table {
+    min-width: 700px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px 6px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .editInput {
+    min-width: 80px;
+  }
+
+  .modal {
+    width: 90vw;
+    padding: 1.25rem;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .table {
+    min-width: 620px;
+  }
+
+  .table th,
+  .table td {
+    padding: 6px 5px;
+    font-size: 12px;
+  }
+
+  .approveBtn,
+  .rejectBtn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .modalTitle {
+    font-size: 15px;
+  }
+
+  .modalSubtitle,
+  .modalSubtitle1 {
+    font-size: 12px;
+  }
+}

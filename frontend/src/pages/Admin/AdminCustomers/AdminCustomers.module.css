@@ -300,3 +300,56 @@
 .required {
   color: #ef4444;
 }
+
+.tableWrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .table {
+    min-width: 700px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px 6px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .editInput {
+    min-width: 80px;
+  }
+
+  .createBtn {
+    font-size: 13px;
+    padding: 7px 12px;
+  }
+
+  .modal {
+    width: 90vw;
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .table {
+    min-width: 600px;
+  }
+
+  .table th,
+  .table td {
+    padding: 6px 5px;
+    font-size: 12px;
+  }
+
+  .modalTitle {
+    font-size: 15px;
+  }
+
+  .modalSubtitle,
+  .modalSubtitle1 {
+    font-size: 12px;
+  }
+}
