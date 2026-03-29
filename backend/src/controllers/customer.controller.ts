@@ -5,6 +5,8 @@ import {
   updateCustomerSchema,
 } from "../validators/customer.validator";
 import * as customerService from "../services/customer.service";
+import fs from "fs";
+import path from "path";
 
 // Read
 export const getCustomers = async (
@@ -93,6 +95,43 @@ export const deleteCustomer = async (
     res.status(200).json({
       status: "success",
       message: "Customer deleted successfully",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const uploadCustomerAvatar = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ status: "error", message: "No file uploaded" });
+      return;
+    }
+
+    const customerId = req.params.id as string;
+
+    // Build the public URL that the frontend can use
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+
+    // Fetch old avatar so we can delete it from disk
+    const existing = await customerService.getCustomerById(customerId);
+    if (existing.avatarUrl) {
+      const oldPath = path.join(process.cwd(), existing.avatarUrl);
+      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    }
+
+    const customer = await customerService.updateCustomer(customerId, {
+      avatarUrl,
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Avatar uploaded successfully",
+      data: customer,
     });
   } catch (err) {
     next(err);
