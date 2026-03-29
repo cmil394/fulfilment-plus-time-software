@@ -3,6 +3,7 @@ import { customerService } from "../../services/customer.service.ts";
 import type { Customer } from "../../services/customer.service.ts";
 import styles from "./CustomersModal.module.css";
 import { useNavigate } from "react-router-dom";
+import defaultAvatar from "./../../assets/icons/default.png";
 
 interface Props {
   compact?: boolean;
@@ -83,7 +84,11 @@ function CustomersModal({ compact = false, onSelectCustomer }: Props) {
               }
             >
               <img
-                src={`${BASE_URL}${customer.avatarUrl}`}
+                src={
+                  customer.avatarUrl
+                    ? `${BASE_URL}${customer.avatarUrl}`
+                    : defaultAvatar
+                }
                 alt="Customer"
                 className={
                   compact ? styles.customerIconCompact : styles.customerIcon
