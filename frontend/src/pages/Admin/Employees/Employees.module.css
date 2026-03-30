@@ -148,8 +148,14 @@
   color: #111827;
 }
 
-.table td:nth-child(7),
-.table td:nth-child(8) {
+.employeesTable td:nth-child(7),
+.employeesTable td:nth-child(8) {
+  text-align: center;
+  width: 40px;
+}
+
+.pendingTable td:nth-child(8),
+.pendingTable td:nth-child(9) {
   text-align: center;
   width: 40px;
 }

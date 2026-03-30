@@ -153,13 +153,13 @@ function Auth() {
           </button>
         </div>
 
-        {error && <div className={styles.error}>{error}</div>}
-        {success && <div className={styles.success}>{success}</div>}
-
         <div className={styles.formContainer}>
+          {error && <div className={styles.error}>{error}</div>}
+          {success && <div className={styles.success}>{success}</div>}
+
           {activeTab === "login" ? (
             <form className={styles.form} onSubmit={handleLoginSubmit}>
-              {/* Dev login button for quick access during development (delete later) */}
+              {/* Dev login button for quick access during development (will be deleted later) */}
               <button
                 type="button"
                 onClick={handleDevLogin}

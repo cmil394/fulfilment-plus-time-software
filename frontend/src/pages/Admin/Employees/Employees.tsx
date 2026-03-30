@@ -303,7 +303,8 @@ function Employees() {
             ) : employees.length === 0 ? (
               <p>No employees found</p>
             ) : (
-              <table className={styles.table}>
+              /* Employees table */
+              <table className={`${styles.table} ${styles.employeesTable}`}>
                 <thead>
                   <tr>
                     <SortableTh
@@ -505,7 +506,8 @@ function Employees() {
             ) : pendingUsers.length === 0 ? (
               <p>No pending users</p>
             ) : (
-              <table className={styles.table}>
+              /* Pending table */
+              <table className={`${styles.table} ${styles.pendingTable}`}>
                 <thead>
                   <tr>
                     <SortableTh
