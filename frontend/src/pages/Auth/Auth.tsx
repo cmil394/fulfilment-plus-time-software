@@ -40,13 +40,13 @@ function Auth() {
       setAuth(response.data.user, response.data.token);
       console.log("Admin Token:", response.data.token);
       setSuccess(response.message);
-
-      // Redirect after successful login
       setTimeout(() => navigate("/"), 1000);
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Login failed. Please try again.",
-      );
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        "Login failed. Please try again.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -61,32 +61,26 @@ function Auth() {
     try {
       const response = await authService.register(registerData);
       setSuccess(response.message);
-
-      // Optionally auto-login after registration
       setAuth(response.data.user, response.data.token);
-
-      // Clear form
       setRegisterData({
         email: "",
         fullname: "",
         password: "",
         confirmPassword: "",
       });
-
-      // Switch to login tab after a delay or redirect
       setTimeout(() => navigate("/"), 2000);
     } catch (err: any) {
       if (err.response?.data?.errors) {
-        // Handle validation errors
         const errorMessages = err.response.data.errors
           .map((e: any) => e.message)
           .join(", ");
         setError(errorMessages);
       } else {
-        setError(
+        const message =
           err.response?.data?.message ||
-            "Registration failed. Please try again.",
-        );
+          err.message ||
+          "Registration failed. Please try again.";
+        setError(message);
       }
     } finally {
       setLoading(false);
@@ -108,7 +102,9 @@ function Auth() {
       setSuccess("Logged in as Admin (Dev Only)");
       setTimeout(() => navigate("/"), 1000);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Dev login failed");
+      const message =
+        err.response?.data?.message || err.message || "Dev login failed.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -159,7 +155,7 @@ function Auth() {
 
           {activeTab === "login" ? (
             <form className={styles.form} onSubmit={handleLoginSubmit}>
-              {/* Dev login button for quick access during development (will be deleted later) */}
+              {/* Dev login button - remove before production */}
               <button
                 type="button"
                 onClick={handleDevLogin}
@@ -189,7 +185,7 @@ function Auth() {
                 type="password"
                 id="login-password"
                 name="password"
-                placeholder="Enter your username"
+                placeholder="Enter your password"
                 className={styles.input}
                 value={loginData.password}
                 onChange={(e) =>

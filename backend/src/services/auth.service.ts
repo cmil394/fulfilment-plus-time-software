@@ -70,12 +70,12 @@ export const loginUser = async (data: LoginInput) => {
   });
 
   if (!user) {
-    throw new UnauthorizedError("Invalid email or password");
+    throw new UnauthorizedError("Invalid Email");
   }
 
   const isValid = await comparePassword(data.password, user.password);
   if (!isValid) {
-    throw new UnauthorizedError("Invalid email or password");
+    throw new UnauthorizedError("Invalid Password");
   }
 
   if (user.status !== "APPROVED") {

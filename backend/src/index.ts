@@ -8,6 +8,7 @@ import taskRoutes from "./routes/task.routes";
 import timeEntryRoutes from "./routes/time-entry.routes";
 import taskTemplateRoutes from "./routes/task-template.routes";
 import { seedAdmin } from "./utils/seed.admin";
+import { errorHandler } from "./utils/errors";
 import path from "path";
 
 dotenv.config();
@@ -48,6 +49,8 @@ app.get("/api/db-test", async (req, res) => {
     });
   }
 });
+
+app.use(errorHandler);
 
 // Startup
 const startServer = async () => {
