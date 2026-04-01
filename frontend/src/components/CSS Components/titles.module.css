@@ -25,6 +25,14 @@
   background-color: #f8f8f8;
 }
 
+@media (max-height: 900px) {
+  .pageTitle1 {
+    font-size: 35px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+  }
+}
+
 @media (max-height: 700px) {
   .pageTitle1 {
     font-size: 30px;
