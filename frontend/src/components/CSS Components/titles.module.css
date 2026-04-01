@@ -25,6 +25,22 @@
   background-color: #f8f8f8;
 }
 
+@media (max-height: 700px) {
+  .pageTitle1 {
+    font-size: 30px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-height: 550px) {
+  .pageTitle1 {
+    font-size: 24px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+}
+
 /* Subheadings blue background */
 .subheading1 {
   text-align: center;
@@ -46,4 +62,22 @@
   display: block;
   border-bottom: 2px solid #ccc;
   background-color: none;
+}
+
+@media (max-height: 700px) {
+  .subheading1 {
+    font-size: 22px;
+    grid-template-rows: 12px 0;
+    grid-gap: 16px;
+    margin: 10px 0px;
+  }
+}
+
+@media (max-height: 550px) {
+  .subheading1 {
+    font-size: 18px;
+    grid-template-rows: 10px 0;
+    grid-gap: 12px;
+    margin: 6px 0px;
+  }
 }

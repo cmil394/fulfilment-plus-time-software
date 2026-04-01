@@ -23,6 +23,7 @@
   background-color: #1467ae;
   border-radius: 5px;
   padding: 10px 15px;
+  padding-top: 0px;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -41,11 +42,12 @@
   background-color: #1467ae;
   border-radius: 5px;
   padding: 10px 15px;
+  padding-top: 0px;
   flex: 1;
   min-height: 0;
 }
 
-/* ── Tablet (≤ 900px): collapse to 2 columns ── */
+/* ≤ 900px = collapse to 2 columns */
 @media (max-width: 900px) {
   .tabsRow {
     grid-template-columns: 1fr 1fr;
@@ -85,6 +87,6 @@
 
   h2 {
     font-size: 1rem;
-    margin: 6px 0;
+    margin: 112px 0;
   }
 }
