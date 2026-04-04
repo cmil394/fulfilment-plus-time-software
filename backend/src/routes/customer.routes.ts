@@ -21,6 +21,6 @@ router.get("/customers/:id", authMiddleware, getCustomerById);
 router.post("/customers", authMiddleware, adminMiddleware, uploadAvatar.single("avatar"), createCustomer);
 router.patch("/customers/:id", authMiddleware, adminMiddleware, updateCustomer);
 router.delete("/customers/:id", authMiddleware, adminMiddleware, deleteCustomer,);
-router.patch("/customers/:id/avatar", authMiddleware, uploadAvatar.single("avatar"), uploadCustomerAvatar,);
+router.patch("/customers/:id/avatar", authMiddleware, uploadAvatar.single("avatar"),adminMiddleware, uploadCustomerAvatar,);
 
 export default router;
