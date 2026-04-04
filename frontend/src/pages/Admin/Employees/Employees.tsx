@@ -43,6 +43,9 @@ function Employees() {
   const [currentUserId] = useState<string | null>(() =>
     authService.getCurrentUserId(),
   );
+  const [currentUserRole] = useState<string | null>(
+    () => authService.getCurrentUserRole?.() ?? null,
+  );
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingConfirmId, setPendingConfirmId] = useState<string | null>(null);
@@ -393,6 +396,14 @@ function Employees() {
                   {sortedEmployees.map((employee) => {
                     const isEditing = editingId === employee.id;
                     const isSaving = actionLoading === employee.id;
+                    const isSelf = currentUserId === employee.id;
+                    const targetIsAdmin =
+                      employee.role === "Admin" || employee.role === "Owner";
+                    const currentIsOwner = currentUserRole === "Owner";
+                    // Owners can change anyone's role except their own
+                    // Admins can only change Employees roles
+                    const canChangeRole =
+                      !isSelf && (currentIsOwner || !targetIsAdmin);
 
                     return (
                       <tr
@@ -459,10 +470,18 @@ function Employees() {
                               onChange={(e) =>
                                 handleDraftChange("role", e.target.value)
                               }
-                              disabled={
-                                isSaving || currentUserId === employee.id
+                              disabled={isSaving || !canChangeRole}
+                              title={
+                                !canChangeRole && !isSelf
+                                  ? "Only Owners can change an Admin's role"
+                                  : undefined
                               }
                             >
+                              {employee.role === "Owner" && (
+                                <option value="Owner" disabled>
+                                  Owner
+                                </option>
+                              )}
                               <option value="Admin">Admin</option>
                               <option value="Employee">Employee</option>
                             </select>
@@ -520,6 +539,8 @@ function Employees() {
                             </button>
                           )}
                         </td>
+
+                        {/* Delete */}
                         <td>
                           <button
                             className={styles.deleteBtn}
