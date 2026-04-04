@@ -94,12 +94,12 @@ function Auth() {
 
     try {
       const response = await authService.login({
-        email: import.meta.env.VITE_ADMIN_EMAIL,
-        password: import.meta.env.VITE_ADMIN_PASSWORD,
+        email: import.meta.env.VITE_OWNER_EMAIL,
+        password: import.meta.env.VITE_OWNER_PASSWORD,
       });
       setAuth(response.data.user, response.data.token);
-      console.log("Admin Token:", response.data.token);
-      setSuccess("Logged in as Admin (Dev Only)");
+      console.log("Owner Token:", response.data.token);
+      setSuccess("Logged in as Owner (Dev Only)");
       setTimeout(() => navigate("/"), 1000);
     } catch (err: any) {
       const message =
@@ -162,7 +162,7 @@ function Auth() {
                 className={styles.submitButton}
                 disabled={loading}
               >
-                {loading ? "Logging in..." : "Dev Admin Login"}
+                {loading ? "Logging in..." : "Dev Owner Login"}
               </button>
 
               <label htmlFor="login-email">Email</label>

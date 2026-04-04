@@ -525,10 +525,14 @@ function Employees() {
                             className={styles.deleteBtn}
                             onClick={() => handleRequestDelete(employee.id)}
                             disabled={
-                              isEditing || isSaving || employee.role === "Admin"
+                              isEditing ||
+                              isSaving ||
+                              employee.role === "Admin" ||
+                              employee.role === "Owner"
                             }
                             title={
-                              employee.role === "Admin"
+                              employee.role === "Admin" ||
+                              employee.role === "Owner"
                                 ? "Admins cannot be deleted"
                                 : "Delete employee"
                             }

@@ -30,19 +30,31 @@ function Home() {
       <Route
         path="/admin/customers"
         element={
-          user?.role === "Admin" ? <AdminCustomers /> : <Navigate to="/login" />
+          user?.role === "Admin" || user?.role === "Owner" ? (
+            <AdminCustomers />
+          ) : (
+            <Navigate to="/login" />
+          )
         }
       />
       <Route
         path="/admin/tasks"
         element={
-          user?.role === "Admin" ? <AdminTasks /> : <Navigate to="/login" />
+          user?.role === "Admin" || user?.role === "Owner" ? (
+            <AdminTasks />
+          ) : (
+            <Navigate to="/login" />
+          )
         }
       />
       <Route
         path="/admin/employees"
         element={
-          user?.role === "Admin" ? <Employees /> : <Navigate to="/login" />
+          user?.role === "Admin" || user?.role === "Owner" ? (
+            <Employees />
+          ) : (
+            <Navigate to="/login" />
+          )
         }
       />
       <Route

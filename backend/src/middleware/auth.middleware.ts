@@ -52,10 +52,10 @@ export const adminMiddleware = (
     });
   }
 
-  if (req.user.role !== "Admin") {
+  if (req.user.role !== "Admin" && req.user.role !== "Owner") {
     return res.status(403).json({
       status: "error",
-      message: "Admin access required",
+      message: "Admin or Owner access required",
     });
   }
 
