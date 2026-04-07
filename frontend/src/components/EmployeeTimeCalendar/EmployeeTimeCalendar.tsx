@@ -113,6 +113,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   const [loadingCustomers, setLoadingCustomers] = useState(false);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const gridScrollRef = useRef<HTMLDivElement>(null);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart);
@@ -180,6 +181,12 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     };
     load();
   }, [selectedCustomerId]);
+
+  useEffect(() => {
+    if (gridScrollRef.current) {
+      gridScrollRef.current.scrollTop = (8 - HOUR_START) * SLOT_HEIGHT;
+    }
+  }, []);
 
   // Drag logic
   const yToTime = useCallback((y: number): { hour: number; min: number } => {
@@ -423,7 +430,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
           </div>
 
           {/* Scrollable grid */}
-          <div className={styles.gridScroll}>
+          <div className={styles.gridScroll} ref={gridScrollRef}>
             <div className={styles.gridInner}>
               {/* Time labels */}
               <div className={styles.timeGutter}>
