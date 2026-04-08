@@ -106,6 +106,9 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Viewing entry state
+  const [viewingEntry, setViewingEntry] = useState<TimeEntry | null>(null);
+
   // Customer + task selection
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
@@ -211,6 +214,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     setDragStart({ col: colIndex, y });
     setDragCurrent({ col: colIndex, y });
     setPendingEntry(null);
+    setViewingEntry(null);
     setSaveError(null);
   };
 
@@ -307,6 +311,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     try {
       await timeEntryService.deleteEntry(entryId);
       setEntries((prev) => prev.filter((e) => e.id !== entryId));
+      if (viewingEntry?.id === entryId) setViewingEntry(null);
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ??
@@ -356,6 +361,22 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     end.setDate(end.getDate() + 6);
     return `${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
   })();
+
+  // Helper to get date label for a viewed entry
+  const getEntryDateLabel = (entry: TimeEntry): string => {
+    const start = new Date(entry.startTime);
+    return start.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const getEntryTimeRange = (entry: TimeEntry): string => {
+    const start = new Date(entry.startTime);
+    const end = entry.endTime ? new Date(entry.endTime) : null;
+    return `${formatTime(start)}${end ? ` – ${formatTime(end)}` : ""}`;
+  };
 
   return (
     <div className={styles.overlay}>
@@ -518,11 +539,18 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
                       const end = entry.endTime
                         ? new Date(entry.endTime)
                         : null;
+                      const isViewing = viewingEntry?.id === entry.id;
                       return (
                         <div
                           key={entry.id}
-                          className={styles.entryBlock}
+                          className={`${styles.entryBlock} ${isViewing ? styles.entryBlockActive : ""}`}
                           style={{ top: pos.top, height: pos.height }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPendingEntry(null);
+                            setSaveError(null);
+                            setViewingEntry(isViewing ? null : entry);
+                          }}
                         >
                           <div className={styles.entryInner}>
                             <span className={styles.entryTime}>
@@ -561,6 +589,60 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
             </div>
           </div>
         </div>
+
+        {/* View entry panel */}
+        {viewingEntry && (
+          <div className={styles.newEntryForm}>
+            <div className={styles.formHeader}>
+              <Clock size={15} />
+              <strong>Time Entry</strong>
+              <span className={styles.formTime}>
+                {getEntryDateLabel(viewingEntry)}
+                {" · "}
+                {getEntryTimeRange(viewingEntry)}
+              </span>
+              <button
+                className={styles.discardBtn}
+                style={{ marginLeft: "auto" }}
+                onClick={() => setViewingEntry(null)}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className={styles.formSelects}>
+              {/* Customer read-only display */}
+              <select className={styles.selectInput} disabled value="">
+                <option value="">
+                  {viewingEntry.customer?.name ?? "No customer"}
+                </option>
+              </select>
+
+              {/* Task read-only display */}
+              <select className={styles.selectInput} disabled value="">
+                <option value="">{viewingEntry.task?.name ?? "No task"}</option>
+              </select>
+            </div>
+
+            <div className={styles.formRow}>
+              <input
+                className={styles.descInput}
+                placeholder="No notes"
+                value={viewingEntry.notes ?? ""}
+                readOnly
+              />
+              <button
+                className={styles.discardBtn}
+                onClick={() => {
+                  handleDeleteEntry(viewingEntry.id);
+                }}
+              >
+                <Trash2 size={13} style={{ marginRight: 4 }} />
+                Delete
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* New entry form */}
         {pendingEntry && (
