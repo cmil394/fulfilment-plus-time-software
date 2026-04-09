@@ -25,6 +25,13 @@ export interface AdminCreateEntryPayload {
   notes?: string;
 }
 
+export interface UpdateEntryPayload {
+  taskId?: string;
+  startTime?: string; // ISO string
+  endTime?: string; // ISO string
+  notes?: string;
+}
+
 export const timeEntryService = {
   // Timer
 
@@ -67,6 +74,14 @@ export const timeEntryService = {
     payload: AdminCreateEntryPayload,
   ): Promise<TimeEntry> => {
     const res = await api.post("/time-entries/admin/create", payload);
+    return res.data.data;
+  },
+
+  updateEntry: async (
+    entryId: string,
+    payload: UpdateEntryPayload,
+  ): Promise<TimeEntry> => {
+    const res = await api.patch(`/time-entries/${entryId}`, payload);
     return res.data.data;
   },
 

@@ -474,7 +474,7 @@
   color: #64748b;
   font-size: 13px;
   font-weight: 600;
-  padding: 8px 16px;
+  padding: 6px 14px;
   cursor: pointer;
   transition:
     background 0.15s,
@@ -542,4 +542,83 @@
 .entryBlockActive {
   outline: 2px solid var(--color-primary);
   z-index: 2;
+}
+
+/* ── Add these to the bottom of EmployeeTimeCalendar.module.css ── */
+
+.formHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.editBtn {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 8px;
+  color: #a5b4fc;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  white-space: nowrap;
+}
+
+.editBtn:hover {
+  background: rgba(99, 102, 241, 0.22);
+  color: #c7d2fe;
+}
+
+.datetimeGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.datetimeLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.datetimeInput {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #f1f5f9;
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  color-scheme: dark;
+}
+
+.datetimeInput:focus {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.saveError {
+  margin: 0;
+  font-size: 12px;
+  color: #f87171;
+  padding: 4px 0;
+}
+
+.errorBanner {
+  background: rgba(248, 113, 113, 0.1);
+  border-bottom: 1px solid rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  font-size: 13px;
+  padding: 8px 24px;
+  flex-shrink: 0;
 }

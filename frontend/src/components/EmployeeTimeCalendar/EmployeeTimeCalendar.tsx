@@ -6,6 +6,8 @@ import {
   ChevronRight,
   Plus,
   Trash2,
+  Pencil,
+  Check,
 } from "lucide-react";
 import styles from "./EmployeeTimeCalendar.module.css";
 import {
@@ -75,6 +77,12 @@ function isToday(date: Date): boolean {
   );
 }
 
+// Convert a Date to "HH:MM" for datetime-local input
+function toLocalDatetimeValue(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
   const [weekStart, setWeekStart] = useState<Date>(() =>
     getWeekStart(new Date()),
@@ -106,10 +114,20 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // Viewing entry state
+  // Viewing / editing entry state
   const [viewingEntry, setViewingEntry] = useState<TimeEntry | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editStartTime, setEditStartTime] = useState("");
+  const [editEndTime, setEditEndTime] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [editCustomerId, setEditCustomerId] = useState("");
+  const [editTaskId, setEditTaskId] = useState("");
+  const [editTasks, setEditTasks] = useState<Task[]>([]);
+  const [loadingEditTasks, setLoadingEditTasks] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
-  // Customer + task selection
+  // Customer + task selection (new entry)
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -163,7 +181,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     load();
   }, []);
 
-  // Fetch tasks when customer changes
+  // Fetch tasks when customer changes (new entry)
   useEffect(() => {
     if (!selectedCustomerId) {
       setTasks([]);
@@ -185,11 +203,104 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     load();
   }, [selectedCustomerId]);
 
+  // Fetch tasks when edit customer changes
+  useEffect(() => {
+    if (!editCustomerId) {
+      setEditTasks([]);
+      setEditTaskId("");
+      return;
+    }
+    const load = async () => {
+      setLoadingEditTasks(true);
+      try {
+        const data = await taskService.getByCustomer(editCustomerId);
+        setEditTasks(data);
+      } catch (err) {
+        console.error("Failed to load tasks for edit:", err);
+      } finally {
+        setLoadingEditTasks(false);
+      }
+    };
+    load();
+  }, [editCustomerId]);
+
   useEffect(() => {
     if (gridScrollRef.current) {
       gridScrollRef.current.scrollTop = (8 - HOUR_START) * SLOT_HEIGHT;
     }
   }, []);
+
+  // Start editing a viewed entry — pre-populate fields
+  const handleStartEdit = (entry: TimeEntry) => {
+    setIsEditing(true);
+    setEditError(null);
+    setEditStartTime(toLocalDatetimeValue(new Date(entry.startTime)));
+    setEditEndTime(
+      entry.endTime ? toLocalDatetimeValue(new Date(entry.endTime)) : "",
+    );
+    setEditNotes(entry.notes ?? "");
+    const custId = entry.customer?.id ?? "";
+    setEditCustomerId(custId);
+    // editTaskId will be set after tasks load; pre-set it speculatively
+    // We don't have taskId on the entry object, so leave blank for user to reselect if changing
+    setEditTaskId("");
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditError(null);
+    setEditTaskId("");
+    setEditCustomerId("");
+    setEditTasks([]);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!viewingEntry) return;
+    if (!editStartTime) {
+      setEditError("Start time is required.");
+      return;
+    }
+
+    setEditSaving(true);
+    setEditError(null);
+    try {
+      const payload: Record<string, string> = {
+        startTime: new Date(editStartTime).toISOString(),
+      };
+      if (editEndTime) {
+        payload.endTime = new Date(editEndTime).toISOString();
+      }
+      if (editNotes.trim()) {
+        payload.notes = editNotes.trim();
+      }
+      if (editTaskId) {
+        payload.taskId = editTaskId;
+      }
+
+      const updated = await timeEntryService.updateEntry(
+        viewingEntry.id,
+        payload,
+      );
+
+      setEntries((prev) =>
+        prev.map((e) => (e.id === viewingEntry.id ? updated : e)),
+      );
+      setViewingEntry(updated);
+      setIsEditing(false);
+      setEditTaskId("");
+      setEditCustomerId("");
+      setEditTasks([]);
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ??
+        err?.message ??
+        "Failed to update entry";
+      setEditError(msg);
+      console.error("updateEntry error:", err);
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   // Drag logic
   const yToTime = useCallback((y: number): { hour: number; min: number } => {
@@ -215,6 +326,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     setDragCurrent({ col: colIndex, y });
     setPendingEntry(null);
     setViewingEntry(null);
+    setIsEditing(false);
     setSaveError(null);
   };
 
@@ -257,7 +369,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     return { top, height, left: 0, right: 0 };
   })();
 
-  // Save entry
+  // Save new entry
   const handleSaveEntry = async () => {
     if (!pendingEntry) return;
 
@@ -362,7 +474,6 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     return `${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
   })();
 
-  // Helper to get date label for a viewed entry
   const getEntryDateLabel = (entry: TimeEntry): string => {
     const start = new Date(entry.startTime);
     return start.toLocaleDateString("en-US", {
@@ -549,6 +660,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
                             e.stopPropagation();
                             setPendingEntry(null);
                             setSaveError(null);
+                            setIsEditing(false);
+                            setEditError(null);
                             setViewingEntry(isViewing ? null : entry);
                           }}
                         >
@@ -590,57 +703,171 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
           </div>
         </div>
 
-        {/* View entry panel */}
+        {/* View / Edit entry panel */}
         {viewingEntry && (
           <div className={styles.newEntryForm}>
             <div className={styles.formHeader}>
               <Clock size={15} />
               <strong>Time Entry</strong>
-              <span className={styles.formTime}>
-                {getEntryDateLabel(viewingEntry)}
-                {" · "}
-                {getEntryTimeRange(viewingEntry)}
-              </span>
-              <button
-                className={styles.discardBtn}
-                style={{ marginLeft: "auto" }}
-                onClick={() => setViewingEntry(null)}
-              >
-                Close
-              </button>
+              {!isEditing && (
+                <span className={styles.formTime}>
+                  {getEntryDateLabel(viewingEntry)}
+                  {" · "}
+                  {getEntryTimeRange(viewingEntry)}
+                </span>
+              )}
+              <div className={styles.formHeaderActions}>
+                {!isEditing ? (
+                  <>
+                    <button
+                      className={styles.editBtn}
+                      onClick={() => handleStartEdit(viewingEntry)}
+                    >
+                      <Pencil size={13} style={{ marginRight: 4 }} />
+                      Edit
+                    </button>
+                    <button
+                      className={styles.discardBtn}
+                      onClick={() => {
+                        handleDeleteEntry(viewingEntry.id);
+                      }}
+                    >
+                      <Trash2 size={13} style={{ marginRight: 4 }} />
+                      Delete
+                    </button>
+                    <button
+                      className={styles.discardBtn}
+                      onClick={() => setViewingEntry(null)}
+                    >
+                      <X size={13} style={{ marginRight: 4 }} />
+                      Close
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className={styles.saveBtn}
+                      onClick={handleSaveEdit}
+                      disabled={editSaving}
+                    >
+                      <Check size={13} style={{ marginRight: 4 }} />
+                      {editSaving ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      className={styles.discardBtn}
+                      onClick={handleCancelEdit}
+                    >
+                      <X size={13} style={{ marginRight: 4 }} />
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
-            <div className={styles.formSelects}>
-              {/* Customer read-only display */}
-              <select className={styles.selectInput} disabled value="">
-                <option value="">
-                  {viewingEntry.customer?.name ?? "No customer"}
-                </option>
-              </select>
+            {isEditing ? (
+              <>
+                {editError && <p className={styles.saveError}>{editError}</p>}
 
-              {/* Task read-only display */}
-              <select className={styles.selectInput} disabled value="">
-                <option value="">{viewingEntry.task?.name ?? "No task"}</option>
-              </select>
-            </div>
+                {/* Date/time pickers */}
+                <div className={styles.formSelects}>
+                  <div className={styles.datetimeGroup}>
+                    <label className={styles.datetimeLabel}>Start</label>
+                    <input
+                      type="datetime-local"
+                      className={styles.datetimeInput}
+                      value={editStartTime}
+                      onChange={(e) => setEditStartTime(e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.datetimeGroup}>
+                    <label className={styles.datetimeLabel}>End</label>
+                    <input
+                      type="datetime-local"
+                      className={styles.datetimeInput}
+                      value={editEndTime}
+                      onChange={(e) => setEditEndTime(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-            <div className={styles.formRow}>
-              <input
-                className={styles.descInput}
-                placeholder="No notes"
-                value={viewingEntry.notes ?? ""}
-                readOnly
-              />
-              <button
-                className={styles.discardBtn}
-                onClick={() => {
-                  handleDeleteEntry(viewingEntry.id);
-                }}
-              >
-                <Trash2 size={13} style={{ marginRight: 4 }} />
-                Delete
-              </button>
-            </div>
+                {/* Customer + task (optional re-assignment) */}
+                <div className={styles.formSelects}>
+                  <select
+                    className={styles.selectInput}
+                    value={editCustomerId}
+                    onChange={(e) => setEditCustomerId(e.target.value)}
+                    disabled={loadingCustomers}
+                  >
+                    <option value="">
+                      {loadingCustomers
+                        ? "Loading customers…"
+                        : `Customer: ${viewingEntry.customer?.name ?? "none"}`}
+                    </option>
+                    {customers.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  {editCustomerId && (
+                    <select
+                      className={styles.selectInput}
+                      value={editTaskId}
+                      onChange={(e) => setEditTaskId(e.target.value)}
+                      disabled={loadingEditTasks}
+                    >
+                      <option value="">
+                        {loadingEditTasks
+                          ? "Loading tasks…"
+                          : editTasks.length === 0
+                            ? "No tasks for this customer"
+                            : `Task: ${viewingEntry.task?.name ?? "none"}`}
+                      </option>
+                      {editTasks.map((t) => (
+                        <option key={t.id} value={String(t.id)}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {/* Notes */}
+                <div className={styles.formRow}>
+                  <input
+                    className={styles.descInput}
+                    placeholder="Notes (optional)"
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={styles.formSelects}>
+                  <select className={styles.selectInput} disabled value="">
+                    <option value="">
+                      {viewingEntry.customer?.name ?? "No customer"}
+                    </option>
+                  </select>
+                  <select className={styles.selectInput} disabled value="">
+                    <option value="">
+                      {viewingEntry.task?.name ?? "No task"}
+                    </option>
+                  </select>
+                </div>
+                <div className={styles.formRow}>
+                  <input
+                    className={styles.descInput}
+                    placeholder="No notes"
+                    value={viewingEntry.notes ?? ""}
+                    readOnly
+                  />
+                </div>
+              </>
+            )}
           </div>
         )}
 
