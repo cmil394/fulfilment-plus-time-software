@@ -9,18 +9,19 @@ import {
 } from "../controllers/customer.controller";
 import { authMiddleware, adminMiddleware } from "../middleware/auth.middleware";
 import { uploadAvatar } from "../middleware/upload.middleware";
+import { readLimiter, writeLimiter, uploadLimiter } from "../middleware/rate-limiting.middleware";
 
 const router = express.Router();
 
 // Get reqs(auth)
 
-router.get("/customers", authMiddleware, getCustomers);
-router.get("/customers/:id", authMiddleware, getCustomerById);
+router.get("/customers", authMiddleware, readLimiter, getCustomers);
+router.get("/customers/:id", authMiddleware, readLimiter, getCustomerById);
 
 // Admin
 router.post("/customers", authMiddleware, adminMiddleware, uploadAvatar.single("avatar"), createCustomer);
-router.patch("/customers/:id", authMiddleware, adminMiddleware, updateCustomer);
-router.delete("/customers/:id", authMiddleware, adminMiddleware, deleteCustomer,);
-router.patch("/customers/:id/avatar", authMiddleware, uploadAvatar.single("avatar"),adminMiddleware, uploadCustomerAvatar,);
+router.patch("/customers/:id", authMiddleware, adminMiddleware, writeLimiter, updateCustomer);
+router.delete("/customers/:id", authMiddleware, adminMiddleware, writeLimiter, deleteCustomer);
+router.patch("/customers/:id/avatar", authMiddleware, adminMiddleware, uploadAvatar.single("avatar"), uploadLimiter, uploadCustomerAvatar);
 
 export default router;
