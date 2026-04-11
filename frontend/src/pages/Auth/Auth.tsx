@@ -68,7 +68,6 @@ function Auth() {
         password: "",
         confirmPassword: "",
       });
-      setTimeout(() => navigate("/"), 2000);
     } catch (err: any) {
       if (err.response?.data?.errors) {
         const errorMessages = err.response.data.errors
@@ -172,6 +171,7 @@ function Auth() {
                 id="login-email"
                 name="email"
                 placeholder="Enter your email"
+                autoComplete="email"
                 className={styles.input}
                 value={loginData.email}
                 onChange={(e) =>
@@ -187,6 +187,7 @@ function Auth() {
                 id="login-password"
                 name="password"
                 placeholder="Enter your password"
+                autoComplete="password"
                 className={styles.input}
                 value={loginData.password}
                 onChange={(e) =>
@@ -212,6 +213,7 @@ function Auth() {
                 id="register-email"
                 name="email"
                 placeholder="Enter your email"
+                autoComplete="email"
                 className={styles.input}
                 value={registerData.email}
                 onChange={(e) =>
@@ -227,6 +229,7 @@ function Auth() {
                 id="register-fullname"
                 name="fullname"
                 placeholder="Enter your full name"
+                autoComplete="name"
                 className={styles.input}
                 value={registerData.fullname}
                 onChange={(e) =>
@@ -242,6 +245,7 @@ function Auth() {
                 id="register-password"
                 name="password"
                 placeholder="Enter your password"
+                autoComplete="new-password"
                 className={styles.input}
                 value={registerData.password}
                 onChange={(e) =>
@@ -257,6 +261,7 @@ function Auth() {
                 id="register-confirm"
                 name="confirmPassword"
                 placeholder="Confirm password"
+                autoComplete="new-password"
                 className={styles.input}
                 value={registerData.confirmPassword}
                 onChange={(e) =>

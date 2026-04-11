@@ -32,8 +32,10 @@ const fullUserSelect = {
 
 // Auth
 export const registerUser = async (data: RegisterInput) => {
+  const email = data.email.trim().toLowerCase();
+
   const existing = await prisma.user.findUnique({
-    where: { email: data.email },
+    where: { email },
   });
 
   if (existing) {
@@ -50,7 +52,7 @@ export const registerUser = async (data: RegisterInput) => {
 
   const user = await prisma.user.create({
     data: {
-      email: data.email,
+      email: email,
       password: hashedPassword,
       fullName: data.fullname,
       firstName,
@@ -65,8 +67,10 @@ export const registerUser = async (data: RegisterInput) => {
 };
 
 export const loginUser = async (data: LoginInput) => {
+  const email = data.email.trim().toLowerCase();
+
   const user = await prisma.user.findUnique({
-    where: { email: data.email },
+    where: { email },
   });
 
   if (!user) {
