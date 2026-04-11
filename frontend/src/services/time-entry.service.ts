@@ -49,6 +49,11 @@ export const timeEntryService = {
     return res.data.data ?? null;
   },
 
+  getAllActiveTimers: async (): Promise<TimeEntry[]> => {
+    const res = await api.get("/time-entries/active/all");
+    return res.data.data ?? [];
+  },
+
   // User
   getMyEntries: async (): Promise<TimeEntry[]> => {
     const res = await api.get("/time-entries");

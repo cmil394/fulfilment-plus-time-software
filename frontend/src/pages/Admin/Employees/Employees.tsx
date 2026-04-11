@@ -1,13 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Navbar from "../../../components/Navbar/Navbar";
 import styles from "./Employees.module.css";
 import tableStyles from "./../../../components/CSS Components/titles.module.css";
 import { authService } from "../../../services/auth.service";
 import type { User } from "../../../services/auth.service";
-import { Eye, Pencil, Check, X, AlertTriangle, Trash2 } from "lucide-react";
+import {
+  Eye,
+  Pencil,
+  Check,
+  X,
+  AlertTriangle,
+  Trash2,
+  RefreshCw,
+} from "lucide-react";
 import EmployeeTimeCalendar from "../../../components/EmployeeTimeCalendar/EmployeeTimeCalendar";
+import { timeEntryService } from "../../../services/time-entry.service";
+import type { TimeEntry } from "../../../services/time-entry.service";
 
-type Tab = "employees" | "pending";
+type Tab = "employees" | "pending" | "activeEmployees";
 type SortField =
   | "index"
   | "firstName"
@@ -22,6 +32,37 @@ interface EditDraft {
   lastName: string;
   email: string;
   role: string;
+}
+
+function formatElapsed(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function toNZTString(date: Date): string {
+  return date.toLocaleTimeString("en-NZ", {
+    timeZone: "Pacific/Auckland",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+}
+
+function ElapsedCell({ startTime }: { startTime: string }) {
+  const getSeconds = () =>
+    Math.floor((Date.now() - new Date(startTime).getTime()) / 1000);
+
+  const [elapsed, setElapsed] = useState(getSeconds);
+
+  useEffect(() => {
+    const id = setInterval(() => setElapsed(getSeconds()), 1000);
+    return () => clearInterval(id);
+  }, [startTime]);
+
+  return <span className={styles.elapsed}>{formatElapsed(elapsed)}</span>;
 }
 
 function Employees() {
@@ -61,6 +102,27 @@ function Employees() {
 
   // Time calendar state
   const [viewingEmployee, setViewingEmployee] = useState<User | null>(null);
+
+  // Active timers state
+  const [activeTimers, setActiveTimers] = useState<TimeEntry[]>([]);
+  const [timersLoading, setTimersLoading] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchActiveTimers = useCallback(async (isManual = false) => {
+    if (isManual) setIsRefreshing(true);
+    else setTimersLoading(true);
+    try {
+      const timers = await timeEntryService.getAllActiveTimers();
+      setActiveTimers(timers);
+      setLastRefreshed(new Date());
+    } catch (err) {
+      console.error("Failed to fetch active timers:", err);
+    } finally {
+      setTimersLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (activeTab === "employees") {
@@ -102,7 +164,11 @@ function Employees() {
 
       fetchPendingUsers();
     }
-  }, [activeTab]);
+
+    if (activeTab === "activeEmployees") {
+      fetchActiveTimers(false);
+    }
+  }, [activeTab, fetchActiveTimers]);
 
   // Edit handlers
   const handleStartEdit = (employee: User) => {
@@ -312,7 +378,9 @@ function Employees() {
           <h3 className={styles.tableCount}>
             {activeTab === "employees"
               ? `${employees.length} Employee${employees.length !== 1 ? "s" : ""}`
-              : `${pendingUsers.length} Pending`}
+              : activeTab === "pending"
+                ? `${pendingUsers.length} Pending`
+                : `${activeTimers.length} Active`}
           </h3>
         </div>
 
@@ -328,6 +396,12 @@ function Employees() {
             onClick={() => setActiveTab("pending")}
           >
             Pending employees
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === "activeEmployees" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("activeEmployees")}
+          >
+            Active Employees
           </button>
         </div>
 
@@ -674,6 +748,71 @@ function Employees() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {activeTab === "activeEmployees" && (
+          <div>
+            <div className={styles.activeTimersHeader}>
+              <button
+                className={styles.refreshBtn}
+                onClick={() => fetchActiveTimers(true)}
+                disabled={timersLoading || isRefreshing}
+                title="Refresh active timers"
+              >
+                <RefreshCw
+                  size={14}
+                  className={`${styles.refreshBtnIcon} ${isRefreshing ? styles.spinning : ""}`}
+                />
+                Refresh
+              </button>
+              {lastRefreshed && (
+                <span className={styles.lastRefreshed}>
+                  Last refreshed: {toNZTString(lastRefreshed)} NZT
+                </span>
+              )}
+            </div>
+
+            {timersLoading ? (
+              <p>Loading active timers...</p>
+            ) : activeTimers.length === 0 ? (
+              <p className={styles.noTimers}>No active timers running.</p>
+            ) : (
+              <table className={`${styles.table} ${styles.activeTimersTable}`}>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Customer</th>
+                    <th>Task</th>
+                    <th>Elapsed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeTimers.map((entry, idx) => {
+                    const user = (entry as any).user as
+                      | { firstName: string; lastName: string }
+                      | undefined;
+                    const name = user
+                      ? `${user.firstName} ${user.lastName}`
+                      : "—";
+
+                    return (
+                      <tr key={entry.id}>
+                        <td>{idx + 1}.</td>
+                        <td>{name}</td>
+                        <td>{entry.customer?.name ?? "—"}</td>
+                        <td>{entry.task?.name ?? "—"}</td>
+                        <td>
+                          <span className={styles.activeIndicator} />
+                          <ElapsedCell startTime={entry.startTime} />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
