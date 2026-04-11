@@ -18,6 +18,7 @@ router.get("/time-entries", readLimiter, timeEntryController.getMyEntries);
 // Admin
 router.get("/time-entries/user/:userId", adminMiddleware, readLimiter, timeEntryController.getEntriesByUser);
 router.get("/time-entries/customer/:customerId", adminMiddleware, readLimiter, timeEntryController.getEntriesByCustomer);
+router.get("/time-entries/active/all", adminMiddleware, readLimiter, timeEntryController.getAllActiveTimers);
 router.get("/time-entries/:entryId", adminMiddleware, readLimiter, timeEntryController.getEntryById);
 router.post("/time-entries/admin/create", adminMiddleware, writeLimiter, timeEntryController.adminCreateEntry);
 router.patch("/time-entries/:entryId", adminMiddleware, writeLimiter, timeEntryController.updateEntry);

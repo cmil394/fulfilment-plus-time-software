@@ -71,6 +71,17 @@ export const getActiveTimer = async (userId: string) => {
   return { ...entry, durationSeconds: elapsedSeconds };
 };
 
+export const getAllActiveTimers = async () => {
+  return prisma.timeEntry.findMany({
+    where: { endTime: null },
+    include: {
+      task: { select: { name: true } },
+      customer: { select: { id: true, name: true } },
+      user: { select: { id: true, firstName: true, lastName: true } },
+    },
+  });
+};
+
 // User
 export const getMyEntries = async (userId: string) => {
   return prisma.timeEntry.findMany({

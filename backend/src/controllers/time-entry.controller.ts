@@ -63,6 +63,22 @@ export const getActiveTimer = async (
   }
 };
 
+export const getAllActiveTimers = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const entries = await timeEntryService.getAllActiveTimers();
+    res.status(200).json({
+      status: "success",
+      data: entries,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // User
 export const getMyEntries = async (
   req: AuthRequest,
