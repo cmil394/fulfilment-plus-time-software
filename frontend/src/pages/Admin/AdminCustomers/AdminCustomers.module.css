@@ -161,11 +161,71 @@
 }
 
 .editInput {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: inherit;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border-secondary, #d1d5db);
+  border-radius: 6px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 16px;
   width: 100%;
   box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  outline: none;
+  font-family: inherit;
+}
+
+.editInput:hover {
+  border-color: #9ca3af;
+}
+
+.editInput:focus {
+  border-color: #378add;
+  box-shadow: 0 0 0 3px rgba(55, 138, 221, 0.15);
+}
+
+.editInput:disabled {
+  background: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.confirmBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 10px;
+  background: none;
+  border: 1px solid #22c55e;
+  border-radius: 6px;
+  color: #15803d;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.confirmBtn:hover {
+  background-color: #f0fdf4;
+}
+
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 10px;
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.cancelBtn:hover {
+  background-color: #f3f4f6;
 }
 
 .editActions {
