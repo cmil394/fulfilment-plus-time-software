@@ -4,6 +4,7 @@ import styles from "./Dashboard.module.css";
 import titleStyles from "./../../components/CSS Components/titles.module.css";
 import CustomersModal from "./../../components/CustomersModal/CustomersModal";
 import TasksModal from "./../../components/TasksModal/TasksModal";
+import HistoryModal from "./../../components/DashboardComponents/HistoryModal/HistoryModal";
 
 function Dashboard() {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
@@ -34,6 +35,7 @@ function Dashboard() {
         </div>
         <div className={styles.historyTab}>
           <h2 className={titleStyles.subheading1}>History</h2>
+          <HistoryModal />
         </div>
         <div className={styles.rightStack}>
           <div className={styles.profileTab}>
