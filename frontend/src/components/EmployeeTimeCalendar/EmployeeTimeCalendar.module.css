@@ -87,13 +87,250 @@
   color: #f1f5f9;
 }
 
-.weekNav {
+.tabsRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 7px;
+  border: none;
+  background: none;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tabActive {
+  background: rgba(99, 102, 241, 0.18);
+  color: #a5b4fc;
+  font-weight: 600;
+}
+
+.tabActive:hover {
+  background: rgba(99, 102, 241, 0.22);
+  color: #c7d2fe;
+}
+
+.tabsRowRight {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.filterWrap {
+  position: relative;
+}
+
+.filterBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.filterBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  border-color: rgba(255, 255, 255, 0.13);
+}
+
+.filterBtnActive {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+}
+
+.filterBtnActive:hover {
+  background: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+}
+
+.filterCount {
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #6366f1;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0 3px;
+}
+
+.filterChevronOpen {
+  transform: rotate(180deg);
+}
+
+.filterPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  width: 280px;
+  background: #151720;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.filterPopoverHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.filterClearBtn {
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  transition: color 0.15s;
+}
+
+.filterClearBtn:hover {
+  color: #818cf8;
+}
+
+.filterPopoverBody {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filterLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: #3d5068;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding-left: 2px;
+}
+
+/* ── Filter active banner ── */
+
+.filterActiveBanner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 24px;
+  background: rgba(99, 102, 241, 0.06);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.12);
+  font-size: 12px;
+  color: #64748b;
   flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.filterPill {
+  background: rgba(99, 102, 241, 0.14);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 20px;
+  color: #818cf8;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+}
+
+.filterActiveClear {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+  padding: 0;
+}
+
+.filterActiveClear:hover {
+  color: #f87171;
+}
+
+.weekNavInline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weekLabelInline {
+  font-size: 13px;
+  font-weight: 600;
+  color: #cbd5e1;
+  white-space: nowrap;
 }
 
 .navBtn {
@@ -101,7 +338,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 7px;
   color: #94a3b8;
-  padding: 6px 8px;
+  padding: 5px 7px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -115,24 +352,17 @@
   color: #f1f5f9;
 }
 
-.weekLabel {
-  font-size: 14px;
-  font-weight: 600;
-  color: #cbd5e1;
-  flex: 1;
-  text-align: center;
-}
-
 .todayBtn {
   background: rgba(59, 130, 246, 0.12);
   border: 1px solid rgba(59, 130, 246, 0.25);
   border-radius: 7px;
   color: #60a5fa;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 5px 14px;
+  padding: 5px 12px;
   cursor: pointer;
   transition: background 0.15s;
+  font-family: inherit;
 }
 
 .todayBtn:hover {
@@ -141,7 +371,7 @@
 
 .hint {
   margin: 0;
-  padding: 8px 24px;
+  padding: 7px 24px;
   font-size: 12px;
   color: #475569;
   display: flex;
@@ -150,6 +380,8 @@
   flex-shrink: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
+
+/* ── Calendar ── */
 
 .calendarOuter {
   flex: 1;
@@ -233,12 +465,6 @@
   position: relative;
 }
 
-.timeGutter {
-  width: 62px;
-  flex-shrink: 0;
-  position: relative;
-}
-
 .timeLabel {
   position: absolute;
   right: 10px;
@@ -255,6 +481,7 @@
   display: flex;
   position: relative;
   cursor: crosshair;
+  height: calc(24 * 64px);
 }
 
 .dayColumn {
@@ -262,10 +489,6 @@
   position: relative;
   border-left: 1px solid rgba(255, 255, 255, 0.05);
   min-height: calc(24 * 64px);
-}
-
-.columnsWrapper {
-  height: calc(24 * 64px);
 }
 
 .todayColumn {
@@ -390,6 +613,308 @@
   color: #f87171;
 }
 
+.entryMeta {
+  font-size: 11px;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.entryCustomer {
+  font-size: 11px;
+  color: #64748b;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.entryBlockActive {
+  outline: 2px solid var(--color-primary, #6366f1);
+  z-index: 2;
+}
+
+/* List view */
+
+.listViewOuter {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.listViewOuter::-webkit-scrollbar {
+  width: 6px;
+}
+.listViewOuter::-webkit-scrollbar-track {
+  background: transparent;
+}
+.listViewOuter::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.listView {
+  padding: 16px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.listEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 80px 24px;
+  color: #334155;
+  text-align: center;
+}
+
+.listEmpty p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.listEmpty span {
+  font-size: 12px;
+  color: #334155;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+.listGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.listGroupHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.listGroupDate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.listGroupDayNum {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.listGroupDayNumToday {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.listGroupDateText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.listGroupDayName {
+  font-size: 13px;
+  font-weight: 700;
+  color: #cbd5e1;
+  line-height: 1;
+}
+
+.listGroupMonthYear {
+  font-size: 11px;
+  color: #475569;
+}
+
+.listGroupTotal {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4f46e5;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 6px;
+  padding: 3px 9px;
+}
+
+.listGroupEntries {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.listEntry {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.listEntry:hover {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.listEntryActive {
+  background: rgba(99, 102, 241, 0.1) !important;
+  border-color: rgba(99, 102, 241, 0.35) !important;
+}
+
+.listEntryAccent {
+  width: 3px;
+  align-self: stretch;
+  background: #6366f1;
+  flex-shrink: 0;
+  border-radius: 0;
+}
+
+.listEntryTime {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  flex-shrink: 0;
+  min-width: 76px;
+}
+
+.listEntryStart {
+  font-size: 12px;
+  font-weight: 700;
+  color: #a5b4fc;
+  white-space: nowrap;
+}
+
+.listEntryEnd {
+  font-size: 11px;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.listEntryBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.listEntryTask {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listEntryCustomer {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listEntryNotes {
+  font-size: 11px;
+  color: #3d5068;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-style: italic;
+}
+
+.listEntryRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  flex-shrink: 0;
+}
+
+.listEntryDur {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+  min-width: 40px;
+  text-align: right;
+}
+
+.listEntryActions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.listEntry:hover .listEntryActions {
+  opacity: 1;
+}
+
+.listEntryEdit {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  border-radius: 6px;
+  color: #818cf8;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.listEntryEdit:hover {
+  background: rgba(99, 102, 241, 0.22);
+  color: #c7d2fe;
+}
+
+.listEntryDelete {
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.18);
+  border-radius: 6px;
+  color: #f87171;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+}
+
+.listEntryDelete:hover {
+  background: rgba(248, 113, 113, 0.18);
+}
+
 .newEntryForm {
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   padding: 16px 24px 18px;
@@ -481,6 +1006,7 @@
   align-items: center;
   gap: 4px;
   letter-spacing: 0.1px;
+  font-family: inherit;
 }
 
 .saveBtn:hover:not(:disabled) {
@@ -510,6 +1036,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  font-family: inherit;
 }
 
 .discardBtn:hover {
@@ -567,26 +1094,6 @@
   color: #c8d0dc;
 }
 
-.entryMeta {
-  font-size: 11px;
-  font-weight: 600;
-  color: #e2e8f0;
-  white-space: normal;
-  word-break: break-word;
-}
-
-.entryCustomer {
-  font-size: 11px;
-  color: #64748b;
-  white-space: normal;
-  word-break: break-word;
-}
-
-.entryBlockActive {
-  outline: 2px solid var(--color-primary);
-  z-index: 2;
-}
-
 .formHeaderActions {
   display: flex;
   align-items: center;
@@ -612,6 +1119,7 @@
     border-color 0.15s,
     box-shadow 0.15s;
   white-space: nowrap;
+  font-family: inherit;
 }
 
 .editBtn:hover {
@@ -723,7 +1231,6 @@
   border-color: rgba(99, 102, 241, 0.6);
 }
 
-/* Circular count badge */
 .groupChipBadge {
   flex-shrink: 0;
   width: 20px;
@@ -781,13 +1288,11 @@
   overflow-y: auto;
 }
 
-/* Open upward when near the bottom of the viewport */
 .groupPopoverUp {
   top: auto;
   bottom: calc(100% + 6px);
 }
 
-/* Anchor to right edge when near the right side of the viewport */
 .groupPopoverRight {
   left: auto;
   right: 0;

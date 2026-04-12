@@ -8,6 +8,10 @@ import {
   Trash2,
   Pencil,
   Check,
+  List,
+  CalendarDays,
+  Filter,
+  ChevronDown,
 } from "lucide-react";
 import styles from "./EmployeeTimeCalendar.module.css";
 import {
@@ -36,14 +40,13 @@ interface Props {
   onClose: () => void;
 }
 
+type ViewTab = "calendar" | "list";
+
 const HOUR_START = 0;
 const HOUR_END = 24;
 const TOTAL_HOURS = HOUR_END - HOUR_START;
 const SLOT_HEIGHT = 64;
-// Entries that overlap or start within this many minutes of the previous
-// entry's end get grouped into a single chip.
 const GROUP_GAP_MINS = 5;
-// Minimum rendered height (px)
 const MIN_BLOCK_HEIGHT = 32;
 
 function getWeekStart(date: Date): Date {
@@ -85,6 +88,17 @@ function isToday(date: Date): boolean {
 function toLocalDatetimeValue(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function formatDuration(startTime: string, endTime?: string | null): string {
+  if (!endTime) return "—";
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+  const mins = Math.round((end.getTime() - start.getTime()) / 60000);
+  if (mins < 60) return `${mins}m`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
 interface SingleItem {
@@ -326,14 +340,287 @@ function GroupChip({ item, onSelectEntry, onDeleteEntry }: GroupChipProps) {
   );
 }
 
+// Filter Popover
+interface FilterPopoverProps {
+  customers: Customer[];
+  tasks: Task[];
+  filterCustomerId: string;
+  filterTaskId: string;
+  onFilterCustomerChange: (id: string) => void;
+  onFilterTaskChange: (id: string) => void;
+  onClear: () => void;
+  onClose: () => void;
+  loadingTasks: boolean;
+}
+
+function FilterPopover({
+  customers,
+  tasks,
+  filterCustomerId,
+  filterTaskId,
+  onFilterCustomerChange,
+  onFilterTaskChange,
+  onClear,
+  onClose,
+  loadingTasks,
+}: FilterPopoverProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [onClose]);
+
+  const hasFilter = !!filterCustomerId || !!filterTaskId;
+
+  return (
+    <div ref={ref} className={styles.filterPopover}>
+      <div className={styles.filterPopoverHeader}>
+        <span>Filter entries</span>
+        {hasFilter && (
+          <button className={styles.filterClearBtn} onClick={onClear}>
+            Clear all
+          </button>
+        )}
+      </div>
+
+      <div className={styles.filterPopoverBody}>
+        <div className={styles.filterGroup}>
+          <label className={styles.filterLabel}>Customer</label>
+          <select
+            className={styles.selectInput}
+            value={filterCustomerId}
+            onChange={(e) => onFilterCustomerChange(e.target.value)}
+          >
+            <option value="">All customers</option>
+            {customers.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {filterCustomerId && (
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Task</label>
+            <select
+              className={styles.selectInput}
+              value={filterTaskId}
+              onChange={(e) => onFilterTaskChange(e.target.value)}
+              disabled={loadingTasks}
+            >
+              <option value="">
+                {loadingTasks
+                  ? "Loading tasks…"
+                  : tasks.length === 0
+                    ? "No tasks"
+                    : "All tasks"}
+              </option>
+              {tasks.map((t) => (
+                <option key={t.name} value={t.name}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// List View
+interface ListViewProps {
+  entries: TimeEntry[];
+  onSelectEntry: (entry: TimeEntry) => void;
+  onDeleteEntry: (id: string) => void;
+  viewingEntryId?: string;
+}
+
+function ListView({
+  entries,
+  onSelectEntry,
+  onDeleteEntry,
+  viewingEntryId,
+}: ListViewProps) {
+  if (entries.length === 0) {
+    return (
+      <div className={styles.listEmpty}>
+        <Clock size={32} strokeWidth={1.2} />
+        <p>No time entries found</p>
+        <span>
+          Try adjusting your filters or switch to calendar view to add entries
+        </span>
+      </div>
+    );
+  }
+
+  // Group by date
+  const grouped: Record<string, TimeEntry[]> = {};
+  for (const entry of entries) {
+    const dateKey = new Date(entry.startTime).toDateString();
+    if (!grouped[dateKey]) grouped[dateKey] = [];
+    grouped[dateKey].push(entry);
+  }
+
+  const sortedDates = Object.keys(grouped).sort(
+    (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+  );
+
+  return (
+    <div className={styles.listView}>
+      {sortedDates.map((dateKey) => {
+        const date = new Date(dateKey);
+        const dayEntries = grouped[dateKey]
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+          );
+
+        const totalMins = dayEntries.reduce((acc, e) => {
+          if (!e.endTime) return acc;
+          return (
+            acc +
+            Math.round(
+              (new Date(e.endTime).getTime() -
+                new Date(e.startTime).getTime()) /
+                60000,
+            )
+          );
+        }, 0);
+
+        const totalLabel =
+          totalMins > 0
+            ? totalMins < 60
+              ? `${totalMins}m`
+              : `${Math.floor(totalMins / 60)}h ${totalMins % 60 > 0 ? `${totalMins % 60}m` : ""}`.trim()
+            : null;
+
+        return (
+          <div key={dateKey} className={styles.listGroup}>
+            <div className={styles.listGroupHeader}>
+              <div className={styles.listGroupDate}>
+                <span
+                  className={`${styles.listGroupDayNum} ${isToday(date) ? styles.listGroupDayNumToday : ""}`}
+                >
+                  {date.getDate()}
+                </span>
+                <div className={styles.listGroupDateText}>
+                  <span className={styles.listGroupDayName}>
+                    {date.toLocaleDateString("en-US", { weekday: "long" })}
+                  </span>
+                  <span className={styles.listGroupMonthYear}>
+                    {date.toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              </div>
+              {totalLabel && (
+                <span className={styles.listGroupTotal}>
+                  {totalLabel} total
+                </span>
+              )}
+            </div>
+
+            <div className={styles.listGroupEntries}>
+              {dayEntries.map((entry) => {
+                const start = new Date(entry.startTime);
+                const end = entry.endTime ? new Date(entry.endTime) : null;
+                const isSelected = viewingEntryId === entry.id;
+
+                return (
+                  <div
+                    key={entry.id}
+                    className={`${styles.listEntry} ${isSelected ? styles.listEntryActive : ""}`}
+                    onClick={() => onSelectEntry(entry)}
+                  >
+                    <div className={styles.listEntryAccent} />
+                    <div className={styles.listEntryTime}>
+                      <span className={styles.listEntryStart}>
+                        {formatTime(start)}
+                      </span>
+                      {end && (
+                        <span className={styles.listEntryEnd}>
+                          {formatTime(end)}
+                        </span>
+                      )}
+                    </div>
+                    <div className={styles.listEntryBody}>
+                      <span className={styles.listEntryTask}>
+                        {entry.task?.name ?? "—"}
+                      </span>
+                      {entry.customer?.name && (
+                        <span className={styles.listEntryCustomer}>
+                          {entry.customer.name}
+                        </span>
+                      )}
+                      {entry.notes && (
+                        <span className={styles.listEntryNotes}>
+                          {entry.notes}
+                        </span>
+                      )}
+                    </div>
+                    <div className={styles.listEntryRight}>
+                      <span className={styles.listEntryDur}>
+                        {formatDuration(entry.startTime, entry.endTime)}
+                      </span>
+                      <div className={styles.listEntryActions}>
+                        <button
+                          className={styles.listEntryEdit}
+                          title="Edit"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectEntry(entry);
+                          }}
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          className={styles.listEntryDelete}
+                          title="Delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteEntry(entry.id);
+                          }}
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // Main component
 export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
+  const [activeTab, setActiveTab] = useState<ViewTab>("calendar");
   const [weekStart, setWeekStart] = useState<Date>(() =>
     getWeekStart(new Date()),
   );
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Filter state
+  const [filterCustomerId, setFilterCustomerId] = useState("");
+  const [filterTaskId, setFilterTaskId] = useState("");
+  const [filterTasks, setFilterTasks] = useState<Task[]>([]);
+  const [loadingFilterTasks, setLoadingFilterTasks] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   // Drag state
   const [dragging, setDragging] = useState(false);
@@ -386,6 +673,16 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     return d;
   });
 
+  // Filtered entries
+  const filteredEntries = entries.filter((e) => {
+    if (filterCustomerId && e.customer?.id !== filterCustomerId) return false;
+    if (filterTaskId && e.task?.name !== filterTaskId) return false;
+    return true;
+  });
+
+  const hasActiveFilter = !!filterCustomerId || !!filterTaskId;
+  const activeFilterCount = (filterCustomerId ? 1 : 0) + (filterTaskId ? 1 : 0);
+
   // Fetch entries
   useEffect(() => {
     const load = async () => {
@@ -422,6 +719,27 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     };
     load();
   }, []);
+
+  // Fetch tasks when filter customer changes
+  useEffect(() => {
+    if (!filterCustomerId) {
+      setFilterTasks([]);
+      setFilterTaskId("");
+      return;
+    }
+    const load = async () => {
+      setLoadingFilterTasks(true);
+      try {
+        setFilterTasks(await taskService.getByCustomer(filterCustomerId));
+        setFilterTaskId("");
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingFilterTasks(false);
+      }
+    };
+    load();
+  }, [filterCustomerId]);
 
   // Fetch tasks when customer changes (new entry)
   useEffect(() => {
@@ -469,7 +787,6 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
       gridScrollRef.current.scrollTop = (8 - HOUR_START) * SLOT_HEIGHT;
   }, []);
 
-  // Start editing a viewed entry — pre-populate fields
   const handleStartEdit = (entry: TimeEntry) => {
     setIsEditing(true);
     setEditError(null);
@@ -599,7 +916,6 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     };
   })();
 
-  // Save new entry
   const handleSaveEntry = async () => {
     if (!pendingEntry) return;
     if (!selectedCustomerId) {
@@ -642,7 +958,6 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     }
   };
 
-  // Delete entry
   const handleDeleteEntry = async (entryId: string) => {
     try {
       await timeEntryService.deleteEntry(entryId);
@@ -720,199 +1035,315 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
           </button>
         </div>
 
-        {/* Week navigation */}
-        <div className={styles.weekNav}>
-          <button className={styles.navBtn} onClick={prevWeek}>
-            <ChevronLeft size={18} />
-          </button>
-          <span className={styles.weekLabel}>{weekLabel}</span>
-          <button className={styles.navBtn} onClick={nextWeek}>
-            <ChevronRight size={18} />
-          </button>
-          <button
-            className={styles.todayBtn}
-            onClick={() => setWeekStart(getWeekStart(new Date()))}
-          >
-            Today
-          </button>
+        {/* Tabs + controls row */}
+        <div className={styles.tabsRow}>
+          <div className={styles.tabs}>
+            <button
+              className={`${styles.tab} ${activeTab === "calendar" ? styles.tabActive : ""}`}
+              onClick={() => setActiveTab("calendar")}
+            >
+              <CalendarDays size={14} />
+              Calendar
+            </button>
+            <button
+              className={`${styles.tab} ${activeTab === "list" ? styles.tabActive : ""}`}
+              onClick={() => setActiveTab("list")}
+            >
+              <List size={14} />
+              List
+            </button>
+          </div>
+
+          <div className={styles.tabsRowRight}>
+            {/* Filter button */}
+            <div className={styles.filterWrap}>
+              <button
+                className={`${styles.filterBtn} ${hasActiveFilter ? styles.filterBtnActive : ""}`}
+                onClick={() => setFilterOpen((v) => !v)}
+              >
+                <Filter size={13} />
+                Filter
+                {activeFilterCount > 0 && (
+                  <span className={styles.filterCount}>
+                    {activeFilterCount}
+                  </span>
+                )}
+                <ChevronDown
+                  size={12}
+                  className={filterOpen ? styles.filterChevronOpen : ""}
+                />
+              </button>
+
+              {filterOpen && (
+                <FilterPopover
+                  customers={customers}
+                  tasks={filterTasks}
+                  filterCustomerId={filterCustomerId}
+                  filterTaskId={filterTaskId}
+                  onFilterCustomerChange={setFilterCustomerId}
+                  onFilterTaskChange={setFilterTaskId}
+                  onClear={() => {
+                    setFilterCustomerId("");
+                    setFilterTaskId("");
+                  }}
+                  onClose={() => setFilterOpen(false)}
+                  loadingTasks={loadingFilterTasks}
+                />
+              )}
+            </div>
+
+            {/* Week nav — only in calendar tab */}
+            {activeTab === "calendar" && (
+              <div className={styles.weekNavInline}>
+                <button className={styles.navBtn} onClick={prevWeek}>
+                  <ChevronLeft size={16} />
+                </button>
+                <span className={styles.weekLabelInline}>{weekLabel}</span>
+                <button className={styles.navBtn} onClick={nextWeek}>
+                  <ChevronRight size={16} />
+                </button>
+                <button
+                  className={styles.todayBtn}
+                  onClick={() => setWeekStart(getWeekStart(new Date()))}
+                >
+                  Today
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Error banner */}
         {error && <div className={styles.errorBanner}>{error}</div>}
 
-        {/* Hint */}
-        <p className={styles.hint}>
-          <Plus size={13} /> Drag on the calendar to create a time entry
-        </p>
-
-        {/* Calendar */}
-        <div className={styles.calendarOuter}>
-          {/* Day headers */}
-          <div className={styles.dayHeaders}>
-            <div className={styles.timeGutter} />
-            {weekDays.map((day, i) => {
-              const { day: dayName, num } = formatDateHeader(day);
-              return (
-                <div
-                  key={i}
-                  className={`${styles.dayHeader} ${isToday(day) ? styles.todayHeader : ""}`}
-                >
-                  <span className={styles.dayName}>{dayName}</span>
-                  <span
-                    className={`${styles.dayNum} ${isToday(day) ? styles.todayNum : ""}`}
-                  >
-                    {num}
-                  </span>
-                </div>
-              );
-            })}
+        {/* Active filter pill */}
+        {hasActiveFilter && (
+          <div className={styles.filterActiveBanner}>
+            <Filter size={11} />
+            Showing filtered results
+            {filterCustomerId &&
+              customers.find((c) => c.id === filterCustomerId) && (
+                <span className={styles.filterPill}>
+                  {customers.find((c) => c.id === filterCustomerId)!.name}
+                </span>
+              )}
+            {filterTaskId &&
+              filterTasks.find((t) => t.name === filterTaskId) && (
+                <span className={styles.filterPill}>
+                  {filterTasks.find((t) => t.name === filterTaskId)!.name}
+                </span>
+              )}
+            <button
+              className={styles.filterActiveClear}
+              onClick={() => {
+                setFilterCustomerId("");
+                setFilterTaskId("");
+              }}
+            >
+              <X size={11} />
+              Clear
+            </button>
           </div>
+        )}
 
-          {/* Scrollable grid */}
-          <div className={styles.gridScroll} ref={gridScrollRef}>
-            <div className={styles.gridInner}>
-              {/* Time labels */}
-              <div className={styles.timeGutter}>
-                {Array.from({ length: TOTAL_HOURS }, (_, i) => (
-                  <div
-                    key={i}
-                    className={styles.timeLabel}
-                    style={{ top: i * SLOT_HEIGHT }}
-                  >
-                    {formatHour(HOUR_START + i)}
-                  </div>
-                ))}
-              </div>
+        {activeTab === "calendar" && (
+          <>
+            {/* Hint */}
+            <p className={styles.hint}>
+              <Plus size={13} /> Drag on the calendar to create a time entry
+            </p>
 
-              {/* Day columns */}
-              <div className={styles.columnsWrapper} ref={gridRef}>
-                {weekDays.map((day, colIdx) => {
-                  const layoutItems = computeColumnLayout(entries, day);
+            {/* Calendar */}
+            <div className={styles.calendarOuter}>
+              {/* Day headers */}
+              <div className={styles.dayHeaders}>
+                <div className={styles.timeGutter} />
+                {weekDays.map((day, i) => {
+                  const { day: dayName, num } = formatDateHeader(day);
                   return (
                     <div
-                      key={colIdx}
-                      className={`${styles.dayColumn} ${isToday(day) ? styles.todayColumn : ""}`}
-                      onMouseDown={(e) => handleMouseDown(e, colIdx)}
+                      key={i}
+                      className={`${styles.dayHeader} ${isToday(day) ? styles.todayHeader : ""}`}
                     >
-                      {Array.from({ length: TOTAL_HOURS }, (_, i) => (
-                        <div
-                          key={i}
-                          className={styles.hourLine}
-                          style={{ top: i * SLOT_HEIGHT }}
-                        />
-                      ))}
-                      {Array.from({ length: TOTAL_HOURS }, (_, i) => (
-                        <div
-                          key={`h${i}`}
-                          className={styles.halfLine}
-                          style={{ top: i * SLOT_HEIGHT + SLOT_HEIGHT / 2 }}
-                        />
-                      ))}
-
-                      {dragging && dragStart?.col === colIdx && ghostStyle && (
-                        <div className={styles.dragGhost} style={ghostStyle} />
-                      )}
-
-                      {pendingEntry &&
-                        pendingEntry.dayIndex === colIdx &&
-                        (() => {
-                          const top =
-                            (((pendingEntry.startHour - HOUR_START) * 60 +
-                              pendingEntry.startMin) /
-                              60) *
-                            SLOT_HEIGHT;
-                          const height =
-                            (((pendingEntry.endHour - pendingEntry.startHour) *
-                              60 +
-                              (pendingEntry.endMin - pendingEntry.startMin)) /
-                              60) *
-                            SLOT_HEIGHT;
-                          return (
-                            <div
-                              className={styles.pendingBlock}
-                              style={{ top, height }}
-                            >
-                              <span>
-                                {formatHour(
-                                  pendingEntry.startHour,
-                                  pendingEntry.startMin,
-                                )}{" "}
-                                –{" "}
-                                {formatHour(
-                                  pendingEntry.endHour,
-                                  pendingEntry.endMin,
-                                )}
-                              </span>
-                            </div>
-                          );
-                        })()}
-
-                      {layoutItems.map((item, idx) => {
-                        if (item.type === "group") {
-                          return (
-                            <GroupChip
-                              key={`group-${idx}`}
-                              item={item}
-                              onSelectEntry={handleSelectEntry}
-                              onDeleteEntry={handleDeleteEntry}
-                            />
-                          );
-                        }
-
-                        const { entry, top, height } = item;
-                        const start = new Date(entry.startTime);
-                        const end = entry.endTime
-                          ? new Date(entry.endTime)
-                          : null;
-                        const isViewing = viewingEntry?.id === entry.id;
-                        return (
-                          <div
-                            key={entry.id}
-                            className={`${styles.entryBlock} ${isViewing ? styles.entryBlockActive : ""}`}
-                            style={{ top, height }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSelectEntry(entry);
-                            }}
-                          >
-                            <div className={styles.entryInner}>
-                              <span className={styles.entryTime}>
-                                {formatTime(start)}
-                                {end ? ` – ${formatTime(end)}` : ""}
-                              </span>
-                              <span className={styles.entryMeta}>
-                                {entry.task?.name}
-                              </span>
-                              {entry.customer?.name && (
-                                <span className={styles.entryCustomer}>
-                                  {entry.customer.name}
-                                </span>
-                              )}
-                              {entry.notes && (
-                                <span className={styles.entryDesc}>
-                                  {entry.notes}
-                                </span>
-                              )}
-                            </div>
-                            <button
-                              className={styles.entryDelete}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteEntry(entry.id);
-                              }}
-                            >
-                              <Trash2 size={11} />
-                            </button>
-                          </div>
-                        );
-                      })}
+                      <span className={styles.dayName}>{dayName}</span>
+                      <span
+                        className={`${styles.dayNum} ${isToday(day) ? styles.todayNum : ""}`}
+                      >
+                        {num}
+                      </span>
                     </div>
                   );
                 })}
               </div>
+
+              {/* Scrollable grid */}
+              <div className={styles.gridScroll} ref={gridScrollRef}>
+                <div className={styles.gridInner}>
+                  {/* Time labels */}
+                  <div className={styles.timeGutter}>
+                    {Array.from({ length: TOTAL_HOURS }, (_, i) => (
+                      <div
+                        key={i}
+                        className={styles.timeLabel}
+                        style={{ top: i * SLOT_HEIGHT }}
+                      >
+                        {formatHour(HOUR_START + i)}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Day columns */}
+                  <div className={styles.columnsWrapper} ref={gridRef}>
+                    {weekDays.map((day, colIdx) => {
+                      const layoutItems = computeColumnLayout(
+                        filteredEntries,
+                        day,
+                      );
+                      return (
+                        <div
+                          key={colIdx}
+                          className={`${styles.dayColumn} ${isToday(day) ? styles.todayColumn : ""}`}
+                          onMouseDown={(e) => handleMouseDown(e, colIdx)}
+                        >
+                          {Array.from({ length: TOTAL_HOURS }, (_, i) => (
+                            <div
+                              key={i}
+                              className={styles.hourLine}
+                              style={{ top: i * SLOT_HEIGHT }}
+                            />
+                          ))}
+                          {Array.from({ length: TOTAL_HOURS }, (_, i) => (
+                            <div
+                              key={`h${i}`}
+                              className={styles.halfLine}
+                              style={{ top: i * SLOT_HEIGHT + SLOT_HEIGHT / 2 }}
+                            />
+                          ))}
+
+                          {dragging &&
+                            dragStart?.col === colIdx &&
+                            ghostStyle && (
+                              <div
+                                className={styles.dragGhost}
+                                style={ghostStyle}
+                              />
+                            )}
+
+                          {pendingEntry &&
+                            pendingEntry.dayIndex === colIdx &&
+                            (() => {
+                              const top =
+                                (((pendingEntry.startHour - HOUR_START) * 60 +
+                                  pendingEntry.startMin) /
+                                  60) *
+                                SLOT_HEIGHT;
+                              const height =
+                                (((pendingEntry.endHour -
+                                  pendingEntry.startHour) *
+                                  60 +
+                                  (pendingEntry.endMin -
+                                    pendingEntry.startMin)) /
+                                  60) *
+                                SLOT_HEIGHT;
+                              return (
+                                <div
+                                  className={styles.pendingBlock}
+                                  style={{ top, height }}
+                                >
+                                  <span>
+                                    {formatHour(
+                                      pendingEntry.startHour,
+                                      pendingEntry.startMin,
+                                    )}{" "}
+                                    –{" "}
+                                    {formatHour(
+                                      pendingEntry.endHour,
+                                      pendingEntry.endMin,
+                                    )}
+                                  </span>
+                                </div>
+                              );
+                            })()}
+
+                          {layoutItems.map((item, idx) => {
+                            if (item.type === "group") {
+                              return (
+                                <GroupChip
+                                  key={`group-${idx}`}
+                                  item={item}
+                                  onSelectEntry={handleSelectEntry}
+                                  onDeleteEntry={handleDeleteEntry}
+                                />
+                              );
+                            }
+
+                            const { entry, top, height } = item;
+                            const start = new Date(entry.startTime);
+                            const end = entry.endTime
+                              ? new Date(entry.endTime)
+                              : null;
+                            const isViewing = viewingEntry?.id === entry.id;
+                            return (
+                              <div
+                                key={entry.id}
+                                className={`${styles.entryBlock} ${isViewing ? styles.entryBlockActive : ""}`}
+                                style={{ top, height }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectEntry(entry);
+                                }}
+                              >
+                                <div className={styles.entryInner}>
+                                  <span className={styles.entryTime}>
+                                    {formatTime(start)}
+                                    {end ? ` – ${formatTime(end)}` : ""}
+                                  </span>
+                                  <span className={styles.entryMeta}>
+                                    {entry.task?.name}
+                                  </span>
+                                  {entry.customer?.name && (
+                                    <span className={styles.entryCustomer}>
+                                      {entry.customer.name}
+                                    </span>
+                                  )}
+                                  {entry.notes && (
+                                    <span className={styles.entryDesc}>
+                                      {entry.notes}
+                                    </span>
+                                  )}
+                                </div>
+                                <button
+                                  className={styles.entryDelete}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteEntry(entry.id);
+                                  }}
+                                >
+                                  <Trash2 size={11} />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
+          </>
+        )}
+
+        {activeTab === "list" && (
+          <div className={styles.listViewOuter}>
+            <ListView
+              entries={filteredEntries}
+              onSelectEntry={handleSelectEntry}
+              onDeleteEntry={handleDeleteEntry}
+              viewingEntryId={viewingEntry?.id}
+            />
           </div>
-        </div>
+        )}
 
         {/* View / Edit entry panel */}
         {viewingEntry && (
@@ -976,8 +1407,6 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
             {isEditing ? (
               <>
                 {editError && <p className={styles.saveError}>{editError}</p>}
-
-                {/* Date/time pickers */}
                 <div className={styles.formSelects}>
                   <div className={styles.datetimeGroup}>
                     <label className={styles.datetimeLabel}>Start</label>
@@ -998,8 +1427,6 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
                     />
                   </div>
                 </div>
-
-                {/* Customer + task (optional re-assignment) */}
                 <div className={styles.formSelects}>
                   <select
                     className={styles.selectInput}
@@ -1034,15 +1461,13 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
                             : "Change task…"}
                       </option>
                       {editTasks.map((t) => (
-                        <option key={t.id} value={String(t.id)}>
+                        <option key={t.name} value={t.name}>
                           {t.name}
                         </option>
                       ))}
                     </select>
                   )}
                 </div>
-
-                {/* Notes */}
                 <div className={styles.formRow}>
                   <input
                     className={styles.descInput}
@@ -1102,7 +1527,6 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
             {saveError && <p className={styles.saveError}>{saveError}</p>}
 
             <div className={styles.formSelects}>
-              {/* Customer dropdown */}
               <select
                 className={styles.selectInput}
                 value={selectedCustomerId}
@@ -1119,7 +1543,6 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
                 ))}
               </select>
 
-              {/* Task dropdown, only shown once a customer is selected */}
               {selectedCustomerId && (
                 <select
                   className={styles.selectInput}
@@ -1135,7 +1558,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
                         : "Select task…"}
                   </option>
                   {tasks.map((t) => (
-                    <option key={t.id} value={String(t.id)}>
+                    <option key={t.name} value={t.name}>
                       {t.name}
                     </option>
                   ))}
