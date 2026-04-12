@@ -126,7 +126,7 @@ function TasksModal({ customerId, onBack, compact = false }: Props) {
       <div className={styles.topRow}>
         <button onClick={onBack} className={styles.backBtn}>
           <img src={backarrow} alt="back" className={styles.backArrow} />
-          {compact ? customerName : "Back"}
+          {customerName}
         </button>
         <input
           type="text"
