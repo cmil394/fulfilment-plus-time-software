@@ -686,7 +686,7 @@
   flex-shrink: 0;
 }
 
-/* ─── Group chip (collapsed overlapping entries) ─────────────────────────── */
+/* Group chip */
 
 .groupChipWrap {
   position: absolute;
@@ -764,7 +764,7 @@
   text-overflow: ellipsis;
 }
 
-/* ─── Group popover ──────────────────────────────────────────────────────── */
+/* Group popover */
 
 .groupPopover {
   position: absolute;
@@ -785,6 +785,12 @@
 .groupPopoverUp {
   top: auto;
   bottom: calc(100% + 6px);
+}
+
+/* Anchor to right edge when near the right side of the viewport */
+.groupPopoverRight {
+  left: auto;
+  right: 0;
 }
 
 .groupPopover::-webkit-scrollbar {

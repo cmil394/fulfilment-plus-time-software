@@ -193,6 +193,7 @@ interface GroupChipProps {
 function GroupChip({ item, onSelectEntry, onDeleteEntry }: GroupChipProps) {
   const [open, setOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
+  const [openRightAligned, setOpenRightAligned] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const chipRef = useRef<HTMLDivElement>(null);
 
@@ -211,6 +212,7 @@ function GroupChip({ item, onSelectEntry, onDeleteEntry }: GroupChipProps) {
     if (!open && chipRef.current) {
       const rect = chipRef.current.getBoundingClientRect();
       setOpenUpward(rect.bottom > window.innerHeight * 0.65);
+      setOpenRightAligned(rect.left + 270 > window.innerWidth - 16);
     }
     setOpen((v) => !v);
   };
@@ -255,7 +257,7 @@ function GroupChip({ item, onSelectEntry, onDeleteEntry }: GroupChipProps) {
 
       {open && (
         <div
-          className={`${styles.groupPopover} ${openUpward ? styles.groupPopoverUp : ""}`}
+          className={`${styles.groupPopover} ${openUpward ? styles.groupPopoverUp : ""} ${openRightAligned ? styles.groupPopoverRight : ""}`}
         >
           <div className={styles.groupPopoverHeader}>
             {item.entries.length} entries
