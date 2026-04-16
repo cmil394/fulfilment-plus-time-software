@@ -922,7 +922,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
         endHour: end.hour,
         endMin: end.min,
       });
-      setNotes("");
+      setNotes("Manual Entry");
       setSelectedCustomerId("");
       setSelectedTaskId("");
     };
