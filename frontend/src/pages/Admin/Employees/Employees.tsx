@@ -32,6 +32,7 @@ interface EditDraft {
   lastName: string;
   email: string;
   role: string;
+  pin: string;
 }
 
 function formatElapsed(seconds: number): string {
@@ -178,6 +179,7 @@ function Employees() {
       lastName: employee.lastName,
       email: employee.email,
       role: employee.role,
+      pin: employee.pin ?? "",
     });
     setSaveError(null);
   };
@@ -315,9 +317,13 @@ function Employees() {
   ): User[] => {
     return [...users].sort((a, b) => {
       const valA =
-        field === "index" ? orderMap.get(a.id)! : a[field as keyof User];
+        field === "index"
+          ? orderMap.get(a.id)!
+          : (a[field as keyof User] ?? "");
       const valB =
-        field === "index" ? orderMap.get(b.id)! : b[field as keyof User];
+        field === "index"
+          ? orderMap.get(b.id)!
+          : (b[field as keyof User] ?? "");
       const cmp = valA < valB ? -1 : valA > valB ? 1 : 0;
       return dir === "asc" ? cmp : -cmp;
     });
@@ -457,6 +463,7 @@ function Employees() {
                     >
                       Role
                     </SortableTh>
+                    <th className={styles.pinCol}>PIN</th>
                     <SortableTh
                       field="createdAt"
                       activeField={empSortField}
@@ -566,6 +573,36 @@ function Employees() {
                           ) : (
                             <span className={styles.roleBadge}>
                               {employee.role}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* PIN */}
+                        <td className={styles.pinCol}>
+                          {isEditing ? (
+                            <input
+                              className={styles.editInput}
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={5}
+                              value={editDraft!.pin}
+                              onChange={(e) =>
+                                handleDraftChange(
+                                  "pin",
+                                  e.target.value.replace(/\D/g, ""),
+                                )
+                              }
+                              disabled={isSaving}
+                              placeholder="PIN"
+                              style={{ width: "100%" }}
+                            />
+                          ) : employee.pin ? (
+                            "•••••"
+                          ) : (
+                            <span
+                              style={{ color: "var(--color-text-muted, #aaa)" }}
+                            >
+                              —
                             </span>
                           )}
                         </td>

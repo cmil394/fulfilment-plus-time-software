@@ -152,9 +152,9 @@
   color: #111827;
 }
 
-.employeesTable td:nth-child(7),
 .employeesTable td:nth-child(8),
-.employeesTable td:nth-child(9) {
+.employeesTable td:nth-child(9),
+.employeesTable td:nth-child(10) {
   text-align: center;
   width: 40px;
 }
@@ -199,6 +199,10 @@
   background: #f9fafb;
   color: #9ca3af;
   cursor: not-allowed;
+}
+
+.pinCol {
+  width: 100px;
 }
 
 .confirmBtn {

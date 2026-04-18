@@ -18,6 +18,7 @@ export interface User {
   firstName: string;
   lastName: string;
   role: string;
+  pin?: string;
   status: string;
   createdAt: string;
 }
