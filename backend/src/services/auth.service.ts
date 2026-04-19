@@ -134,6 +134,12 @@ export const loginWithPin = async (pin: string) => {
     },
   };
 };
+
+export const clockOut = async (userId: string) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new AppError(404, "User not found");
+  return { userId };
+};
  
 
 // User

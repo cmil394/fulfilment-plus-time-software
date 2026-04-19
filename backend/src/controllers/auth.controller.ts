@@ -7,7 +7,7 @@ import {
   pinLoginSchema,
 } from "../validators/auth.validator";
 import * as authService from "../services/auth.service";
-import { UnauthorizedError } from "../utils/errors";
+import { AppError, UnauthorizedError } from "../utils/errors";
 import { generateToken } from "../utils/auth";
 
 // Auth
@@ -59,6 +59,26 @@ export const loginWithPin = async (
       status: "success",
       message: "Login successful",
       data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const clockOut = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) throw new AppError(401, "Unauthorized");
+
+    await authService.clockOut(userId);
+
+    res.status(200).json({
+      status: "success",
+      message: "Clocked out successfully",
     });
   } catch (err) {
     next(err);

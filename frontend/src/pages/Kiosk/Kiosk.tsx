@@ -113,9 +113,24 @@ function PinInput({ onSuccess }: PinInputProps) {
 interface UserRowProps {
   user: LoggedInUser;
   index: number;
+  onClockOut: (userId: string) => void;
 }
 
-function UserRow({ user, index }: UserRowProps) {
+function UserRow({ user, index, onClockOut }: UserRowProps) {
+  const [loading, setLoading] = useState(false);
+
+  const handleClockOut = async () => {
+    setLoading(true);
+    try {
+      await authService.clockOut(user.token);
+      onClockOut(user.id);
+    } catch {
+      // surface an error toast/alert here if you have one
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <tr className={`${styles.userRow} ${styles.userRowEnter}`}>
       <td className={`${styles.cell} ${styles.cellSeq}`}>
@@ -137,6 +152,13 @@ function UserRow({ user, index }: UserRowProps) {
           <button className={`${styles.btn} ${styles.btnStop}`} disabled>
             Stop
           </button>
+          <button
+            className={`${styles.btn} ${styles.btnClockOut}`}
+            onClick={handleClockOut}
+            disabled={loading}
+          >
+            {loading ? "Clocking out…" : "Clock Out"}
+          </button>
         </div>
       </td>
     </tr>
@@ -153,6 +175,10 @@ export default function Kiosk() {
     });
   };
 
+  const handleClockOut = (userId: string) => {
+    setLoggedInUsers((prev) => prev.filter((u) => u.id !== userId));
+  };
+
   const activeCount = loggedInUsers.length;
 
   return (
@@ -162,7 +188,9 @@ export default function Kiosk() {
       <div className={styles.subheader}>
         <span className={styles.subheaderTitle}>Kiosk</span>
         <span className={styles.subheaderMeta}>
-          <span className={`${styles.sessionDot} ${activeCount > 0 ? styles.sessionDotActive : ""}`} />
+          <span
+            className={`${styles.sessionDot} ${activeCount > 0 ? styles.sessionDotActive : ""}`}
+          />
           {activeCount === 0
             ? "No active sessions"
             : `${activeCount} active session${activeCount !== 1 ? "s" : ""}`}
@@ -184,7 +212,12 @@ export default function Kiosk() {
             </thead>
             <tbody>
               {loggedInUsers.map((user, i) => (
-                <UserRow key={user.id} user={user} index={i} />
+                <UserRow
+                  key={user.id}
+                  user={user}
+                  index={i}
+                  onClockOut={handleClockOut}
+                />
               ))}
               <PinInput onSuccess={handlePinSuccess} />
               {loggedInUsers.length === 0 && (

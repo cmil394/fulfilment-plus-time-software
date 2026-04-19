@@ -64,6 +64,12 @@ export const authService = {
     return response.data;
   },
 
+  clockOut: async (token: string): Promise<void> => {
+    await api.post("/auth/logout/pin", {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
   getProfile: async (): Promise<{ status: string; data: { user: User } }> => {
     const response = await api.get("/auth/profile");
     return response.data;
