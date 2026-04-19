@@ -28,7 +28,7 @@ function PinInput({ onSuccess }: PinInputProps) {
   }, []);
 
   const handleSubmit = async () => {
-    if (pin.length < 4) return;
+    if (pin.length !== 5) return;
     setState("loading");
     setErrorMsg("");
 
@@ -97,11 +97,11 @@ function PinInput({ onSuccess }: PinInputProps) {
           )}
         </div>
       </td>
-      <td className={styles.cell} colSpan={3}>
+      <td className={styles.cell} colSpan={4}>
         <button
           className={`${styles.btn} ${styles.btnConfirm}`}
           onClick={handleSubmit}
-          disabled={pin.length < 4 || state === "loading"}
+          disabled={pin.length !== 5 || state === "loading"}
         >
           {state === "loading" ? "Verifying…" : "Clock In →"}
         </button>
@@ -152,14 +152,16 @@ function UserRow({ user, index, onClockOut }: UserRowProps) {
           <button className={`${styles.btn} ${styles.btnStop}`} disabled>
             Stop
           </button>
-          <button
-            className={`${styles.btn} ${styles.btnClockOut}`}
-            onClick={handleClockOut}
-            disabled={loading}
-          >
-            {loading ? "Clocking out…" : "Clock Out"}
-          </button>
         </div>
+      </td>
+      <td className={`${styles.cell} ${styles.cellClockOut}`}>
+        <button
+          className={`${styles.btn} ${styles.btnClockOut}`}
+          onClick={handleClockOut}
+          disabled={loading}
+        >
+          {loading ? "Clocking out…" : "Clock Out"}
+        </button>
       </td>
     </tr>
   );
@@ -208,6 +210,7 @@ export default function Kiosk() {
                 <th className={styles.th}>Customer</th>
                 <th className={styles.th}>Task</th>
                 <th className={`${styles.th} ${styles.thActions}`}>Actions</th>
+                <th className={styles.th}></th>
               </tr>
             </thead>
             <tbody>
@@ -222,7 +225,7 @@ export default function Kiosk() {
               <PinInput onSuccess={handlePinSuccess} />
               {loggedInUsers.length === 0 && (
                 <tr>
-                  <td colSpan={6} className={styles.emptyHint}>
+                  <td colSpan={7} className={styles.emptyHint}>
                     Enter your PIN above to clock in
                   </td>
                 </tr>
