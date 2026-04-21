@@ -4,7 +4,8 @@ export interface RegisterData {
   email: string;
   password: string;
   confirmPassword: string;
-  fullname: string;
+  firstname: string;
+  lastname: string;
 }
 
 export interface LoginData {

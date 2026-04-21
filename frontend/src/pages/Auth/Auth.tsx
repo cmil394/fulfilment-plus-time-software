@@ -24,7 +24,8 @@ function Auth() {
   // Register form state
   const [registerData, setRegisterData] = useState<RegisterData>({
     email: "",
-    fullname: "",
+    firstname: "",
+    lastname: "",
     password: "",
     confirmPassword: "",
   });
@@ -64,7 +65,8 @@ function Auth() {
       setAuth(response.data.user, response.data.token);
       setRegisterData({
         email: "",
-        fullname: "",
+        firstname: "",
+        lastname: "",
         password: "",
         confirmPassword: "",
       });
@@ -223,21 +225,42 @@ function Auth() {
                 disabled={loading}
               />
 
-              <label htmlFor="register-fullname">Full Name</label>
-              <input
-                type="text"
-                id="register-fullname"
-                name="fullname"
-                placeholder="Enter your full name"
-                autoComplete="name"
-                className={styles.input}
-                value={registerData.fullname}
-                onChange={(e) =>
-                  setRegisterData({ ...registerData, fullname: e.target.value })
-                }
-                required
-                disabled={loading}
-              />
+              <div className={styles.nameRow}>
+                <div className={styles.nameField}>
+                  <label htmlFor="register-firstname">First Name</label>
+                  <input
+                    type="text"
+                    id="register-firstname"
+                    name="firstname"
+                    placeholder="Enter your first name"
+                    autoComplete="name"
+                    className={styles.inputName}
+                    value={registerData.firstname}
+                    onChange={(e) =>
+                      setRegisterData({ ...registerData, firstname: e.target.value })
+                    }
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className={styles.nameField}>
+                  <label htmlFor="register-lastname">Last Name</label>
+                  <input
+                    type="text"
+                    id="register-lastname"
+                    name="lastname"
+                    placeholder="Enter your lastname"
+                    autoComplete="name"
+                    className={styles.inputName}
+                    value={registerData.lastname}
+                    onChange={(e) =>
+                      setRegisterData({ ...registerData, lastname: e.target.value })
+                    }
+                    required
+                    disabled={loading}
+                  />
+                </div>
+              </div>
 
               <label htmlFor="register-password">Password</label>
               <input
