@@ -26,6 +26,9 @@ export const seedCompany = async () => {
             {
               name: "Break",
             },
+            {
+              name: "Meeting",
+            }
           ],
         },
       },
