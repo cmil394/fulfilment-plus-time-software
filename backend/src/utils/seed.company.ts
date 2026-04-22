@@ -19,7 +19,7 @@ export const seedCompany = async () => {
         name: "Fulfilment Plus",
         ownerName: "Mike Appleton",
         email: "mikeappleton@fulfilmentplus.co.nz",
-        phone: "+1234567890",
+        phone: "021 483 832",
         avatarUrl: null,
         tasks: {
           create: [
