@@ -18,6 +18,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  fullName: string;
   role: string;
   employeeCode?: string;
   pin?: string;
