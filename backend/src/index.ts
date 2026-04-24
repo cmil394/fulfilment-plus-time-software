@@ -14,7 +14,7 @@ import path from "path";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
 // Middleware
 app.use(cors());
@@ -60,7 +60,7 @@ const startServer = async () => {
 
     await seedOwner();
 
-    app.listen(PORT, () => {
+    app.listen(PORT, /*"0.0.0.0",*/() => {
       console.log(`Server running on http://localhost:${PORT}`);
       console.log(`Health check: http://localhost:${PORT}/api/health`);
       console.log(`Auth endpoints: http://localhost:${PORT}/api/auth`);
