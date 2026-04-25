@@ -8,6 +8,7 @@ import taskRoutes from "./routes/task.routes";
 import timeEntryRoutes from "./routes/time-entry.routes";
 import taskTemplateRoutes from "./routes/task-template.routes";
 import { seedOwner } from "./utils/seed.owner";
+import { seedCompany } from "./utils/seed.company";
 import { errorHandler } from "./utils/errors";
 import path from "path";
 
@@ -59,11 +60,11 @@ const startServer = async () => {
     console.log("Database connected");
 
     await seedOwner();
+    await seedCompany();
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on http://localhost:${PORT}`);
       console.log(`Health check: http://localhost:${PORT}/api/health`);
-      console.log(`Auth endpoints: http://localhost:${PORT}/api/auth`);
     });
   } catch (error) {
     console.error("Startup failure:", error);
