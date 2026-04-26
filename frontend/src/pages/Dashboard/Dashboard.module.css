@@ -88,10 +88,15 @@
   }
 
   .customersTab,
-  .historyTab,
   .profileTab,
   .reportsTab {
     min-height: 120px;
+    flex: none;
+  }
+
+  .historyTab {
+    min-height: 120px;
+    max-height: 540px;
     flex: none;
   }
 
