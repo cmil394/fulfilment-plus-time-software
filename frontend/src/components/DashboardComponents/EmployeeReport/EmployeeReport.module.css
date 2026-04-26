@@ -146,12 +146,12 @@
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 7px;
-  padding: 8px 12px;
+  padding: 5px 10px;
   flex-shrink: 0;
 }
 
 .totalLabel {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.55);
   font-weight: 500;
   text-transform: uppercase;
@@ -159,7 +159,7 @@
 }
 
 .totalHours {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
 }
@@ -227,7 +227,7 @@
   align-items: center;
   width: 100%;
   gap: 6px;
-  padding: 6px 8px;
+  padding: 8px 10px;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.07);
   border: none;
@@ -245,7 +245,7 @@
 .customerName {
   flex: 1;
   text-align: left;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -253,7 +253,7 @@
 }
 
 .customerHours {
-  font-size: 11px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.65);
   font-weight: 500;
   flex-shrink: 0;
@@ -331,4 +331,52 @@
   color: #fca5a5;
   text-align: center;
   flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .totalCard {
+    padding: 4px 9px;
+  }
+
+  .totalHours {
+    font-size: 13px;
+  }
+
+  .customerRow {
+    padding: 7px 9px;
+  }
+
+  .customerName {
+    font-size: 12px;
+  }
+
+  .customerHours {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 600px), (max-height: 700px) {
+  .totalCard {
+    padding: 4px 8px;
+  }
+
+  .totalLabel {
+    font-size: 9px;
+  }
+
+  .totalHours {
+    font-size: 12px;
+  }
+
+  .customerRow {
+    padding: 6px 8px;
+  }
+
+  .customerName {
+    font-size: 11px;
+  }
+
+  .customerHours {
+    font-size: 10px;
+  }
 }
