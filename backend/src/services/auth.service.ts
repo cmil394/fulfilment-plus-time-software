@@ -4,6 +4,7 @@ import {
   RegisterInput,
   LoginInput,
   AdminUpdateUserInput,
+  ChangePasswordInput,
 } from "../validators/auth.validator";
 import {
   ConflictError,
@@ -158,6 +159,17 @@ export const getUserProfile = async (userId: string) => {
   }
 
   return user;
+};
+
+export const changePassword = async (userId: string, data: ChangePasswordInput) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new NotFoundError("User not found");
+
+  const isValid = await comparePassword(data.currentPassword, user.password);
+  if (!isValid) throw new UnauthorizedError("Current password is incorrect");
+
+  const hashedPassword = await hashPassword(data.newPassword);
+  await prisma.user.update({ where: { id: userId }, data: { password: hashedPassword } });
 };
 
 // Admin

@@ -5,6 +5,7 @@ import {
   loginSchema,
   adminUpdateUserSchema,
   pinLoginSchema,
+  changePasswordSchema,
 } from "../validators/auth.validator";
 import * as authService from "../services/auth.service";
 import { AppError, UnauthorizedError } from "../utils/errors";
@@ -95,6 +96,21 @@ export const getProfile = async (
     if (!req.user?.userId) throw new UnauthorizedError();
     const user = await authService.getUserProfile(req.user.userId);
     res.status(200).json({ status: "success", data: { user } });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const changePassword = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    if (!req.user?.userId) throw new UnauthorizedError();
+    const data = changePasswordSchema.parse(req.body);
+    await authService.changePassword(req.user.userId, data);
+    res.status(200).json({ status: "success", message: "Password updated successfully" });
   } catch (err) {
     next(err);
   }
