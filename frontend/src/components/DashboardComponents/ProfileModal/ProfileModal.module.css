@@ -1,79 +1,244 @@
 .card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    padding: 4px 8px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px 12px 8px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .avatar {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
 }
 
 .name {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #fff;
-    text-align: center;
-    margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  margin: 0;
 }
 
 .badge {
-    display: inline-block;
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 2px 10px;
-    border-radius: 999px;
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 10px;
+  border-radius: 999px;
 }
 
 .divider {
-    width: 100%;
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    margin: 0;
+  width: 100%;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 0;
 }
 
 .rows {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
 }
 
 .label {
-    font-size: 1rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .value {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  text-align: right;
+  word-break: break-all;
+}
+
+@media (max-height: 700px) {
+  .card {
+    gap: 8px;
+    padding: 2px 8px 8px 8px;
+  }
+
+  .header {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .headerText {
+    align-items: flex-start;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  .name {
+    font-size: 0.875rem;
+    text-align: left;
+  }
+
+  .label,
+  .value {
+    font-size: 0.8rem;
+  }
+
+  .rows {
+    gap: 5px;
+  }
+
+  .divider {
+    margin: -2px 0;
+  }
+}
+
+@media (max-height: 500px) {
+  .card {
+    gap: 5px;
+    padding: 0px 8px 6px 8px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  .name {
+    font-size: 0.8rem;
+  }
+
+  .badge {
+    font-size: 0.55rem;
+    padding: 1px 7px;
+  }
+
+  .label,
+  .value {
+    font-size: 0.72rem;
+  }
+
+  .rows {
+    gap: 3px;
+  }
+
+  .divider {
+    margin: -2px 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .header {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .headerText {
+    align-items: flex-start;
+  }
+
+  .avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+
+  .name {
+    font-size: 0.9rem;
+    text-align: left;
+  }
+
+  .label,
+  .value {
+    font-size: 0.85rem;
+  }
+
+  .rows {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 600px) {
+  .card {
+    gap: 8px;
+    padding: 6px 8px 10px 8px;
+  }
+
+  .header {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .headerText {
+    align-items: flex-start;
+  }
+
+  .avatar {
+    width: 38px;
+    height: 38px;
     font-size: 1rem;
-    font-weight: 500;
-    color: #fff;
-    text-align: right;
-    word-break: break-all;
+  }
+
+  .name {
+    font-size: 0.85rem;
+    text-align: left;
+  }
+
+  .badge {
+    font-size: 0.6rem;
+    padding: 2px 8px;
+  }
+
+  .label,
+  .value {
+    font-size: 0.8rem;
+  }
+
+  .rows {
+    gap: 5px;
+  }
 }
