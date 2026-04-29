@@ -18,7 +18,7 @@ export const seedCompany = async () => {
       data: {
         name: "Fulfilment Plus",
         ownerName: "Mike Appleton",
-        email: "mikeappleton@fulfilmentplus.co.nz",
+        email: "mike@fulfilmentplus.co.nz",
         phone: "021 483 832",
         avatarUrl: null,
         tasks: {
@@ -43,5 +43,3 @@ export const seedCompany = async () => {
   }
 };
 
-seedCompany()
-  .catch(console.error)

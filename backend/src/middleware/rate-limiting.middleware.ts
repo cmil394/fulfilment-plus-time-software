@@ -12,8 +12,8 @@ export const readLimiter = rateLimit({
 
 // Stricter limit for write endpoints (POST, PATCH, DELETE)
 export const writeLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 70, // max 70 requests per IP per window 
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 100, // max 100 requests per IP per window 
   message: {
     status: "error",
     message: "Too many write requests, please try again in a few minutes.",

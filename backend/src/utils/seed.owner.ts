@@ -4,50 +4,96 @@ import { config } from "dotenv";
 
 config();
 
+type OwnerSeed = {
+  email: string;
+  firstName: string;
+  lastName: string;
+};
+
+const owners: OwnerSeed[] = [
+  {
+    email: "owner@gmail.com",
+    firstName: "System",
+    lastName: "Owner",
+  },
+  {
+    email: "mike@fulfilmentplus.co.nz",
+    firstName: "Mike",
+    lastName: "Appleton",
+  },
+  {
+    email: "carl@cargoplus.co.nz",
+    firstName: "Carl",
+    lastName: "Mills",
+  },
+  {
+    email: "rob@cargoplus.co.nz",
+    firstName: "Rob",
+    lastName: "Mills",
+  },
+];
+
 export const seedOwner = async () => {
-  const ownerEmail = process.env.OWNER_EMAIL;
   const ownerPassword = process.env.OWNER_PASSWORD;
 
-  if (!ownerEmail || !ownerPassword) {
-    console.warn("OWNER_EMAIL / OWNER_PASSWORD not set");
-    return;
-  }
-
-  const existingOwner = await prisma.user.findUnique({
-    where: { email: ownerEmail },
-  });
-
-  if (existingOwner) {
-    console.log("Owner already exists");
+  if (!ownerPassword) {
+    console.warn("OWNER_PASSWORD not set");
     return;
   }
 
   const hashedPassword = await hashPassword(ownerPassword);
-  const hashedPin = await hashPassword("0427");
 
-  try {
-    await prisma.user.create({
-      data: {
-        email: ownerEmail,
-        password: hashedPassword,
-        fullName: "System Owner",
-        firstName: "System",
-        lastName: "Owner",
-        role: "Owner",
-        status: "APPROVED",
-        employeeCode: "2712",
-        pin: hashedPin,
-      },
+  let created = 0;
+
+  for (let i = 0; i < owners.length; i++) {
+    const owner = owners[i];
+
+    const existing = await prisma.user.findUnique({
+      where: { email: owner.email },
     });
-    console.log("Owner account created");
-  } catch (error: any) {
-    if (error.code === "P2002") {
-      console.log("Owner already exists");
-    } else {
-      throw error;
+
+    if (existing) {
+      continue;
+    }
+
+    const employeeCode = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, "0");
+
+    const pin = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, "0");
+
+    const hashedPin = await hashPassword(pin);
+
+    try {
+      await prisma.user.create({
+        data: {
+          email: owner.email,
+          password: hashedPassword,
+          fullName: `${owner.firstName} ${owner.lastName}`,
+          firstName: owner.firstName,
+          lastName: owner.lastName,
+          role: "Owner",
+          status: "APPROVED",
+          employeeCode,
+          pin: hashedPin,
+        },
+      });
+
+      console.log(
+        `${owner.email} created — employeeCode: ${employeeCode}, pin: ${pin}`
+      );
+      created++;
+    } catch (error: any) {
+      if (error.code === "P2002") {
+      } else {
+        throw error;
+      }
     }
   }
-};
 
-seedOwner()
-  .catch(console.error)
+  if (created === 0) {
+    console.log("Owners already exist");
+  }
+};
