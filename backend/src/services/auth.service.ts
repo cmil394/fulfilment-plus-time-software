@@ -52,8 +52,6 @@ export const registerUser = async (data: RegisterInput) => {
   const hashedPassword = await hashPassword(data.password);
   const generatedEmployeeCode = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
   const generatedPin = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
-  const hashedPin = await hashPassword(generatedPin);
-
   const user = await prisma.user.create({
     data: {
       email: email,
@@ -62,7 +60,7 @@ export const registerUser = async (data: RegisterInput) => {
       lastName: data.lastname,
       fullName: fullname,
       employeeCode: generatedEmployeeCode,
-      pin: hashedPin,
+      pin: generatedPin,
       role: "Employee",
       status: "PENDING",
     },
@@ -112,7 +110,7 @@ export const loginWithPin = async (employeeCode: string, pin: string) => {
   if (!user) {
     throw new AppError(401, "Invalid employee code");
   }
-  const pinValid = user.pin ? await comparePassword(pin, user.pin) : false;
+  const pinValid = user.pin ? user.pin === pin : false;
   if (!pinValid) {
     throw new AppError(401, "Incorrect PIN");
   }
@@ -245,9 +243,7 @@ export const adminUpdateUser = async (
     }
   }
 
-  const updateData = data.pin
-    ? { ...data, pin: await hashPassword(data.pin) }
-    : data;
+  const updateData = data;
 
   return prisma.user.update({
     where: { id: targetId },

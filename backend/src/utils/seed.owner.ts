@@ -64,8 +64,6 @@ export const seedOwner = async () => {
       .toString()
       .padStart(4, "0");
 
-    const hashedPin = await hashPassword(pin);
-
     try {
       await prisma.user.create({
         data: {
@@ -77,7 +75,7 @@ export const seedOwner = async () => {
           role: "Owner",
           status: "APPROVED",
           employeeCode,
-          pin: hashedPin,
+          pin,
         },
       });
 
