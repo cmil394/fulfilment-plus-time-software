@@ -32,6 +32,7 @@
 .table th {
   background: #f5f5f5;
   font-weight: bold;
+  white-space: nowrap;
 }
 
 .table tr:hover {
@@ -152,9 +153,53 @@
   color: #111827;
 }
 
+.resetPwBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #d97706;
+  padding: 6px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.resetPwBtn:hover {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.resetPwBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.resetPwInput {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.resetPwInput:focus {
+  border-color: #378add;
+  box-shadow: 0 0 0 3px rgba(55, 138, 221, 0.15);
+}
+
 .employeesTable td:nth-child(8),
 .employeesTable td:nth-child(9),
-.employeesTable td:nth-child(10) {
+.employeesTable td:nth-child(10),
+.employeesTable td:nth-child(11) {
   text-align: center;
   width: 40px;
 }
@@ -270,24 +315,6 @@
   cursor: not-allowed;
 }
 
-.confirmBtn {
-  color: green;
-  background: none;
-  border: 1px solid green;
-  border-radius: 4px;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.cancelBtn {
-  color: #000000;
-  background: none;
-  border: 1px solid #000000;
-  border-radius: 4px;
-  cursor: pointer;
-  padding: 4px;
-}
-
 .errorMsg {
   color: red;
   margin-bottom: 8px;
@@ -340,6 +367,7 @@
   margin: 0 0 0rem;
   line-height: 1.5;
 }
+
 .modalSubtitle1 {
   font-size: 13px;
   color: #666;
@@ -457,10 +485,12 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.3;
   }
@@ -480,6 +510,7 @@
 .sortableTh:hover {
   background: #ebebeb;
 }
+
 /* Responsive Table */
 .tableWrapper {
   overflow-x: auto;

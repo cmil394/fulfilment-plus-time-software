@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Trash2,
   RefreshCw,
+  KeyRound,
 } from "lucide-react";
 import EmployeeTimeCalendar from "../../../components/EmployeeTimeCalendar/EmployeeTimeCalendar";
 import { timeEntryService } from "../../../services/time-entry.service";
@@ -99,6 +100,12 @@ function Employees() {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  const [showResetPwModal, setShowResetPwModal] = useState(false);
+  const [pendingResetId, setPendingResetId] = useState<string | null>(null);
+  const [resetNewPassword, setResetNewPassword] = useState("");
+  const [resetPwError, setResetPwError] = useState<string | null>(null);
+  const [resetPwLoading, setResetPwLoading] = useState(false);
 
   // Time calendar state
   const [viewingEmployee, setViewingEmployee] = useState<User | null>(null);
@@ -281,6 +288,40 @@ function Employees() {
   const handleCancelDelete = () => {
     setShowDeleteModal(false);
     setPendingDeleteId(null);
+  };
+
+  const handleRequestResetPassword = (userId: string) => {
+    setPendingResetId(userId);
+    setResetNewPassword("");
+    setResetPwError(null);
+    setShowResetPwModal(true);
+  };
+
+  const handleConfirmResetPassword = async () => {
+    if (!pendingResetId) return;
+    if (resetNewPassword.length < 6) {
+      setResetPwError("Password must be at least 6 characters.");
+      return;
+    }
+    setResetPwLoading(true);
+    setResetPwError(null);
+    try {
+      await authService.resetEmployeePassword(pendingResetId, resetNewPassword);
+      setShowResetPwModal(false);
+      setPendingResetId(null);
+      setResetNewPassword("");
+    } catch {
+      setResetPwError("Failed to reset password. Please try again.");
+    } finally {
+      setResetPwLoading(false);
+    }
+  };
+
+  const handleCancelResetPassword = () => {
+    setShowResetPwModal(false);
+    setPendingResetId(null);
+    setResetNewPassword("");
+    setResetPwError(null);
   };
 
   const makeHandleSort =
@@ -477,6 +518,7 @@ function Employees() {
                     </SortableTh>
                     <th>View</th>
                     <th>Edit</th>
+                    {editingId && <th>Reset PW</th>}
                     <th>Delete</th>
                   </tr>
                 </thead>
@@ -636,6 +678,22 @@ function Employees() {
                             </button>
                           )}
                         </td>
+
+                        {/* Reset Password */}
+                        {editingId && (
+                          <td>
+                            {isEditing && (
+                              <button
+                                className={styles.resetPwBtn}
+                                onClick={() => handleRequestResetPassword(employee.id)}
+                                disabled={isSaving}
+                                title="Reset password"
+                              >
+                                <KeyRound size={16} />
+                              </button>
+                            )}
+                          </td>
+                        )}
 
                         {/* Delete */}
                         <td>
@@ -890,6 +948,45 @@ function Employees() {
                 onClick={handleConfirmDelete}
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showResetPwModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <div className={styles.modalIconWrap}>
+              <KeyRound size={22} className={styles.modalIcon} />
+            </div>
+            <p className={styles.modalTitle}>Reset Password</p>
+            <p className={styles.modalSubtitle}>
+              Enter a new password for this employee.
+            </p>
+            <input
+              type="password"
+              className={styles.resetPwInput}
+              placeholder="New password"
+              value={resetNewPassword}
+              onChange={(e) => setResetNewPassword(e.target.value)}
+              autoFocus
+            />
+            {resetPwError && <p className={styles.errorMsg}>{resetPwError}</p>}
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancelBtn}
+                onClick={handleCancelResetPassword}
+                disabled={resetPwLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.modalConfirmBtn}
+                onClick={handleConfirmResetPassword}
+                disabled={resetPwLoading}
+              >
+                {resetPwLoading ? "Resetting..." : "Reset"}
               </button>
             </div>
           </div>

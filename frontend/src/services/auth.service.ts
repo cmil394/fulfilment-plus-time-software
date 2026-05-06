@@ -126,6 +126,8 @@ export const authService = {
     return response.data;
   },
 
+  resetEmployeePassword: (userId: string, newPassword: string) =>
+    api.patch(`/auth/admin/users/${userId}/reset-password`, { newPassword }),
   deleteUser: (userId: string) => api.delete(`/auth/admin/users/${userId}`),
   updateUser: (id: string, data: Partial<User>) =>
     api.patch(`/auth/admin/users/${id}`, data),
