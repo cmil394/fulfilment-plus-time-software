@@ -170,14 +170,10 @@ export const rejectUser = async (
   next: NextFunction,
 ) => {
   try {
-    const user = await authService.updateUserStatus(
-      req.params.id as string,
-      "REJECTED",
-    );
+    await authService.deleteUser(req.params.id as string);
     res.status(200).json({
       status: "success",
-      message: "User rejected",
-      data: { user },
+      message: "User rejected and removed",
     });
   } catch (err) {
     next(err);
