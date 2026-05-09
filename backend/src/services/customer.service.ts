@@ -14,7 +14,6 @@ export const getCustomers = async () => {
         select: { name: true },
       },
     },
-    orderBy: { name: "asc" },
   });
 
   customers.sort((a, b) => {

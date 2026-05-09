@@ -93,6 +93,7 @@ model TimeEntry {
   @@index([taskId])
   @@index([startTime])
   @@index([endTime])
+  @@index([userId, endTime])
   @@map("time_entries")
 }
 
