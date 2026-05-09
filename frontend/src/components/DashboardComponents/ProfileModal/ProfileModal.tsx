@@ -5,12 +5,31 @@ import styles from "./ProfileModal.module.css";
 
 export default function ProfileModal() {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    authService.getProfile().then((res) => setUser(res.data.user));
+    authService
+      .getProfile()
+      .then((res) => setUser(res.data.user))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (!user) return null;
+  if (loading) return null;
+  if (error || !user)
+    return (
+      <p
+        style={{
+          color: "rgba(255,255,255,0.5)",
+          fontSize: "0.85rem",
+          textAlign: "center",
+          padding: "12px 0",
+        }}
+      >
+        Could not load profile.
+      </p>
+    );
 
   const initials =
     `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase();

@@ -8,6 +8,7 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 
 function Profile() {
   const [user, setUser] = useState<User | null>(null);
+  const [profileError, setProfileError] = useState(false);
   const [showPwForm, setShowPwForm] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -24,7 +25,10 @@ function Profile() {
   const [revealedPin, setRevealedPin] = useState<string | null>(null);
 
   useEffect(() => {
-    authService.getProfile().then((res) => setUser(res.data.user));
+    authService
+      .getProfile()
+      .then((res) => setUser(res.data.user))
+      .catch(() => setProfileError(true));
   }, []);
 
   const initials = user
@@ -122,6 +126,11 @@ function Profile() {
       <h1 className={titleStyles.pageTitle1}>Profile</h1>
 
       <div className={styles.card}>
+        {profileError && (
+          <p className={styles.error}>
+            Could not load profile. Please refresh the page.
+          </p>
+        )}
         {/* Avatar + name + role */}
         <div className={styles.avatarWrap}>
           <div className={styles.avatar}>{initials}</div>
@@ -150,9 +159,7 @@ function Profile() {
           <div className={styles.row}>
             <span className={styles.rowLabel}>PIN</span>
             <span className={styles.pinRowRight}>
-              <span className={styles.rowValue}>
-                {revealedPin ?? "••••"}
-              </span>
+              <span className={styles.rowValue}>{revealedPin ?? "••••"}</span>
               <button
                 type="button"
                 className={styles.eyeBtn}
@@ -261,11 +268,18 @@ function Profile() {
             </div>
             <div className={styles.pinModalHeader}>
               <p className={styles.pinModalTitle}>Verify your identity</p>
-              <p className={styles.pinModalSubtitle}>Enter your account password to reveal your PIN</p>
+              <p className={styles.pinModalSubtitle}>
+                Enter your account password to reveal your PIN
+              </p>
             </div>
-            <form className={styles.pinModalForm} onSubmit={handlePinPasswordSubmit}>
+            <form
+              className={styles.pinModalForm}
+              onSubmit={handlePinPasswordSubmit}
+            >
               <div className={styles.pinInputWrap}>
-                <label className={styles.label} htmlFor="pinConfirmPassword">Password</label>
+                <label className={styles.label} htmlFor="pinConfirmPassword">
+                  Password
+                </label>
                 <input
                   id="pinConfirmPassword"
                   type="password"
