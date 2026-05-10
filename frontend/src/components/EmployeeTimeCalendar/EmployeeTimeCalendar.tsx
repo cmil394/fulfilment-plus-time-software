@@ -49,6 +49,32 @@ const SLOT_HEIGHT = 64;
 const GROUP_GAP_MINS = 5;
 const MIN_BLOCK_HEIGHT = 32;
 
+function monthRange(
+  year: number,
+  month: number,
+): { startDate: string; endDate: string } {
+  const start = new Date(year, month - 1, 1);
+  const end = new Date(year, month, 0, 23, 59, 59, 999);
+  return { startDate: start.toISOString(), endDate: end.toISOString() };
+}
+
+function prevMonth(
+  year: number,
+  month: number,
+): { year: number; month: number } {
+  return month === 1
+    ? { year: year - 1, month: 12 }
+    : { year, month: month - 1 };
+}
+
+function mergeEntries(prev: TimeEntry[], incoming: TimeEntry[]): TimeEntry[] {
+  const ids = new Set(prev.map((e) => e.id));
+  const toAdd = incoming.filter((e) => !ids.has(e.id));
+  return [...prev, ...toAdd];
+}
+
+const MAX_LIST_MONTHS_BACK = 24;
+
 function getWeekStart(date: Date): Date {
   const d = new Date(date);
   const day = d.getDay();
@@ -633,6 +659,19 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Week cache: avoids re-fetching the same week when navigating back
+  const fetchedWeeksRef = useRef<Set<string>>(new Set());
+  // Month cache for list view incremental loading
+  const loadedListMonthsRef = useRef<Set<string>>(new Set());
+  const [oldestListMonth, setOldestListMonth] = useState<{
+    year: number;
+    month: number;
+  }>(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() + 1 };
+  });
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   // Filter state
   const [filterCustomerId, setFilterCustomerId] = useState("");
   const [filterTaskId, setFilterTaskId] = useState("");
@@ -711,15 +750,26 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     (filterTaskId ? 1 : 0) +
     (filterMonthYear ? 1 : 0);
 
-  // Fetch entries
+  // Calendar view: fetch only the visible week (cached)
   useEffect(() => {
+    const weekKey = weekStart.toISOString();
+    if (fetchedWeeksRef.current.has(weekKey)) return;
+
     const load = async () => {
       setLoading(true);
       setError(null);
       try {
-        const grouped: GroupedByCustomer[] =
-          await timeEntryService.getEntriesByUser(employee.id);
-        setEntries(flattenGroupedEntries(grouped));
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+        const grouped = await timeEntryService.getEntriesByUser(
+          employee.id,
+          weekStart.toISOString(),
+          weekEnd.toISOString(),
+        );
+        fetchedWeeksRef.current.add(weekKey);
+        setEntries((prev) =>
+          mergeEntries(prev, flattenGroupedEntries(grouped)),
+        );
       } catch (err: any) {
         setError(
           err?.response?.data?.message ??
@@ -732,6 +782,52 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     };
     load();
   }, [employee.id, weekStart]);
+
+  // List view: fetch current month when switching to list tab
+  useEffect(() => {
+    if (activeTab !== "list") return;
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const key = `${year}-${String(month).padStart(2, "0")}`;
+    if (loadedListMonthsRef.current.has(key)) return;
+
+    const { startDate, endDate } = monthRange(year, month);
+    setLoading(true);
+    timeEntryService
+      .getEntriesByUser(employee.id, startDate, endDate)
+      .then((grouped) => {
+        loadedListMonthsRef.current.add(key);
+        setEntries((prev) =>
+          mergeEntries(prev, flattenGroupedEntries(grouped)),
+        );
+      })
+      .catch((err: any) =>
+        setError(err?.message ?? "Failed to load time entries"),
+      )
+      .finally(() => setLoading(false));
+  }, [activeTab, employee.id]);
+
+  const handleLoadMoreList = async () => {
+    setIsLoadingMore(true);
+    const next = prevMonth(oldestListMonth.year, oldestListMonth.month);
+    const key = `${next.year}-${String(next.month).padStart(2, "0")}`;
+    const { startDate, endDate } = monthRange(next.year, next.month);
+    try {
+      const grouped = await timeEntryService.getEntriesByUser(
+        employee.id,
+        startDate,
+        endDate,
+      );
+      loadedListMonthsRef.current.add(key);
+      setOldestListMonth(next);
+      setEntries((prev) => mergeEntries(prev, flattenGroupedEntries(grouped)));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   // Fetch customers once on mount
   useEffect(() => {
@@ -1019,6 +1115,19 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     d.setDate(d.getDate() + 7);
     setWeekStart(d);
   };
+
+  // List view "show more" helpers
+  const nowRef = new Date();
+  const currentMonthIdx = nowRef.getFullYear() * 12 + nowRef.getMonth() + 1;
+  const oldestListMonthIdx = oldestListMonth.year * 12 + oldestListMonth.month;
+  const canLoadMoreList =
+    currentMonthIdx - oldestListMonthIdx < MAX_LIST_MONTHS_BACK;
+  const nextListMonth = prevMonth(oldestListMonth.year, oldestListMonth.month);
+  const nextListMonthLabel = new Date(
+    nextListMonth.year,
+    nextListMonth.month - 1,
+    1,
+  ).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   const weekLabel = (() => {
     const end = new Date(weekStart);
@@ -1383,6 +1492,16 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
               onDeleteEntry={handleDeleteEntry}
               viewingEntryId={viewingEntry?.id}
             />
+            {!filterMonthYear && canLoadMoreList && (
+              <button
+                className={styles.showMoreBtn}
+                onClick={handleLoadMoreList}
+                disabled={isLoadingMore}
+              >
+                <ChevronDown size={13} />
+                {isLoadingMore ? "Loading…" : `Show ${nextListMonthLabel}`}
+              </button>
+            )}
           </div>
         )}
 

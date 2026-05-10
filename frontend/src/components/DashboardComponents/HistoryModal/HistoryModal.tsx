@@ -1,12 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  Clock,
-  Filter,
-  X,
-  ChevronDown,
-  ChevronUp,
-  RefreshCw,
-} from "lucide-react";
+import { Clock, Filter, X, ChevronDown, RefreshCw } from "lucide-react";
 import styles from "./HistoryModal.module.css";
 import {
   timeEntryService,
@@ -84,6 +77,34 @@ function monthLabel(ym: string): string {
     year: "numeric",
   });
 }
+
+function monthRange(
+  year: number,
+  month: number,
+): { startDate: string; endDate: string } {
+  const start = new Date(year, month - 1, 1);
+  const end = new Date(year, month, 0, 23, 59, 59, 999);
+  return { startDate: start.toISOString(), endDate: end.toISOString() };
+}
+
+function prevMonth(
+  year: number,
+  month: number,
+): { year: number; month: number } {
+  return month === 1
+    ? { year: year - 1, month: 12 }
+    : { year, month: month - 1 };
+}
+
+function mergeEntries(prev: TimeEntry[], incoming: TimeEntry[]): TimeEntry[] {
+  const ids = new Set(prev.map((e) => e.id));
+  const toAdd = incoming.filter((e) => !ids.has(e.id));
+  return [...prev, ...toAdd].sort(
+    (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+  );
+}
+
+const MAX_MONTHS_BACK = 24;
 
 // Filter popover
 
@@ -198,7 +219,16 @@ export default function HistoryModal() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [visibleMonths, setVisibleMonths] = useState(1);
+
+  const loadedMonthsRef = useRef<Set<string>>(new Set());
+  const [oldestMonth, setOldestMonth] = useState<{
+    year: number;
+    month: number;
+  }>(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() + 1 };
+  });
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterCustomerId, setFilterCustomerId] = useState("");
@@ -208,13 +238,23 @@ export default function HistoryModal() {
   const [filterTasks, setFilterTasks] = useState<Task[]>([]);
   const [loadingFilterTasks, setLoadingFilterTasks] = useState(false);
 
+  const fetchMonth = async (year: number, month: number): Promise<number> => {
+    const key = `${year}-${String(month).padStart(2, "0")}`;
+    if (loadedMonthsRef.current.has(key)) return 0;
+    const { startDate, endDate } = monthRange(year, month);
+    const data = await timeEntryService.getMyEntries(startDate, endDate);
+    loadedMonthsRef.current.add(key);
+    setEntries((prev) => mergeEntries(prev, data));
+    return data.length;
+  };
+
+  // Initial load: current month
   useEffect(() => {
-    setLoading(true);
-    timeEntryService
-      .getMyEntries()
-      .then(setEntries)
+    const now = new Date();
+    fetchMonth(now.getFullYear(), now.getMonth() + 1)
       .catch((err: any) => setError(err?.message ?? "Failed to load history"))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -238,15 +278,42 @@ export default function HistoryModal() {
       .finally(() => setLoadingFilterTasks(false));
   }, [filterCustomerId]);
 
-  // Reset month pagination when filters change
+  // When user picks a specific month in the filter, fetch it if not yet loaded
   useEffect(() => {
-    setVisibleMonths(1);
-  }, [filterCustomerId, filterTaskId, filterMonthYear]);
+    if (!filterMonthYear) return;
+    const [yearStr, monthStr] = filterMonthYear.split("-");
+    const year = parseInt(yearStr);
+    const month = parseInt(monthStr);
+    if (loadedMonthsRef.current.has(filterMonthYear)) return;
+    fetchMonth(year, month).catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterMonthYear]);
+
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true);
+    const next = prevMonth(oldestMonth.year, oldestMonth.month);
+    try {
+      await fetchMonth(next.year, next.month);
+      setOldestMonth(next);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      const data = await timeEntryService.getMyEntries();
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      loadedMonthsRef.current.clear();
+      setEntries([]);
+      setOldestMonth({ year, month });
+      const { startDate, endDate } = monthRange(year, month);
+      const data = await timeEntryService.getMyEntries(startDate, endDate);
+      loadedMonthsRef.current.add(`${year}-${String(month).padStart(2, "0")}`);
       setEntries(data);
       setError(null);
     } catch (err: any) {
@@ -284,26 +351,30 @@ export default function HistoryModal() {
     (filterTaskId ? 1 : 0) +
     (filterMonthYear ? 1 : 0);
 
-  const useMonthPagination = !filterMonthYear;
-
   const clearFilters = () => {
     setFilterCustomerId("");
     setFilterTaskId("");
     setFilterMonthYear("");
   };
 
-  // Group entries by month → day
+  // How many months back we've loaded (used to cap the "show more" button)
+  const now = new Date();
+  const currentMonthIndex = now.getFullYear() * 12 + now.getMonth() + 1;
+  const oldestMonthIndex = oldestMonth.year * 12 + oldestMonth.month;
+  const canLoadMore =
+    !filterMonthYear && currentMonthIndex - oldestMonthIndex < MAX_MONTHS_BACK;
 
-  // All distinct months, sorted newest first
+  const nextToLoad = prevMonth(oldestMonth.year, oldestMonth.month);
+  const nextMonthLabel = new Date(
+    nextToLoad.year,
+    nextToLoad.month - 1,
+    1,
+  ).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+  // Group entries by month → day (all loaded months are displayed)
   const allMonths = Array.from(new Set(filteredEntries.map(monthKey))).sort(
     (a, b) => (a < b ? 1 : -1),
   );
-
-  const displayedMonths = useMonthPagination
-    ? allMonths.slice(0, visibleMonths)
-    : allMonths;
-
-  const hiddenMonthCount = allMonths.length - displayedMonths.length;
 
   // Build: month → day → entries
   const byMonth: Record<string, Record<string, TimeEntry[]>> = {};
@@ -315,19 +386,17 @@ export default function HistoryModal() {
     byMonth[mk][dk].push(entry);
   }
 
-  // Total tracked mins across displayed entries
-  const totalDisplayedMins = filteredEntries
-    .filter((e) => displayedMonths.includes(monthKey(e)))
-    .reduce((acc, e) => {
-      if (!e.endTime) return acc;
-      return (
-        acc +
-        Math.round(
-          (new Date(e.endTime).getTime() - new Date(e.startTime).getTime()) /
-            60000,
-        )
-      );
-    }, 0);
+  // Total tracked mins across all displayed entries
+  const totalDisplayedMins = filteredEntries.reduce((acc, e) => {
+    if (!e.endTime) return acc;
+    return (
+      acc +
+      Math.round(
+        (new Date(e.endTime).getTime() - new Date(e.startTime).getTime()) /
+          60000,
+      )
+    );
+  }, 0);
 
   if (loading) {
     return (
@@ -467,7 +536,7 @@ export default function HistoryModal() {
         <>
           {/* Month sections */}
           <div className={styles.groups}>
-            {displayedMonths.map((mk) => {
+            {allMonths.map((mk) => {
               const dayMap = byMonth[mk] ?? {};
               const sortedDays = Object.keys(dayMap).sort(
                 (a, b) => new Date(b).getTime() - new Date(a).getTime(),
@@ -615,31 +684,17 @@ export default function HistoryModal() {
             })}
           </div>
 
-          {/* Show more months button */}
-          {useMonthPagination && hiddenMonthCount > 0 && (
+          {/* Load more months button */}
+          {canLoadMore && (
             <button
               className={styles.showMoreBtn}
-              onClick={() => setVisibleMonths((v) => v + 1)}
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
             >
               <ChevronDown size={13} />
-              {allMonths[visibleMonths]
-                ? `Show ${monthLabel(allMonths[visibleMonths])}`
-                : `Show ${hiddenMonthCount} more month${hiddenMonthCount !== 1 ? "s" : ""}`}
+              {isLoadingMore ? "Loading…" : `Show ${nextMonthLabel}`}
             </button>
           )}
-
-          {/* Collapse back when all shown */}
-          {useMonthPagination &&
-            visibleMonths > 1 &&
-            hiddenMonthCount === 0 && (
-              <button
-                className={styles.showMoreBtn}
-                onClick={() => setVisibleMonths(1)}
-              >
-                <ChevronUp size={13} />
-                Show less
-              </button>
-            )}
         </>
       )}
     </div>

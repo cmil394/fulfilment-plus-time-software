@@ -55,21 +55,46 @@ export const timeEntryService = {
   },
 
   // User
-  getMyEntries: async (): Promise<TimeEntry[]> => {
-    const res = await api.get("/time-entries");
+  getMyEntries: async (
+    startDate?: string,
+    endDate?: string,
+  ): Promise<TimeEntry[]> => {
+    const params = new URLSearchParams();
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+    const query = params.toString();
+    const res = await api.get(`/time-entries${query ? `?${query}` : ""}`);
     return res.data.data ?? [];
   },
 
   // Admin
-  getEntriesByUser: async (userId: string): Promise<GroupedByCustomer[]> => {
-    const res = await api.get(`/time-entries/user/${userId}`);
+  getEntriesByUser: async (
+    userId: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<GroupedByCustomer[]> => {
+    const params = new URLSearchParams();
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+    const query = params.toString();
+    const res = await api.get(
+      `/time-entries/user/${userId}${query ? `?${query}` : ""}`,
+    );
     return res.data.data ?? [];
   },
 
   getEntriesByCustomer: async (
     customerId: string,
+    startDate?: string,
+    endDate?: string,
   ): Promise<GroupedByCustomer[]> => {
-    const res = await api.get(`/time-entries/customer/${customerId}`);
+    const params = new URLSearchParams();
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+    const query = params.toString();
+    const res = await api.get(
+      `/time-entries/customer/${customerId}${query ? `?${query}` : ""}`,
+    );
     return res.data.data ?? [];
   },
 
