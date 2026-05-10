@@ -123,9 +123,11 @@ function AdminCustomers() {
           c.id === editingId ? { ...c, avatarUrl: updated.avatarUrl } : c,
         ),
       );
-    } catch (err) {
-      console.error("Failed to upload avatar:", err);
-      setSaveError("Failed to upload avatar. Please try again.");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to upload avatar. Please try again.";
+      setSaveError(msg);
     } finally {
       setAvatarLoading(false);
       e.target.value = "";
@@ -187,9 +189,11 @@ function AdminCustomers() {
       setCreateDraft(EMPTY_CREATE);
       setCreateAvatarFile(null);
       setCreateAvatarPreview(null);
-    } catch (err) {
-      console.error("Failed to create customer:", err);
-      setCreateError("Failed to create customer. Please try again.");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to create customer. Please try again.";
+      setCreateError(msg);
     } finally {
       setCreateLoading(false);
     }
@@ -238,17 +242,19 @@ function AdminCustomers() {
         prev.map((c) =>
           c.id === customerId
             ? {
-              ...c,
-              ...editDraft,
-            }
+                ...c,
+                ...editDraft,
+              }
             : c,
         ),
       );
       setEditingId(null);
       setEditDraft(null);
-    } catch (err) {
-      console.error("Failed to update customer:", err);
-      setSaveError("Failed to save changes. Please try again.");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to save changes. Please try again.";
+      setSaveError(msg);
     } finally {
       setActionLoading(null);
     }
@@ -275,9 +281,11 @@ function AdminCustomers() {
     try {
       await adminCustomerService.delete(customerId);
       setCustomers((prev) => prev.filter((c) => c.id !== customerId));
-    } catch (err) {
-      console.error("Failed to delete customer:", err);
-      setSaveError("Failed to delete customer. Please try again.");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to delete customer. Please try again.";
+      setSaveError(msg);
     } finally {
       setActionLoading(null);
     }
@@ -621,7 +629,9 @@ function AdminCustomers() {
                 />
               </div>
               <div className={styles.createFormField}>
-                <label className={styles.createFormLabel}>Email <span className={styles.required}>*</span></label>
+                <label className={styles.createFormLabel}>
+                  Email <span className={styles.required}>*</span>
+                </label>
                 <input
                   className={styles.editInput}
                   type="email"

@@ -8,7 +8,7 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 
 function Profile() {
   const [user, setUser] = useState<User | null>(null);
-  const [profileError, setProfileError] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [showPwForm, setShowPwForm] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -28,7 +28,13 @@ function Profile() {
     authService
       .getProfile()
       .then((res) => setUser(res.data.user))
-      .catch(() => setProfileError(true));
+      .catch((err: unknown) => {
+        const msg =
+          (err as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message ??
+          "Could not load profile. Please refresh the page.";
+        setProfileError(msg);
+      });
   }, []);
 
   const initials = user
@@ -126,11 +132,7 @@ function Profile() {
       <h1 className={titleStyles.pageTitle1}>Profile</h1>
 
       <div className={styles.card}>
-        {profileError && (
-          <p className={styles.error}>
-            Could not load profile. Please refresh the page.
-          </p>
-        )}
+        {profileError && <p className={styles.error}>{profileError}</p>}
         {/* Avatar + name + role */}
         <div className={styles.avatarWrap}>
           <div className={styles.avatar}>{initials}</div>

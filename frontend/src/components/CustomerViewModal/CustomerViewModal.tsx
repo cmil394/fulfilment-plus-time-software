@@ -100,9 +100,11 @@ function CustomerViewModal({ customer, onClose }: Props) {
     try {
       const data = await taskService.getByCustomer(customer.id);
       setTasks(data);
-    } catch (err) {
-      console.error("Failed to fetch tasks:", err);
-      setTasksError("Could not load tasks.");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Could not load tasks.";
+      setTasksError(msg);
     } finally {
       setTasksLoading(false);
     }
@@ -120,9 +122,11 @@ function CustomerViewModal({ customer, onClose }: Props) {
     try {
       const data = await taskTemplateService.getAll();
       setTemplates(data);
-    } catch (err) {
-      console.error("Failed to fetch templates:", err);
-      setTemplatesError("Could not load task presets.");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Could not load task presets.";
+      setTemplatesError(msg);
     } finally {
       setTemplatesLoading(false);
     }
@@ -162,9 +166,11 @@ function CustomerViewModal({ customer, onClose }: Props) {
       setCustomName("");
       setCustomDescription("");
       setView("details");
-    } catch (err) {
-      console.error("Failed to create task:", err);
-      setSubmitError("Could not create task. Please try again.");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Could not create task. Please try again.";
+      setSubmitError(msg);
     } finally {
       setSubmitting(false);
     }
@@ -178,9 +184,11 @@ function CustomerViewModal({ customer, onClose }: Props) {
       await taskService.delete(taskToDelete.id);
       await fetchTasks();
       setTaskToDelete(null);
-    } catch (err) {
-      console.error("Failed to delete task:", err);
-      setDeleteError("Could not delete task. Please try again.");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Could not delete task. Please try again.";
+      setDeleteError(msg);
     } finally {
       setDeleting(false);
     }
