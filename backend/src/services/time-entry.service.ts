@@ -83,9 +83,23 @@ export const getAllActiveTimers = async () => {
 };
 
 // User
-export const getMyEntries = async (userId: string) => {
+export const getMyEntries = async (
+  userId: string,
+  startDate?: string,
+  endDate?: string,
+) => {
   return prisma.timeEntry.findMany({
-    where: { userId },
+    where: {
+      userId,
+      ...(startDate || endDate
+        ? {
+            startTime: {
+              ...(startDate && { gte: new Date(startDate) }),
+              ...(endDate && { lte: new Date(endDate) }),
+            },
+          }
+        : {}),
+    },
     orderBy: { startTime: "desc" },
     include: {
       task: { select: { name: true } },
@@ -95,9 +109,24 @@ export const getMyEntries = async (userId: string) => {
 };
 
 // Admin
-export const getEntriesByUser = async (userId: string) => {
+export const getEntriesByUser = async (
+  userId: string,
+  startDate?: string,
+  endDate?: string,
+) => {
   const entries = await prisma.timeEntry.findMany({
-    where: { userId, endTime: { not: null } },
+    where: {
+      userId,
+      endTime: { not: null },
+      ...(startDate || endDate
+        ? {
+            startTime: {
+              ...(startDate && { gte: new Date(startDate) }),
+              ...(endDate && { lte: new Date(endDate) }),
+            },
+          }
+        : {}),
+    },
     orderBy: { startTime: "desc" },
     include: {
       task: { select: { name: true } },
@@ -133,9 +162,24 @@ export const getEntriesByUser = async (userId: string) => {
   return Object.values(grouped);
 };
 
-export const getEntriesByCustomer = async (customerId: string) => {
+export const getEntriesByCustomer = async (
+  customerId: string,
+  startDate?: string,
+  endDate?: string,
+) => {
   const entries = await prisma.timeEntry.findMany({
-    where: { customerId, endTime: { not: null } },
+    where: {
+      customerId,
+      endTime: { not: null },
+      ...(startDate || endDate
+        ? {
+            startTime: {
+              ...(startDate && { gte: new Date(startDate) }),
+              ...(endDate && { lte: new Date(endDate) }),
+            },
+          }
+        : {}),
+    },
     orderBy: { startTime: "desc" },
     include: {
       task: { select: { name: true } },

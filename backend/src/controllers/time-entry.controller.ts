@@ -87,7 +87,12 @@ export const getMyEntries = async (
 ) => {
   try {
     if (!req.user?.userId) throw new UnauthorizedError();
-    const entries = await timeEntryService.getMyEntries(req.user.userId);
+    const { startDate, endDate } = req.query;
+    const entries = await timeEntryService.getMyEntries(
+      req.user.userId,
+      startDate as string | undefined,
+      endDate as string | undefined,
+    );
     res.status(200).json({
       status: "success",
       message: "Time entries retrieved successfully",
@@ -105,8 +110,11 @@ export const getEntriesByUser = async (
   next: NextFunction,
 ) => {
   try {
+    const { startDate, endDate } = req.query;
     const entries = await timeEntryService.getEntriesByUser(
       req.params.userId as string,
+      startDate as string | undefined,
+      endDate as string | undefined,
     );
     res.status(200).json({
       status: "success",
@@ -123,8 +131,11 @@ export const getEntriesByCustomer = async (
   next: NextFunction,
 ) => {
   try {
+    const { startDate, endDate } = req.query;
     const entries = await timeEntryService.getEntriesByCustomer(
       req.params.customerId as string,
+      startDate as string | undefined,
+      endDate as string | undefined,
     );
     res.status(200).json({
       status: "success",
