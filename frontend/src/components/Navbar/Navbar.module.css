@@ -65,6 +65,7 @@
   transition: background-color 0.2s ease;
   border-bottom: 3px solid transparent;
   height: 64px;
+  box-sizing: border-box;
 }
 
 .navLink:hover {
