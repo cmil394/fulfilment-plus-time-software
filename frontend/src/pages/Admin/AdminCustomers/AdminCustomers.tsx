@@ -16,8 +16,25 @@ import {
   AlertTriangle,
   Trash2,
   UserPlus,
+  GripVertical,
 } from "lucide-react";
 import CustomerViewModal from "./../../../components/CustomerViewModal/CustomerViewModal";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3001";
 
 type SortField =
@@ -36,14 +53,56 @@ const EMPTY_CREATE: CustomerDto = {
   phone: "",
 };
 
+interface SortableRowProps {
+  id: string;
+  disabled: boolean;
+  children: React.ReactNode;
+  isEditing: boolean;
+}
+
+function SortableRow({ id, disabled, children, isEditing }: SortableRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id, disabled });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined,
+    position: isDragging ? "relative" : undefined,
+    zIndex: isDragging ? 1 : undefined,
+  };
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className={isEditing ? styles.editingRow : ""}
+    >
+      <td className={styles.dragCell}>
+        {!disabled && (
+          <span className={styles.dragHandle} {...listeners}>
+            <GripVertical size={16} />
+          </span>
+        )}
+      </td>
+      {children}
+    </tr>
+  );
+}
+
 function AdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [customerOrder, setCustomerOrder] = useState<Map<string, number>>(
-    new Map(),
-  );
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [reorderError, setReorderError] = useState<string | null>(null);
 
   // Avatar upload
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -79,15 +138,16 @@ function AdminCustomers() {
   const [sortField, setSortField] = useState<SortField>("index");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+  );
+
   useEffect(() => {
     setLoading(true);
     const fetchCustomers = async () => {
       try {
         const data = await adminCustomerService.getAll();
         setCustomers(data);
-        setCustomerOrder(
-          new Map(data.map((c: Customer, i: number) => [c.id, i + 1])),
-        );
       } catch (err) {
         console.error("Failed to fetch customers:", err);
       } finally {
@@ -180,11 +240,7 @@ function AdminCustomers() {
 
       const newCustomer =
         await adminCustomerService.createWithFormData(formData);
-      setCustomers((prev) => {
-        const updated = [...prev, newCustomer];
-        setCustomerOrder(new Map(updated.map((c, i) => [c.id, i + 1])));
-        return updated;
-      });
+      setCustomers((prev) => [...prev, newCustomer]);
       setShowCreateForm(false);
       setCreateDraft(EMPTY_CREATE);
       setCreateAvatarFile(null);
@@ -239,14 +295,7 @@ function AdminCustomers() {
     try {
       await adminCustomerService.update(customerId, editDraft);
       setCustomers((prev) =>
-        prev.map((c) =>
-          c.id === customerId
-            ? {
-                ...c,
-                ...editDraft,
-              }
-            : c,
-        ),
+        prev.map((c) => (c.id === customerId ? { ...c, ...editDraft } : c)),
       );
       setEditingId(null);
       setEditDraft(null);
@@ -296,6 +345,25 @@ function AdminCustomers() {
     setPendingDeleteId(null);
   };
 
+  // Drag-to-reorder handler (only active when sorted by index)
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = customers.findIndex((c) => c.id === active.id);
+    const newIndex = customers.findIndex((c) => c.id === over.id);
+    const reordered = arrayMove(customers, oldIndex, newIndex);
+    setCustomers(reordered);
+    setReorderError(null);
+
+    try {
+      await adminCustomerService.reorder(reordered.map((c) => c.id));
+    } catch {
+      setReorderError("Failed to save order. Please try again.");
+      setCustomers(customers);
+    }
+  };
+
   // Sort
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -306,15 +374,12 @@ function AdminCustomers() {
     }
   };
 
+  const isDraggable = sortField === "index" && sortDir === "asc" && !editingId;
+
   const sortedCustomers = [...customers].sort((a, b) => {
-    const valA =
-      sortField === "index"
-        ? customerOrder.get(a.id)!
-        : (a[sortField as keyof Customer] ?? "");
-    const valB =
-      sortField === "index"
-        ? customerOrder.get(b.id)!
-        : (b[sortField as keyof Customer] ?? "");
+    if (sortField === "index") return 0; // preserve server order
+    const valA = a[sortField as keyof Customer] ?? "";
+    const valB = b[sortField as keyof Customer] ?? "";
     const cmp = valA < valB ? -1 : valA > valB ? 1 : 0;
     return sortDir === "asc" ? cmp : -cmp;
   });
@@ -358,6 +423,7 @@ function AdminCustomers() {
         </div>
 
         {saveError && <p className={styles.errorMsg}>{saveError}</p>}
+        {reorderError && <p className={styles.errorMsg}>{reorderError}</p>}
 
         {/* Hidden file input for avatar upload */}
         <input
@@ -373,189 +439,209 @@ function AdminCustomers() {
         ) : customers.length === 0 ? (
           <p>No customers found</p>
         ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <SortableTh field="index">#</SortableTh>
-                <th>Icon</th>
-                <SortableTh field="name">Company Name</SortableTh>
-                <SortableTh field="ownerName">Owners Name</SortableTh>
-                <SortableTh field="email">Email</SortableTh>
-                <SortableTh field="phone">Phone Number</SortableTh>
-                <SortableTh field="createdAt">Date Registered</SortableTh>
-                <th>View</th>
-                <th>Edit</th>
-                <th>Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedCustomers.map((customer) => {
-                const isEditing = editingId === customer.id;
-                const isSaving = actionLoading === customer.id;
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th className={styles.dragHeaderCell}></th>
+                  <SortableTh field="index">#</SortableTh>
+                  <th>Icon</th>
+                  <SortableTh field="name">Company Name</SortableTh>
+                  <SortableTh field="ownerName">Owners Name</SortableTh>
+                  <SortableTh field="email">Email</SortableTh>
+                  <SortableTh field="phone">Phone Number</SortableTh>
+                  <SortableTh field="createdAt">Date Registered</SortableTh>
+                  <th>View</th>
+                  <th>Edit</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
+              <SortableContext
+                items={sortedCustomers.map((c) => c.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <tbody>
+                  {sortedCustomers.map((customer, index) => {
+                    const isEditing = editingId === customer.id;
+                    const isSaving = actionLoading === customer.id;
 
-                return (
-                  <tr
-                    key={customer.id}
-                    className={isEditing ? styles.editingRow : ""}
-                  >
-                    <td>{customerOrder.get(customer.id)}.</td>
-
-                    {/* Avatar */}
-                    <td>
-                      <div
-                        className={`${styles.avatarWrap} ${isEditing ? styles.avatarEditable : ""}`}
-                        onClick={handleAvatarClick}
-                        title={isEditing ? "Click to change photo" : undefined}
+                    return (
+                      <SortableRow
+                        key={customer.id}
+                        id={customer.id}
+                        disabled={!isDraggable}
+                        isEditing={isEditing}
                       >
-                        <img
-                          src={
-                            customer.avatarUrl
-                              ? customer.avatarUrl.startsWith("http")
-                                ? customer.avatarUrl
-                                : `${BASE_URL}${customer.avatarUrl}`
-                              : defaultAvatar
-                          }
-                          alt={customer.name}
-                          className={styles.avatar}
-                        />
-                        {isEditing && (
-                          <div className={styles.avatarOverlay}>
-                            {avatarLoading ? "..." : <Pencil size={12} />}
+                        <td>{index + 1}.</td>
+
+                        {/* Avatar */}
+                        <td>
+                          <div
+                            className={`${styles.avatarWrap} ${isEditing ? styles.avatarEditable : ""}`}
+                            onClick={handleAvatarClick}
+                            title={
+                              isEditing ? "Click to change photo" : undefined
+                            }
+                          >
+                            <img
+                              src={
+                                customer.avatarUrl
+                                  ? customer.avatarUrl.startsWith("http")
+                                    ? customer.avatarUrl
+                                    : `${BASE_URL}${customer.avatarUrl}`
+                                  : defaultAvatar
+                              }
+                              alt={customer.name}
+                              className={styles.avatar}
+                            />
+                            {isEditing && (
+                              <div className={styles.avatarOverlay}>
+                                {avatarLoading ? "..." : <Pencil size={12} />}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </td>
+                        </td>
 
-                    {/* Name */}
-                    <td>
-                      {isEditing ? (
-                        <input
-                          className={styles.editInput}
-                          value={editDraft!.name}
-                          onChange={(e) =>
-                            handleDraftChange("name", e.target.value)
-                          }
-                          disabled={isSaving}
-                        />
-                      ) : (
-                        customer.name
-                      )}
-                    </td>
+                        {/* Name */}
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className={styles.editInput}
+                              value={editDraft!.name}
+                              onChange={(e) =>
+                                handleDraftChange("name", e.target.value)
+                              }
+                              disabled={isSaving}
+                            />
+                          ) : (
+                            customer.name
+                          )}
+                        </td>
 
-                    {/* Owners Name */}
-                    <td>
-                      {isEditing ? (
-                        <input
-                          className={styles.editInput}
-                          type="text"
-                          value={editDraft!.ownerName ?? ""}
-                          onChange={(e) =>
-                            handleDraftChange("ownerName", e.target.value)
-                          }
-                          disabled={isSaving}
-                        />
-                      ) : (
-                        (customer.ownerName ?? "—")
-                      )}
-                    </td>
+                        {/* Owners Name */}
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className={styles.editInput}
+                              type="text"
+                              value={editDraft!.ownerName ?? ""}
+                              onChange={(e) =>
+                                handleDraftChange("ownerName", e.target.value)
+                              }
+                              disabled={isSaving}
+                            />
+                          ) : (
+                            (customer.ownerName ?? "—")
+                          )}
+                        </td>
 
-                    {/* Email */}
-                    <td>
-                      {isEditing ? (
-                        <input
-                          className={styles.editInput}
-                          type="email"
-                          value={editDraft!.email ?? ""}
-                          onChange={(e) =>
-                            handleDraftChange("email", e.target.value)
-                          }
-                          disabled={isSaving}
-                        />
-                      ) : (
-                        (customer.email ?? "—")
-                      )}
-                    </td>
+                        {/* Email */}
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className={styles.editInput}
+                              type="email"
+                              value={editDraft!.email ?? ""}
+                              onChange={(e) =>
+                                handleDraftChange("email", e.target.value)
+                              }
+                              disabled={isSaving}
+                            />
+                          ) : (
+                            (customer.email ?? "—")
+                          )}
+                        </td>
 
-                    {/* Phone Number */}
-                    <td>
-                      {isEditing ? (
-                        <input
-                          className={styles.editInput}
-                          type="tel"
-                          value={editDraft!.phone ?? ""}
-                          onChange={(e) =>
-                            handleDraftChange("phone", e.target.value)
-                          }
-                          disabled={isSaving}
-                        />
-                      ) : (
-                        (customer.phone ?? "—")
-                      )}
-                    </td>
+                        {/* Phone Number */}
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className={styles.editInput}
+                              type="tel"
+                              value={editDraft!.phone ?? ""}
+                              onChange={(e) =>
+                                handleDraftChange("phone", e.target.value)
+                              }
+                              disabled={isSaving}
+                            />
+                          ) : (
+                            (customer.phone ?? "—")
+                          )}
+                        </td>
 
-                    {/* Date (not editable) */}
-                    <td>{new Date(customer.createdAt).toLocaleDateString()}</td>
+                        {/* Date (not editable) */}
+                        <td>
+                          {new Date(customer.createdAt).toLocaleDateString()}
+                        </td>
 
-                    {/* View */}
-                    <td>
-                      <button
-                        className={styles.viewBtn}
-                        onClick={() => setViewingCustomer(customer)}
-                        disabled={isEditing}
-                        title="View"
-                      >
-                        <Eye size={16} />
-                      </button>
-                    </td>
-
-                    {/* Edit / Confirm / Cancel */}
-                    <td>
-                      {isEditing ? (
-                        <div className={styles.editActions}>
+                        {/* View */}
+                        <td>
                           <button
-                            className={styles.confirmBtn}
-                            onClick={() => handleRequestConfirm(customer.id)}
-                            disabled={isSaving}
-                            title="Confirm"
+                            className={styles.viewBtn}
+                            onClick={() => setViewingCustomer(customer)}
+                            disabled={isEditing}
+                            title="View"
                           >
-                            {isSaving ? "..." : <Check size={16} />}
+                            <Eye size={16} />
                           </button>
-                          <button
-                            className={styles.cancelBtn}
-                            onClick={handleCancelEdit}
-                            disabled={isSaving}
-                            title="Cancel"
-                          >
-                            <X size={18} />
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          className={styles.editBtn}
-                          onClick={() => handleStartEdit(customer)}
-                          disabled={!!editingId}
-                        >
-                          <Pencil size={18} />
-                        </button>
-                      )}
-                    </td>
+                        </td>
 
-                    {/* Delete */}
-                    <td>
-                      <button
-                        className={styles.rejectBtn}
-                        onClick={() => handleRequestDelete(customer.id)}
-                        disabled={isEditing || !!actionLoading}
-                        title="Delete"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                        {/* Edit / Confirm / Cancel */}
+                        <td>
+                          {isEditing ? (
+                            <div className={styles.editActions}>
+                              <button
+                                className={styles.confirmBtn}
+                                onClick={() =>
+                                  handleRequestConfirm(customer.id)
+                                }
+                                disabled={isSaving}
+                                title="Confirm"
+                              >
+                                {isSaving ? "..." : <Check size={16} />}
+                              </button>
+                              <button
+                                className={styles.cancelBtn}
+                                onClick={handleCancelEdit}
+                                disabled={isSaving}
+                                title="Cancel"
+                              >
+                                <X size={18} />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              className={styles.editBtn}
+                              onClick={() => handleStartEdit(customer)}
+                              disabled={!!editingId}
+                            >
+                              <Pencil size={18} />
+                            </button>
+                          )}
+                        </td>
+
+                        {/* Delete */}
+                        <td>
+                          <button
+                            className={styles.rejectBtn}
+                            onClick={() => handleRequestDelete(customer.id)}
+                            disabled={isEditing || !!actionLoading}
+                            title="Delete"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      </SortableRow>
+                    );
+                  })}
+                </tbody>
+              </SortableContext>
+            </table>
+          </DndContext>
         )}
       </div>
 

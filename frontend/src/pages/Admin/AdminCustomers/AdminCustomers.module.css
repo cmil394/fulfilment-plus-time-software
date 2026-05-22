@@ -120,20 +120,53 @@
   margin-left: 3px;
 }
 
-.table td:nth-child(2),
-.table th:nth-child(2) {
+.table td:nth-child(3),
+.table th:nth-child(3) {
   text-align: center;
   width: 52px;
 }
 
-.table td:nth-child(8),
-.table th:nth-child(8),
 .table td:nth-child(9),
 .table th:nth-child(9),
 .table td:nth-child(10),
-.table th:nth-child(10) {
+.table th:nth-child(10),
+.table td:nth-child(11),
+.table th:nth-child(11) {
   text-align: center;
   width: 44px;
+}
+
+.dragHeaderCell {
+  width: 28px;
+  padding: 0 4px;
+}
+
+.dragCell {
+  width: 28px;
+  padding: 0 4px;
+  text-align: center;
+}
+
+.dragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  cursor: grab;
+  border-radius: 4px;
+  padding: 2px;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.dragHandle:hover {
+  color: #475569;
+  background: #f1f5f9;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
 }
 
 .avatarWrap {

@@ -8,6 +8,7 @@ export interface Customer {
   phone?: string;
   createdAt: string;
   avatarUrl?: string;
+  sortOrder: number;
 }
 
 export interface CustomerDto {
@@ -48,6 +49,10 @@ export const adminCustomerService = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/customers/${id}`);
+  },
+
+  reorder: async (orderedIds: string[]): Promise<void> => {
+    await api.patch("/customers/reorder", { orderedIds });
   },
 
   uploadAvatar: async (id: string, file: File): Promise<Customer> => {
