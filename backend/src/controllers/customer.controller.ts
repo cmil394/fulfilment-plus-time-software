@@ -114,6 +114,26 @@ export const updateCustomer = async (
   }
 };
 
+export const reorderCustomers = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { orderedIds } = req.body as { orderedIds: string[] };
+    if (!Array.isArray(orderedIds)) {
+      res
+        .status(400)
+        .json({ status: "error", message: "orderedIds must be an array" });
+      return;
+    }
+    await customerService.reorderCustomers(orderedIds);
+    res.status(200).json({ status: "success", message: "Order saved" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const deleteCustomer = async (
   req: AuthRequest,
   res: Response,
