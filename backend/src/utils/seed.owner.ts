@@ -67,7 +67,6 @@ export const seedOwner = async () => {
     const pin = Math.floor(Math.random() * 10000)
       .toString()
       .padStart(4, "0");
-
     try {
       await prisma.user.create({
         data: {
@@ -84,7 +83,7 @@ export const seedOwner = async () => {
       });
 
       console.log(
-        `${owner.email} created — employeeCode: ${employeeCode}, pin: ${pin}`
+        `${owner.email} created — employeeCode: ${employeeCode}, pin: ${pin}`,
       );
       created++;
     } catch (error: any) {

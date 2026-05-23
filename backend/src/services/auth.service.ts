@@ -22,7 +22,6 @@ const publicUserSelect = {
   firstName: true,
   lastName: true,
   employeeCode: true,
-  pin: true,
   role: true,
   status: true,
   createdAt: true,
@@ -51,8 +50,12 @@ export const registerUser = async (data: RegisterInput) => {
   const fullname = firstName + " " + lastName;
 
   const hashedPassword = await hashPassword(data.password);
-  const generatedEmployeeCode = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
-  const generatedPin = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
+  const generatedEmployeeCode = Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, "0");
+  const generatedPin = Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, "0");
   const user = await prisma.user.create({
     data: {
       email: email,
@@ -145,7 +148,6 @@ export const clockOut = async (userId: string) => {
   return { userId };
 };
 
-
 // User
 export const getUserProfile = async (userId: string) => {
   const user = await prisma.user.findUnique({
@@ -160,7 +162,18 @@ export const getUserProfile = async (userId: string) => {
   return user;
 };
 
-export const changePassword = async (userId: string, data: ChangePasswordInput) => {
+export const revealPin = async (userId: string, password: string) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new NotFoundError("User not found");
+  const isValid = await comparePassword(password, user.password);
+  if (!isValid) throw new UnauthorizedError("Incorrect password");
+  return { pin: user.pin };
+};
+
+export const changePassword = async (
+  userId: string,
+  data: ChangePasswordInput,
+) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new NotFoundError("User not found");
 
@@ -168,7 +181,10 @@ export const changePassword = async (userId: string, data: ChangePasswordInput) 
   if (!isValid) throw new UnauthorizedError("Current password is incorrect");
 
   const hashedPassword = await hashPassword(data.newPassword);
-  await prisma.user.update({ where: { id: userId }, data: { password: hashedPassword } });
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedPassword },
+  });
 };
 
 // Admin
@@ -255,16 +271,21 @@ export const adminUpdateUser = async (
       email: true,
       role: true,
       employeeCode: true,
-      pin: true,
     },
   });
 };
 
-export const adminResetUserPassword = async (targetId: string, newPassword: string) => {
+export const adminResetUserPassword = async (
+  targetId: string,
+  newPassword: string,
+) => {
   const user = await prisma.user.findUnique({ where: { id: targetId } });
   if (!user) throw new NotFoundError("User not found");
   const hashed = await hashPassword(newPassword);
-  await prisma.user.update({ where: { id: targetId }, data: { password: hashed } });
+  await prisma.user.update({
+    where: { id: targetId },
+    data: { password: hashed },
+  });
 };
 
 export const deleteUser = async (userId: string) => {

@@ -109,8 +109,8 @@ function Profile() {
     setPinLoading(true);
     setPinError("");
     try {
-      await authService.login({ email: user.email, password: pinPassword });
-      setRevealedPin(user.pin ?? "—");
+      const result = await authService.revealPin(pinPassword);
+      setRevealedPin(result.data.pin ?? "—");
       setShowPinPrompt(false);
       setPinPassword("");
     } catch {

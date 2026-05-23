@@ -4,6 +4,7 @@ import {
   login,
   getProfile,
   changePassword,
+  revealPin,
   getAllAcceptedUsers,
   getPendingUsers,
   approveUser,
@@ -27,6 +28,7 @@ router.post("/auth/logout/pin", authMiddleware, clockOut);
 
 // Protected
 router.get("/auth/profile", authMiddleware, readLimiter, getProfile);
+router.post("/auth/profile/reveal-pin", authMiddleware, writeLimiter, revealPin);
 router.patch("/auth/change-password", authMiddleware, writeLimiter, changePassword);
 
 // Admin

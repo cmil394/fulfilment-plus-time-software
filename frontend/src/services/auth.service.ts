@@ -117,6 +117,13 @@ export const authService = {
     }
   },
 
+  revealPin: async (
+    password: string,
+  ): Promise<{ status: string; data: { pin: string } }> => {
+    const response = await api.post("/auth/profile/reveal-pin", { password });
+    return response.data;
+  },
+
   changePassword: async (data: {
     currentPassword: string;
     newPassword: string;

@@ -102,6 +102,22 @@ export const getProfile = async (
   }
 };
 
+export const revealPin = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    if (!req.user?.userId) throw new UnauthorizedError();
+    const { password } = req.body;
+    if (!password) throw new AppError(400, "Password is required");
+    const result = await authService.revealPin(req.user.userId, password);
+    res.status(200).json({ status: "success", data: result });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const changePassword = async (
   req: AuthRequest,
   res: Response,
@@ -111,7 +127,9 @@ export const changePassword = async (
     if (!req.user?.userId) throw new UnauthorizedError();
     const data = changePasswordSchema.parse(req.body);
     await authService.changePassword(req.user.userId, data);
-    res.status(200).json({ status: "success", message: "Password updated successfully" });
+    res
+      .status(200)
+      .json({ status: "success", message: "Password updated successfully" });
   } catch (err) {
     next(err);
   }
@@ -172,8 +190,13 @@ export const resetUserPassword = async (
 ) => {
   try {
     const { newPassword } = adminResetPasswordSchema.parse(req.body);
-    await authService.adminResetUserPassword(req.params.id as string, newPassword);
-    res.status(200).json({ status: "success", message: "Password reset successfully" });
+    await authService.adminResetUserPassword(
+      req.params.id as string,
+      newPassword,
+    );
+    res
+      .status(200)
+      .json({ status: "success", message: "Password reset successfully" });
   } catch (err) {
     next(err);
   }
