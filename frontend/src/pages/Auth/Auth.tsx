@@ -39,7 +39,6 @@ function Auth() {
     try {
       const response = await authService.login(loginData);
       setAuth(response.data.user, response.data.token);
-      console.log("Admin Token:", response.data.token);
       setSuccess(response.message);
       setTimeout(() => navigate("/"), 1000);
     } catch (err: any) {
@@ -83,30 +82,6 @@ function Auth() {
           "Registration failed. Please try again.";
         setError(message);
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDevLogin = async () => {
-    setError("");
-    setSuccess("");
-    setLoading(true);
-
-    try {
-      const response = await authService.login({
-        email: import.meta.env.VITE_OWNER_EMAIL,
-        password: import.meta.env.VITE_OWNER_PASSWORD,
-      });
-      setAuth(response.data.user, response.data.token);
-      console.log("Owner Token:", response.data.token);
-      console.log("Owner Last Name:", response.data.user.lastName);
-      setSuccess("Logged in as Owner (Dev Only)");
-      setTimeout(() => navigate("/"), 1000);
-    } catch (err: any) {
-      const message =
-        err.response?.data?.message || err.message || "Dev login failed.";
-      setError(message);
     } finally {
       setLoading(false);
     }
@@ -157,16 +132,6 @@ function Auth() {
 
           {activeTab === "login" ? (
             <form className={styles.form} onSubmit={handleLoginSubmit}>
-              {/* Dev login button - remove before production */}
-              <button
-                type="button"
-                onClick={handleDevLogin}
-                className={styles.submitButton}
-                disabled={loading}
-              >
-                {loading ? "Logging in..." : "Dev Owner Login"}
-              </button>
-
               <label htmlFor="login-email">Email</label>
               <input
                 type="email"
@@ -237,7 +202,10 @@ function Auth() {
                     className={styles.inputName}
                     value={registerData.firstname}
                     onChange={(e) =>
-                      setRegisterData({ ...registerData, firstname: e.target.value })
+                      setRegisterData({
+                        ...registerData,
+                        firstname: e.target.value,
+                      })
                     }
                     required
                     disabled={loading}
@@ -254,7 +222,10 @@ function Auth() {
                     className={styles.inputName}
                     value={registerData.lastname}
                     onChange={(e) =>
-                      setRegisterData({ ...registerData, lastname: e.target.value })
+                      setRegisterData({
+                        ...registerData,
+                        lastname: e.target.value,
+                      })
                     }
                     required
                     disabled={loading}
