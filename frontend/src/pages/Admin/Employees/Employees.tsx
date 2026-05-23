@@ -226,10 +226,15 @@ function Employees() {
       setEmployees((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, ...editDraft } : u)),
       );
+      console.log(
+        `[Admin] Employee updated — ${editDraft.firstName} ${editDraft.lastName} (${editDraft.role})`,
+      );
       setEditingId(null);
       setEditDraft(null);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to save changes. Please try again.";
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to save changes. Please try again.";
       setSaveError(msg);
     } finally {
       setActionLoading(null);
@@ -249,8 +254,11 @@ function Employees() {
     setActionLoading(userId);
     try {
       await authService.approveUser(userId);
-      // Remove from pending list after approval
+      const approved = pendingUsers.find((u) => u.id === userId);
       setPendingUsers((prev) => prev.filter((u) => u.id !== userId));
+      console.log(
+        `[Admin] Employee approved — ${approved?.firstName} ${approved?.lastName} (${approved?.email})`,
+      );
     } catch (err) {
       console.error("Failed to approve user:", err);
     } finally {
@@ -262,8 +270,11 @@ function Employees() {
     setActionLoading(userId);
     try {
       await authService.rejectUser(userId);
-      // Remove from pending list after rejection
+      const rejected = pendingUsers.find((u) => u.id === userId);
       setPendingUsers((prev) => prev.filter((u) => u.id !== userId));
+      console.log(
+        `[Admin] Employee rejected — ${rejected?.firstName} ${rejected?.lastName} (${rejected?.email})`,
+      );
     } catch (err) {
       console.error("Failed to reject user:", err);
     } finally {
@@ -283,8 +294,12 @@ function Employees() {
     setPendingDeleteId(null);
     setActionLoading(userId);
     try {
+      const deleted = employees.find((u) => u.id === userId);
       await authService.deleteUser(userId);
       setEmployees((prev) => prev.filter((u) => u.id !== userId));
+      console.log(
+        `[Admin] Employee deleted — ${deleted?.firstName} ${deleted?.lastName} (${deleted?.email})`,
+      );
     } catch (err) {
       console.error("Failed to delete user:", err);
     } finally {
@@ -318,7 +333,9 @@ function Employees() {
       setPendingResetId(null);
       setResetNewPassword("");
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to reset password. Please try again.";
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to reset password. Please try again.";
       setResetPwError(msg);
     } finally {
       setResetPwLoading(false);

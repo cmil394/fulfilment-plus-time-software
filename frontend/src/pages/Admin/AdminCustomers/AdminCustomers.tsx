@@ -245,6 +245,9 @@ function AdminCustomers() {
       setCreateDraft(EMPTY_CREATE);
       setCreateAvatarFile(null);
       setCreateAvatarPreview(null);
+      console.log(
+        `[Admin] Customer created — ${newCustomer.name} (${newCustomer.email})`,
+      );
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
@@ -297,6 +300,9 @@ function AdminCustomers() {
       setCustomers((prev) =>
         prev.map((c) => (c.id === customerId ? { ...c, ...editDraft } : c)),
       );
+      console.log(
+        `[Admin] Customer updated — ${editDraft.name} (${editDraft.email})`,
+      );
       setEditingId(null);
       setEditDraft(null);
     } catch (err: unknown) {
@@ -328,8 +334,12 @@ function AdminCustomers() {
 
     setActionLoading(customerId);
     try {
+      const deleted = customers.find((c) => c.id === customerId);
       await adminCustomerService.delete(customerId);
       setCustomers((prev) => prev.filter((c) => c.id !== customerId));
+      console.log(
+        `[Admin] Customer deleted — ${deleted?.name} (${deleted?.email})`,
+      );
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
