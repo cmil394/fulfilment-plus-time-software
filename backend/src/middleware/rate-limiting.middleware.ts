@@ -13,10 +13,21 @@ export const readLimiter = rateLimit({
 // Stricter limit for write endpoints (POST, PATCH, DELETE)
 export const writeLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 100, // max 100 requests per IP per window 
+  max: 100, // max 100 requests per IP per window
   message: {
     status: "error",
     message: "Too many write requests, please try again in a few minutes.",
+  },
+});
+
+// 10 failed login attempts per 30 minutes per IP
+export const loginLimiter = rateLimit({
+  windowMs: 30 * 60 * 1000, // 30 minutes
+  max: 10,
+  skipSuccessfulRequests: true,
+  message: {
+    status: "error",
+    message: "Too many failed login attempts. Please try again in 30 minutes.",
   },
 });
 

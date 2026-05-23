@@ -16,14 +16,14 @@ import {
   clockOut,
 } from "../controllers/auth.controller";
 import { authMiddleware, adminMiddleware } from "../middleware/auth.middleware";
-import { readLimiter, writeLimiter} from "../middleware/rate-limiting.middleware";
+import { readLimiter, writeLimiter, loginLimiter } from "../middleware/rate-limiting.middleware";
 
 const router = express.Router();
 
 //  Public
 router.post("/auth/register", writeLimiter, register);
-router.post("/auth/login", writeLimiter, login);
-router.post("/auth/login/pin", writeLimiter, loginWithPin);
+router.post("/auth/login", loginLimiter, login);
+router.post("/auth/login/pin", loginLimiter, loginWithPin);
 router.post("/auth/logout/pin", authMiddleware, clockOut);
 
 // Protected
