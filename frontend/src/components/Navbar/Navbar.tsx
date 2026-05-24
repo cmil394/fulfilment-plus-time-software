@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.tsx";
 import styles from "./Navbar.module.css";
+import logoWhite from "../../assets/icons/fulfillmentplus_icon_w.png";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -22,7 +23,7 @@ function Navbar() {
       <nav className={styles.navbar}>
         <div className={styles.navbarBrand}>
           <img
-            src="/src/assets/icons/fulfillmentplus_icon_w.png"
+            src={logoWhite}
             alt="Fulfillment Plus Logo"
             className={styles.logoIcon}
           />
@@ -44,7 +45,7 @@ function Navbar() {
     <nav className={styles.navbar}>
       <div className={styles.navbarBrand}>
         <img
-          src="/src/assets/icons/fulfillmentplus_icon_w.png"
+          src={logoWhite}
           alt="Fulfillment Plus Logo"
           className={styles.logoIcon}
         />

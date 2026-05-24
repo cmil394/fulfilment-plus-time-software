@@ -6,6 +6,7 @@ import { authService } from "../../services/auth.service.ts";
 import { useAuth } from "../../context/AuthContext.tsx";
 import type { RegisterData, LoginData } from "../../services/auth.service.ts";
 import styles from "./Auth.module.css";
+import logoBlue from "../../assets/icons/fulfillmentplus_icon_b2.png";
 
 function Auth() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
@@ -92,7 +93,7 @@ function Auth() {
       <Navbar />
       <div className={styles.brand}>
         <img
-          src="/src/assets/icons/fulfillmentplus_icon_b2.png"
+          src={logoBlue}
           alt="Fulfillment Plus Logo"
           className={styles.brandLogo}
         />

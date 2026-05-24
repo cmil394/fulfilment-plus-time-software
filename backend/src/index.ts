@@ -19,7 +19,12 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3001;
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.ALLOWED_ORIGIN || "http://localhost:5173",
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 // Health check
@@ -35,23 +40,6 @@ app.use("/api", timeEntryRoutes);
 app.use("/api", taskTemplateRoutes);
 app.use("/api", reportRoutes);
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-
-// Test database connection
-app.get("/api/db-test", async (req, res) => {
-  try {
-    await prisma.$connect();
-    res.json({
-      status: "success",
-      message: "Database connection successful!",
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: "error",
-      message: "Database connection failed",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-});
 
 app.use(errorHandler);
 

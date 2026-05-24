@@ -32,6 +32,7 @@ Both folders contain a `.env.sample` file. Copy each and rename to `.env`, then 
 | Variable                | Description                                            |
 | ----------------------- | ------------------------------------------------------ |
 | `DATABASE_URL`          | Neon (or other hosted Postgres) connection string      |
+| `ALLOWED_ORIGIN`        | Frontend URL allowed by CORS (e.g. your Vercel URL)   |
 | `JWT_SECRET`            | Secret key for signing JWTs — use a long random string |
 | `OWNER_EMAIL`           | Email for the seeded owner account                     |
 | `OWNER_PASSWORD`        | Password for the seeded owner account                  |
