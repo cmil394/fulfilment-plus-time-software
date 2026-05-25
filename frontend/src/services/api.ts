@@ -21,7 +21,25 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  (config as typeof config & { _t: number })._t = performance.now();
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => {
+    const start = (response.config as typeof response.config & { _t: number })._t;
+    const ms = Math.round(performance.now() - start);
+    console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} — ${ms}ms`);
+    return response;
+  },
+  (error) => {
+    const config = error.config as (typeof error.config & { _t: number }) | undefined;
+    if (config?._t) {
+      const ms = Math.round(performance.now() - config._t);
+      console.warn(`[API] ${config.method?.toUpperCase()} ${config.url} — ${ms}ms (error)`);
+    }
+    return Promise.reject(error);
+  },
+);
 
 export default api;
