@@ -8,14 +8,12 @@ import { NotFoundError, ConflictError } from "../utils/errors";
 
 // Timer
 export const startTimer = async (userId: string, data: StartTimerInput) => {
-  // Check task exists and get customerId from it
-  const task = await prisma.task.findUnique({ where: { id: data.taskId } });
-  if (!task) throw new NotFoundError("Task not found");
+  const [task, active] = await Promise.all([
+    prisma.task.findUnique({ where: { id: data.taskId } }),
+    prisma.timeEntry.findFirst({ where: { userId, endTime: null } }),
+  ]);
 
-  // Prevent multiple active timers
-  const active = await prisma.timeEntry.findFirst({
-    where: { userId, endTime: null },
-  });
+  if (!task) throw new NotFoundError("Task not found");
   if (active) throw new ConflictError("You already have a timer running");
 
   return prisma.timeEntry.create({
