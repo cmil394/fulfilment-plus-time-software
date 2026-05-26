@@ -33,6 +33,12 @@ export interface UpdateEntryPayload {
   notes?: string;
 }
 
+const myEntriesCache = new Map<
+  string,
+  { data: TimeEntry[]; expiresAt: number }
+>();
+const MY_ENTRIES_CACHE_TTL_MS = 120_000;
+
 export const timeEntryService = {
   // Timer
   startTimer: async (taskId: number, notes?: string): Promise<TimeEntry> => {
@@ -60,13 +66,24 @@ export const timeEntryService = {
     startDate?: string,
     endDate?: string,
   ): Promise<TimeEntry[]> => {
+    const cacheKey = `${startDate ?? ""}|${endDate ?? ""}`;
+    const cached = myEntriesCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) return cached.data;
+
     const params = new URLSearchParams();
     if (startDate) params.set("startDate", startDate);
     if (endDate) params.set("endDate", endDate);
     const query = params.toString();
     const res = await api.get(`/time-entries${query ? `?${query}` : ""}`);
-    return res.data.data ?? [];
+    const data: TimeEntry[] = res.data.data ?? [];
+    myEntriesCache.set(cacheKey, {
+      data,
+      expiresAt: Date.now() + MY_ENTRIES_CACHE_TTL_MS,
+    });
+    return data;
   },
+
+  invalidateMyEntriesCache: () => myEntriesCache.clear(),
 
   // Admin
   getEntriesByUser: async (

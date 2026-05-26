@@ -19,18 +19,35 @@ export type EmployeeReportSummary = {
   end: string;
 };
 
+const summaryCache = new Map<
+  string,
+  { data: EmployeeReportSummary; expiresAt: number }
+>();
+const SUMMARY_CACHE_TTL_MS = 120_000;
+
 export const reportService = {
   getEmployeeReportSummary: async (
     startDate?: string,
     endDate?: string,
   ): Promise<EmployeeReportSummary> => {
+    const cacheKey = `${startDate ?? ""}|${endDate ?? ""}`;
+    const cached = summaryCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) return cached.data;
+
     const params = new URLSearchParams();
     if (startDate) params.set("startDate", startDate);
     if (endDate) params.set("endDate", endDate);
     const query = params.toString() ? `?${params.toString()}` : "";
     const response = await api.get(`/reports/employee/me/summary${query}`);
-    return response.data as EmployeeReportSummary;
+    const data = response.data as EmployeeReportSummary;
+    summaryCache.set(cacheKey, {
+      data,
+      expiresAt: Date.now() + SUMMARY_CACHE_TTL_MS,
+    });
+    return data;
   },
+
+  invalidateSummaryCache: () => summaryCache.clear(),
 
   downloadEmployeeReport: async (
     startDate?: string,
