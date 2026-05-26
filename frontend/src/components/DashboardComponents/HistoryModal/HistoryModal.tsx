@@ -308,6 +308,7 @@ export default function HistoryModal() {
       const now = new Date();
       const year = now.getFullYear();
       const month = now.getMonth() + 1;
+      timeEntryService.invalidateMyEntriesCache();
       loadedMonthsRef.current.clear();
       setEntries([]);
       setOldestMonth({ year, month });
