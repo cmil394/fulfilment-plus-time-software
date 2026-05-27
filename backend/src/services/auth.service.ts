@@ -1,5 +1,11 @@
 import { prisma } from "../lib/prisma";
-import { hashPassword, comparePassword, generateToken } from "../utils/auth";
+import {
+  hashPassword,
+  comparePassword,
+  generateToken,
+  encryptPin,
+  decryptPin,
+} from "../utils/auth";
 import {
   RegisterInput,
   LoginInput,
@@ -64,7 +70,7 @@ export const registerUser = async (data: RegisterInput) => {
       lastName: lastName,
       fullName: fullname,
       employeeCode: generatedEmployeeCode,
-      pin: generatedPin,
+      pin: encryptPin(generatedPin),
       role: "Employee",
       status: "PENDING",
     },
@@ -114,7 +120,7 @@ export const loginWithPin = async (employeeCode: string, pin: string) => {
   if (!user) {
     throw new AppError(401, "Invalid employee code");
   }
-  const pinValid = user.pin ? user.pin === pin : false;
+  const pinValid = user.pin ? decryptPin(user.pin) === pin : false;
   if (!pinValid) {
     throw new AppError(401, "Incorrect PIN");
   }
@@ -167,7 +173,7 @@ export const revealPin = async (userId: string, password: string) => {
   if (!user) throw new NotFoundError("User not found");
   const isValid = await comparePassword(password, user.password);
   if (!isValid) throw new UnauthorizedError("Incorrect password");
-  return { pin: user.pin };
+  return { pin: user.pin ? decryptPin(user.pin) : null };
 };
 
 export const changePassword = async (
