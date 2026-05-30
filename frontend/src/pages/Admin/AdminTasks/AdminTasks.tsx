@@ -8,7 +8,13 @@ import type {
   CreateTaskTemplatePayload,
   UpdateTaskTemplatePayload,
 } from "../../../services/task-template.service";
-import { FilePlus, Pencil, AlertTriangle, Trash2 } from "lucide-react";
+import {
+  FilePlus,
+  Pencil,
+  AlertTriangle,
+  Trash2,
+  ClipboardList,
+} from "lucide-react";
 
 // Types
 type ModalMode = "create" | "edit" | "delete" | null;
@@ -161,50 +167,76 @@ function AdminTasks() {
       <Navbar />
       <h1 className={titles.pageTitle1}>Manage Tasks</h1>
       <div className={styles.container}>
-        <div className={styles.header}>
-          <button className={styles.btnPrimary} onClick={openCreate}>
-            + New Template
-          </button>
+        <div className={styles.tableWrapper}>
+          <div className={styles.header}>
+            <div className={styles.headerLeft}>
+              <button className={styles.btnPrimary} onClick={openCreate}>
+                <FilePlus size={15} />
+                New Template
+              </button>
+              {!loading && (
+                <p className={styles.tableCount}>
+                  {templates.length}{" "}
+                  {templates.length === 1 ? "template" : "templates"}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {error && !isCreateOrEdit && (
+            <div className={styles.error}>{error}</div>
+          )}
+
+          {loading ? (
+            <SkeletonList />
+          ) : templates.length === 0 ? (
+            <div className={styles.empty}>
+              <ClipboardList
+                size={36}
+                strokeWidth={1.2}
+                className={styles.emptyIcon}
+              />
+              <p className={styles.emptyText}>No task templates yet</p>
+              <p className={styles.emptyHint}>
+                Create your first template to get started
+              </p>
+            </div>
+          ) : (
+            <div className={styles.templateList}>
+              {templates.map((t) => (
+                <div key={t.id} className={styles.templateCard}>
+                  <div className={styles.templateCardLeft}>
+                    <div className={styles.templateIconWrap}>
+                      <ClipboardList size={16} />
+                    </div>
+                    <div className={styles.templateInfo}>
+                      <p className={styles.templateName}>{t.name}</p>
+                      {t.description && (
+                        <p className={styles.templateDesc}>{t.description}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className={styles.templateActions}>
+                    <button
+                      className={styles.btnGhost}
+                      onClick={() => openEdit(t)}
+                      title="Edit"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button
+                      className={styles.btnDanger}
+                      onClick={() => openDelete(t)}
+                      title="Delete"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-
-        {error && !isCreateOrEdit && (
-          <div className={styles.error}>{error}</div>
-        )}
-
-        {loading ? (
-          <SkeletonList />
-        ) : templates.length === 0 ? (
-          <div className={styles.empty}>
-            <p>No task templates yet. Create your first one.</p>
-          </div>
-        ) : (
-          <div className={styles.templateList}>
-            {templates.map((t) => (
-              <div key={t.id} className={styles.templateCard}>
-                <div className={styles.templateInfo}>
-                  <p className={styles.templateName}>{t.name}</p>
-                  {t.description && (
-                    <p className={styles.templateDesc}>{t.description}</p>
-                  )}
-                </div>
-                <div className={styles.templateActions}>
-                  <button
-                    className={styles.btnGhost}
-                    onClick={() => openEdit(t)}
-                  >
-                    <Pencil size={17} />
-                  </button>
-                  <button
-                    className={styles.btnDanger}
-                    onClick={() => openDelete(t)}
-                  >
-                    <Trash2 size={17} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Create / Edit Modal */}
