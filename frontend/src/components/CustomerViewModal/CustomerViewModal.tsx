@@ -512,7 +512,8 @@ function CustomerViewModal({ customer, onClose }: Props) {
             <h3 className={styles.dialogTitle}>Delete task?</h3>
             <p className={styles.dialogBody}>
               <strong>{taskToDelete.name}</strong> will be permanently removed
-              from this customer.
+              from this customer. All time entries logged against this task will
+              also be deleted. This cannot be undone.
             </p>
             {deleteError && <p className={styles.errorMsg}>{deleteError}</p>}
             <div className={styles.dialogActions}>

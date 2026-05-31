@@ -1,7 +1,6 @@
 import { prisma } from "../lib/prisma";
 import { CreateTaskInput, UpdateTaskInput } from "../validators/task.validator";
 import { NotFoundError } from "../utils/errors";
-import Decimal from "decimal.js";
 
 // Selects & Formatters
 const taskSelect = {
@@ -92,5 +91,8 @@ export const deleteTask = async (id: string) => {
   const existing = await prisma.task.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("Task not found");
 
-  await prisma.task.delete({ where: { id } });
+  await prisma.$transaction([
+    prisma.timeEntry.deleteMany({ where: { taskId: id } }),
+    prisma.task.delete({ where: { id } }),
+  ]);
 };
