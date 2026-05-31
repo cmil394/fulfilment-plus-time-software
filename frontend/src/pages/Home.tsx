@@ -9,6 +9,7 @@ import Tasks from "./Tasks/Tasks";
 import AdminTasks from "./Admin/AdminTasks/AdminTasks";
 import Kiosk from "./Kiosk/Kiosk";
 import Profile from "./Profile/Profile";
+import Timesheets from "./Timesheets/Timesheets";
 
 function Home() {
   const { user, loading } = useAuth();
@@ -63,6 +64,10 @@ function Home() {
       <Route
         path="/profile"
         element={user ? <Profile /> : <Navigate to="/login" />}
+      />
+      <Route
+        path="/timesheets"
+        element={user ? <Timesheets /> : <Navigate to="/login" />}
       />
       <Route
         path="/tasks/:customerId"

@@ -6,7 +6,7 @@ import {
   adminUpdateEntrySchema,
 } from "../validators/time-entry.validator";
 import * as timeEntryService from "../services/time-entry.service";
-import { UnauthorizedError } from "../utils/errors";
+import { UnauthorizedError, ForbiddenError } from "../utils/errors";
 
 // Timer
 export const startTimer = async (
@@ -246,6 +246,16 @@ export const deleteEntry = async (
   next: NextFunction,
 ) => {
   try {
+    if (!req.user?.userId) throw new UnauthorizedError();
+    const isAdmin = req.user.role === "Admin" || req.user.role === "Owner";
+    if (!isAdmin) {
+      const existing = await timeEntryService.getEntryById(
+        req.params.entryId as string,
+      );
+      if (existing.userId !== req.user.userId) {
+        throw new ForbiddenError("You can only delete your own time entries");
+      }
+    }
     await timeEntryService.deleteEntry(req.params.entryId as string);
     res.status(200).json({
       status: "success",
@@ -262,6 +272,16 @@ export const updateEntry = async (
   next: NextFunction,
 ) => {
   try {
+    if (!req.user?.userId) throw new UnauthorizedError();
+    const isAdmin = req.user.role === "Admin" || req.user.role === "Owner";
+    if (!isAdmin) {
+      const existing = await timeEntryService.getEntryById(
+        req.params.entryId as string,
+      );
+      if (existing.userId !== req.user.userId) {
+        throw new ForbiddenError("You can only edit your own time entries");
+      }
+    }
     const data = adminUpdateEntrySchema.parse(req.body);
     const entry = await timeEntryService.updateEntry(
       req.params.entryId as string,

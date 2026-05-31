@@ -22,8 +22,8 @@ router.get("/time-entries/active/all", adminMiddleware, readLimiter, timeEntryCo
 router.patch("/time-entries/user/:userId/stop", adminMiddleware, writeLimiter, timeEntryController.adminStopTimer);
 router.get("/time-entries/:entryId", adminMiddleware, readLimiter, timeEntryController.getEntryById);
 router.post("/time-entries/admin/create", adminMiddleware, writeLimiter, timeEntryController.adminCreateEntry);
-router.patch("/time-entries/:entryId", adminMiddleware, writeLimiter, timeEntryController.updateEntry);
-router.delete("/time-entries/:entryId", adminMiddleware, writeLimiter, timeEntryController.deleteEntry);
+router.patch("/time-entries/:entryId", authMiddleware, writeLimiter, timeEntryController.updateEntry);
+router.delete("/time-entries/:entryId", authMiddleware, writeLimiter, timeEntryController.deleteEntry);
 router.delete("/time-entries/user/:userId", adminMiddleware, writeLimiter, timeEntryController.deleteEntriesByUser);
 router.delete("/time-entries/customer/:customerId", adminMiddleware, writeLimiter, timeEntryController.deleteEntriesByCustomer);
 

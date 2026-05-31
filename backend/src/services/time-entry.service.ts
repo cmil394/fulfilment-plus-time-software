@@ -91,17 +91,17 @@ export const getMyEntries = async (
       userId,
       ...(startDate || endDate
         ? {
-          startTime: {
-            ...(startDate && { gte: new Date(startDate) }),
-            ...(endDate && { lte: new Date(endDate) }),
-          },
-        }
+            startTime: {
+              ...(startDate && { gte: new Date(startDate) }),
+              ...(endDate && { lte: new Date(endDate) }),
+            },
+          }
         : {}),
     },
     orderBy: { startTime: "desc" },
     include: {
-      task: { select: { name: true } },
-      customer: { select: { name: true } },
+      task: { select: { id: true, name: true } },
+      customer: { select: { id: true, name: true } },
     },
   });
 };
@@ -118,11 +118,11 @@ export const getEntriesByUser = async (
       endTime: { not: null },
       ...(startDate || endDate
         ? {
-          startTime: {
-            ...(startDate && { gte: new Date(startDate) }),
-            ...(endDate && { lte: new Date(endDate) }),
-          },
-        }
+            startTime: {
+              ...(startDate && { gte: new Date(startDate) }),
+              ...(endDate && { lte: new Date(endDate) }),
+            },
+          }
         : {}),
     },
     orderBy: { startTime: "desc" },
@@ -132,11 +132,19 @@ export const getEntriesByUser = async (
     },
   });
 
-  const grouped: Record<string, { customer: { id: string; name: string }; totalSeconds: number; entries: typeof entries }> = {};
+  const grouped: Record<
+    string,
+    {
+      customer: { id: string; name: string };
+      totalSeconds: number;
+      entries: typeof entries;
+    }
+  > = {};
 
   for (const entry of entries) {
     const cid = entry.customer.id;
-    if (!grouped[cid]) grouped[cid] = { customer: entry.customer, totalSeconds: 0, entries: [] };
+    if (!grouped[cid])
+      grouped[cid] = { customer: entry.customer, totalSeconds: 0, entries: [] };
     grouped[cid].entries.push(entry);
     grouped[cid].totalSeconds += entry.durationSeconds ?? 0;
   }
@@ -155,11 +163,11 @@ export const getEntriesByCustomer = async (
       endTime: { not: null },
       ...(startDate || endDate
         ? {
-          startTime: {
-            ...(startDate && { gte: new Date(startDate) }),
-            ...(endDate && { lte: new Date(endDate) }),
-          },
-        }
+            startTime: {
+              ...(startDate && { gte: new Date(startDate) }),
+              ...(endDate && { lte: new Date(endDate) }),
+            },
+          }
         : {}),
     },
     orderBy: { startTime: "desc" },
@@ -169,11 +177,19 @@ export const getEntriesByCustomer = async (
     },
   });
 
-  const grouped: Record<string, { user: { id: string; fullName: string }; totalSeconds: number; entries: typeof entries }> = {};
+  const grouped: Record<
+    string,
+    {
+      user: { id: string; fullName: string };
+      totalSeconds: number;
+      entries: typeof entries;
+    }
+  > = {};
 
   for (const entry of entries) {
     const uid = entry.user.id;
-    if (!grouped[uid]) grouped[uid] = { user: entry.user, totalSeconds: 0, entries: [] };
+    if (!grouped[uid])
+      grouped[uid] = { user: entry.user, totalSeconds: 0, entries: [] };
     grouped[uid].entries.push(entry);
     grouped[uid].totalSeconds += entry.durationSeconds ?? 0;
   }
@@ -195,7 +211,7 @@ export const getEntryById = async (entryId: string) => {
 };
 
 export const adminCreateEntry = async (
-  adminId: string,
+  _adminId: string,
   data: AdminCreateEntryInput,
 ) => {
   // Verify user exists

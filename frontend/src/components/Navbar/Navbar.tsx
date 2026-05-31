@@ -131,10 +131,10 @@ function Navbar() {
             </li>
             <li>
               <Link
-                to="/reports"
-                className={`${styles.navLink} ${location.pathname === "/reports" ? styles.active : ""}`}
+                to="/timesheets"
+                className={`${styles.navLink} ${location.pathname === "/timesheets" ? styles.active : ""}`}
               >
-                Reports
+                Timesheets
               </Link>
             </li>
             <li className={user ? styles.noRightBorder : ""}>
