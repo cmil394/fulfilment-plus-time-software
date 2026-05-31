@@ -4,7 +4,7 @@ import {
   AdminCreateEntryInput,
   AdminUpdateEntryInput,
 } from "../validators/time-entry.validator";
-import { NotFoundError, ConflictError } from "../utils/errors";
+import { NotFoundError, ConflictError, AppError } from "../utils/errors";
 
 // Timer
 export const startTimer = async (userId: string, data: StartTimerInput) => {
@@ -298,6 +298,9 @@ export const updateEntry = async (
 
   const startTime = data.startTime ? new Date(data.startTime) : entry.startTime;
   const endTime = data.endTime ? new Date(data.endTime) : entry.endTime;
+
+  if (startTime && endTime && startTime >= endTime)
+    throw new AppError(400, "endTime must be after startTime");
 
   const durationSeconds =
     startTime && endTime
