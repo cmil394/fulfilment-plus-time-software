@@ -50,7 +50,10 @@ function PinInput({ onSuccess }: PinInputProps) {
     setErrorMsg("");
 
     try {
-      const result = await authService.loginWithPin(employeeCode.trim().toUpperCase(), pin);
+      const result = await authService.loginWithPin(
+        employeeCode.trim().toUpperCase(),
+        pin,
+      );
       const { user, token } = result.data;
 
       onSuccess({
@@ -77,13 +80,19 @@ function PinInput({ onSuccess }: PinInputProps) {
 
   const handleCodeChange = (v: string) => {
     setEmployeeCode(v.replace(/\D/g, "").slice(0, 4));
-    if (state === "error") { setState("idle"); setErrorMsg(""); }
+    if (state === "error") {
+      setState("idle");
+      setErrorMsg("");
+    }
   };
 
   const handlePinChange = (v: string) => {
     const numeric = v.replace(/\D/g, "").slice(0, 4);
     setPin(numeric);
-    if (state === "error") { setState("idle"); setErrorMsg(""); }
+    if (state === "error") {
+      setState("idle");
+      setErrorMsg("");
+    }
   };
 
   const handleCodeKey = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -142,7 +151,9 @@ function PinInput({ onSuccess }: PinInputProps) {
         <button
           className={`${styles.btn} ${styles.btnConfirm}`}
           onClick={handleSubmit}
-          disabled={employeeCode.length != 4 || pin.length !== 4 || state === "loading"}
+          disabled={
+            employeeCode.length != 4 || pin.length !== 4 || state === "loading"
+          }
         >
           {state === "loading" ? "Verifying…" : "Clock In →"}
         </button>
@@ -301,11 +312,11 @@ export default function Kiosk() {
         prev.map((s) =>
           s.timerRunning && s.timerStartTime
             ? {
-              ...s,
-              elapsed: Math.floor(
-                (Date.now() - s.timerStartTime.getTime()) / 1000,
-              ),
-            }
+                ...s,
+                elapsed: Math.floor(
+                  (Date.now() - s.timerStartTime.getTime()) / 1000,
+                ),
+              }
             : s,
         ),
       );
@@ -332,15 +343,53 @@ export default function Kiosk() {
       },
     ]);
 
+    const authedApi = createAuthedApi(user.token);
+
     try {
-      const authedApi = createAuthedApi(user.token);
-      const response = await authedApi.get("/customers");
-      const customers = response.data.data;
-      setSessions((prev) =>
-        prev.map((s) =>
-          s.id === user.id ? { ...s, customers, loadingCustomers: false } : s,
-        ),
-      );
+      const [customersRes, activeRes] = await Promise.all([
+        authedApi.get("/customers"),
+        authedApi.get("/time-entries/active"),
+      ]);
+
+      const customers = customersRes.data.data;
+      const active = activeRes.data.data;
+
+      if (active?.taskId) {
+        const startTime = new Date(active.startTime);
+        const elapsed = Math.floor((Date.now() - startTime.getTime()) / 1000);
+
+        let tasks: Task[] = [];
+        try {
+          const tasksRes = await authedApi.get(
+            `/tasks/customer/${active.customerId}`,
+          );
+          tasks = Array.isArray(tasksRes.data.data) ? tasksRes.data.data : [];
+        } catch {}
+
+        setSessions((prev) =>
+          prev.map((s) =>
+            s.id === user.id
+              ? {
+                  ...s,
+                  customers,
+                  loadingCustomers: false,
+                  tasks,
+                  selectedCustomerId: active.customerId,
+                  selectedTaskId: String(active.taskId),
+                  timerRunning: true,
+                  timerStartTime: startTime,
+                  elapsed,
+                }
+              : s,
+          ),
+        );
+      } else {
+        setSessions((prev) =>
+          prev.map((s) =>
+            s.id === user.id ? { ...s, customers, loadingCustomers: false } : s,
+          ),
+        );
+      }
     } catch {
       setSessions((prev) =>
         prev.map((s) =>
@@ -355,12 +404,12 @@ export default function Kiosk() {
       prev.map((s) =>
         s.id === userId
           ? {
-            ...s,
-            selectedCustomerId: customerId,
-            selectedTaskId: "",
-            tasks: [],
-            loadingTasks: customerId !== "",
-          }
+              ...s,
+              selectedCustomerId: customerId,
+              selectedTaskId: "",
+              tasks: [],
+              loadingTasks: customerId !== "",
+            }
           : s,
       ),
     );
@@ -381,18 +430,14 @@ export default function Kiosk() {
       );
     } catch {
       setSessions((prev) =>
-        prev.map((s) =>
-          s.id === userId ? { ...s, loadingTasks: false } : s,
-        ),
+        prev.map((s) => (s.id === userId ? { ...s, loadingTasks: false } : s)),
       );
     }
   };
 
   const handleTaskChange = (userId: string, taskId: string) => {
     setSessions((prev) =>
-      prev.map((s) =>
-        s.id === userId ? { ...s, selectedTaskId: taskId } : s,
-      ),
+      prev.map((s) => (s.id === userId ? { ...s, selectedTaskId: taskId } : s)),
     );
   };
 
@@ -408,12 +453,16 @@ export default function Kiosk() {
       setSessions((prev) =>
         prev.map((s) =>
           s.id === userId
-            ? { ...s, timerRunning: true, timerStartTime: new Date(), elapsed: 0 }
+            ? {
+                ...s,
+                timerRunning: true,
+                timerStartTime: new Date(),
+                elapsed: 0,
+              }
             : s,
         ),
       );
-    } catch {
-    }
+    } catch {}
   };
 
   const handleStop = async (userId: string) => {
@@ -430,8 +479,7 @@ export default function Kiosk() {
             : s,
         ),
       );
-    } catch {
-    }
+    } catch {}
   };
 
   const handleClockOut = (userId: string) => {
