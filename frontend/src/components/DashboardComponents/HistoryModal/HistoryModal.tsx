@@ -518,7 +518,13 @@ export default function HistoryModal() {
       {entries.length === 0 ? (
         <div className={styles.stateWrap}>
           <Clock size={28} strokeWidth={1.2} className={styles.emptyIcon} />
-          <span className={styles.emptyText}>No time entries yet</span>
+          <span className={styles.emptyText}>
+            No entries for{" "}
+            {new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString(
+              "en-US",
+              { month: "long", year: "numeric" },
+            )}
+          </span>
           <span className={styles.emptyHint}>
             Start a timer to see your history here
           </span>
@@ -684,19 +690,19 @@ export default function HistoryModal() {
               );
             })}
           </div>
-
-          {/* Load more months button */}
-          {canLoadMore && (
-            <button
-              className={styles.showMoreBtn}
-              onClick={handleLoadMore}
-              disabled={isLoadingMore}
-            >
-              <ChevronDown size={13} />
-              {isLoadingMore ? "Loading…" : `Show ${nextMonthLabel}`}
-            </button>
-          )}
         </>
+      )}
+
+      {/* Load more months button */}
+      {canLoadMore && (
+        <button
+          className={styles.showMoreBtn}
+          onClick={handleLoadMore}
+          disabled={isLoadingMore}
+        >
+          <ChevronDown size={13} />
+          {isLoadingMore ? "Loading…" : `Show ${nextMonthLabel}`}
+        </button>
       )}
     </div>
   );
