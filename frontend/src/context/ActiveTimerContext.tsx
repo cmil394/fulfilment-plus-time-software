@@ -7,6 +7,7 @@ import {
   useCallback,
 } from "react";
 import { timeEntryService } from "../services/time-entry.service";
+import { useAuth } from "./AuthContext";
 
 interface ActiveTimer {
   taskId: number;
@@ -31,6 +32,8 @@ export function ActiveTimerProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const { token, loading: authLoading } = useAuth();
+
   const [activeTimer, setActiveTimer] = useState<ActiveTimer | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [widgetVisible, setWidgetVisible] = useState(true);
@@ -57,8 +60,15 @@ export function ActiveTimerProvider({
     [clearTick],
   );
 
-  // Hydrate from server on mount
+  // Sync timer state with auth
   useEffect(() => {
+    if (authLoading) return;
+    if (!token) {
+      clearTick();
+      setActiveTimer(null);
+      setElapsedSeconds(0);
+      return;
+    }
     timeEntryService.getActiveTimer().then((active) => {
       if (active?.taskId) {
         const taskName = active.task?.name ?? "Unknown task";
@@ -77,7 +87,7 @@ export function ActiveTimerProvider({
       }
     });
     return clearTick;
-  }, [clearTick, startTick]);
+  }, [token, authLoading, clearTick, startTick]);
 
   const startTimer = useCallback(
     async (taskId: number) => {
