@@ -10,5 +10,11 @@
       "routePrefix": "/_/backend",
       "framework": "express"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/((?!_/backend|api/).*)",
+      "destination": "/index.html"
+    }
+  ]
 }
