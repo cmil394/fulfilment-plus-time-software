@@ -386,7 +386,7 @@ function Timesheets() {
                           {hasActive ? "Live" : fmtHours(daySecs)}
                         </span>
                         <span className={styles.dayEntryCount}>
-                          {dayEntries.length}
+                          {dayEntries.length} {dayEntries.length === 1 ? "entry" : "entries"}
                         </span>
                       </div>
                     )}
