@@ -174,9 +174,13 @@
 
 .customerNameCompact {
   flex: 1;
+  min-width: 0;
   text-align: left;
   font-size: 26px;
   margin-left: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Icons */
@@ -209,6 +213,7 @@
   position: relative;
   z-index: 1;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .viewBtnCompact {
@@ -276,6 +281,47 @@
     font-size: 14px;
     width: 65px;
     height: 26px;
+  }
+}
+
+/* Compact card responsive — width-based */
+@media (max-width: 900px) {
+  .customerNameCompact {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .customerNameCompact {
+    font-size: 16px;
+  }
+
+  .customerIconCompact {
+    width: 36px;
+    height: 36px;
+  }
+
+  .viewBtnCompact {
+    width: 68px;
+    height: 30px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 420px) {
+  .customerNameCompact {
+    font-size: 13px;
+  }
+
+  .customerIconCompact {
+    width: 30px;
+    height: 30px;
+  }
+
+  .viewBtnCompact {
+    width: 60px;
+    height: 28px;
+    font-size: 12px;
   }
 }
 
