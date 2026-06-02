@@ -8,8 +8,6 @@ import taskRoutes from "./routes/task.routes";
 import timeEntryRoutes from "./routes/time-entry.routes";
 import taskTemplateRoutes from "./routes/task-template.routes";
 import reportRoutes from "./routes/report.routes";
-import { seedOwner } from "./utils/seed.owner";
-import { seedCompany } from "./utils/seed.company";
 import { errorHandler } from "./utils/errors";
 import path from "path";
 
@@ -49,7 +47,6 @@ const startServer = async () => {
     await prisma.$connect();
     console.log("Database connected");
 
-    await Promise.all([seedOwner(), seedCompany()]);
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on http://localhost:${PORT}`);
