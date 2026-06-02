@@ -3,11 +3,13 @@ import { z } from "zod";
 export const registerSchema = z
   .object({
     email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/\d/, "Password must contain at least one number"),
     confirmPassword: z.string(),
     firstname: z.string().min(2, "First name must be at least 2 charcters"),
     lastname: z.string().min(2, "Last name must be at least 2 charcters"),
-    pin: z.string().regex(/^\d{4}$/).optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -24,8 +26,6 @@ export const adminUpdateUserSchema = z.object({
   lastName: z.string().min(1).optional(),
   email: z.string().email().optional(),
   role: z.enum(["Admin", "Employee"]).optional(),
-  employeeCode: z.string().min(1).max(10).optional(),
-  pin: z.string().regex(/^\d{4}$/).optional(),
 });
 
 export const pinLoginSchema = z.object({
@@ -36,7 +36,10 @@ export const pinLoginSchema = z.object({
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z.string().min(6, "New password must be at least 6 characters"),
+    newPassword: z
+      .string()
+      .min(6, "New password must be at least 6 characters")
+      .regex(/\d/, "New password must contain at least one number"),
     confirmNewPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmNewPassword, {
@@ -45,7 +48,10 @@ export const changePasswordSchema = z
   });
 
 export const adminResetPasswordSchema = z.object({
-  newPassword: z.string().min(6, "Password must be at least 6 characters"),
+  newPassword: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .regex(/\d/, "Password must contain at least one number"),
 });
 
 export type AdminResetPasswordInput = z.infer<typeof adminResetPasswordSchema>;
