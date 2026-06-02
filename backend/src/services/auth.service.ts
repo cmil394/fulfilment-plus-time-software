@@ -287,7 +287,14 @@ export const adminUpdateUser = async (
     }
   }
 
-  const updateData = data;
+  const updateData = {
+    ...data,
+    ...(data.firstName || data.lastName
+      ? {
+        fullName: `${data.firstName ?? target.firstName} ${data.lastName ?? target.lastName}`,
+      }
+      : {}),
+  };
 
   return prisma.user.update({
     where: { id: targetId },

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User } from "../services/auth.service";
+import { authService } from "../services/auth.service";
 
 interface AuthContextType {
   user: User | null;
@@ -19,7 +20,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load auth data from localStorage on mount
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
@@ -27,11 +27,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const parsed = JSON.parse(storedUser);
       setToken(storedToken);
       setUser(parsed);
-      console.log(
-        `[Auth] Session restored — ${parsed.firstName} ${parsed.lastName} (${parsed.role})`,
-      );
+      authService.getProfile().then((res) => {
+        const fresh = res.data.user;
+        setUser(fresh);
+        localStorage.setItem("user", JSON.stringify(fresh));
+      }).catch(() => { }).finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const setAuth = (newUser: User, newToken: string) => {
