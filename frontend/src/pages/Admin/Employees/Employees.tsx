@@ -222,8 +222,8 @@ function Employees() {
       const payload =
         employee?.role === "Owner"
           ? (({ role: _role, ...rest }) => rest)(
-              editDraft as unknown as Record<string, unknown>,
-            )
+            editDraft as unknown as Record<string, unknown>,
+          )
           : editDraft;
       await authService.updateUser(
         userId,
@@ -395,14 +395,14 @@ function Employees() {
       currentDir: SortDir,
       setDir: (d: SortDir) => void,
     ) =>
-    (field: SortField) => {
-      if (currentField === field) {
-        setDir(currentDir === "asc" ? "desc" : "asc");
-      } else {
-        setField(field);
-        setDir("asc");
-      }
-    };
+      (field: SortField) => {
+        if (currentField === field) {
+          setDir(currentDir === "asc" ? "desc" : "asc");
+        } else {
+          setField(field);
+          setDir("asc");
+        }
+      };
 
   const handleEmpSort = makeHandleSort(
     empSortField,
@@ -581,7 +581,7 @@ function Employees() {
                       Date Registered
                     </SortableTh>
                     <th>View</th>
-                    <th>Edit</th>
+                    <th style={{ textAlign: "center" }}>Edit</th>
                     {editingId && <th>Reset PW</th>}
                     <th>Delete</th>
                   </tr>
@@ -778,7 +778,7 @@ function Employees() {
                             }
                             title={
                               employee.role === "Admin" ||
-                              employee.role === "Owner"
+                                employee.role === "Owner"
                                 ? "Admins cannot be deleted"
                                 : "Delete employee"
                             }
