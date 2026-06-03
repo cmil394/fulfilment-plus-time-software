@@ -124,6 +124,8 @@ function Employees() {
     null,
   );
   const [stopTimerLoading, setStopTimerLoading] = useState(false);
+  const [showStopAllModal, setShowStopAllModal] = useState(false);
+  const [stopAllLoading, setStopAllLoading] = useState(false);
 
   const fetchActiveTimers = useCallback(async (isManual = false) => {
     if (isManual) setIsRefreshing(true);
@@ -222,8 +224,8 @@ function Employees() {
       const payload =
         employee?.role === "Owner"
           ? (({ role: _role, ...rest }) => rest)(
-            editDraft as unknown as Record<string, unknown>,
-          )
+              editDraft as unknown as Record<string, unknown>,
+            )
           : editDraft;
       await authService.updateUser(
         userId,
@@ -388,6 +390,19 @@ function Employees() {
     setPendingStopEntry(null);
   };
 
+  const handleConfirmStopAll = async () => {
+    setShowStopAllModal(false);
+    setStopAllLoading(true);
+    try {
+      await timeEntryService.adminStopAllTimers();
+      setActiveTimers([]);
+    } catch (err) {
+      console.error("Failed to stop all timers:", err);
+    } finally {
+      setStopAllLoading(false);
+    }
+  };
+
   const makeHandleSort =
     (
       currentField: SortField,
@@ -395,14 +410,14 @@ function Employees() {
       currentDir: SortDir,
       setDir: (d: SortDir) => void,
     ) =>
-      (field: SortField) => {
-        if (currentField === field) {
-          setDir(currentDir === "asc" ? "desc" : "asc");
-        } else {
-          setField(field);
-          setDir("asc");
-        }
-      };
+    (field: SortField) => {
+      if (currentField === field) {
+        setDir(currentDir === "asc" ? "desc" : "asc");
+      } else {
+        setField(field);
+        setDir("asc");
+      }
+    };
 
   const handleEmpSort = makeHandleSort(
     empSortField,
@@ -778,7 +793,7 @@ function Employees() {
                             }
                             title={
                               employee.role === "Admin" ||
-                                employee.role === "Owner"
+                              employee.role === "Owner"
                                 ? "Admins cannot be deleted"
                                 : "Delete employee"
                             }
@@ -961,6 +976,16 @@ function Employees() {
                 />
                 Refresh
               </button>
+              {activeTimers.length > 0 && (
+                <button
+                  className={styles.stopAllBtn}
+                  onClick={() => setShowStopAllModal(true)}
+                  disabled={timersLoading || stopAllLoading}
+                  title="Stop all active timers"
+                >
+                  Stop All
+                </button>
+              )}
               {lastRefreshed && (
                 <span className={styles.lastRefreshed}>
                   Last refreshed: {toNZTString(lastRefreshed)} NZT
@@ -1164,6 +1189,35 @@ function Employees() {
                 disabled={resetPwLoading}
               >
                 {resetPwLoading ? "Resetting..." : "Reset"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showStopAllModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <div className={styles.modalIconWrap}>
+              <AlertTriangle size={22} className={styles.modalIcon} />
+            </div>
+            <p className={styles.modalTitle}>Stop all timers?</p>
+            <p className={styles.modalSubtitle}>
+              {`This will stop all ${activeTimers.length} active timer${activeTimers.length !== 1 ? "s" : ""}.`}
+            </p>
+            <p className={styles.modalSubtitle1}>Are you sure?</p>
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancelBtn}
+                onClick={() => setShowStopAllModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.modalConfirmBtn}
+                onClick={handleConfirmStopAll}
+              >
+                Stop All
               </button>
             </div>
           </div>

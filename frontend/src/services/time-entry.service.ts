@@ -121,6 +121,11 @@ export const timeEntryService = {
     return res.data.data;
   },
 
+  adminStopAllTimers: async (): Promise<{ count: number }> => {
+    const res = await api.patch("/time-entries/active/stop-all");
+    return res.data.data;
+  },
+
   adminCreateEntry: async (
     payload: AdminCreateEntryPayload,
   ): Promise<TimeEntry> => {
