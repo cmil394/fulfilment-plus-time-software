@@ -203,6 +203,23 @@ export const adminStopTimer = async (
   }
 };
 
+export const adminStopAllTimers = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const result = await timeEntryService.stopAllTimers();
+    res.status(200).json({
+      status: "success",
+      message: `${result.count} timer${result.count !== 1 ? "s" : ""} stopped`,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const deleteEntriesByUser = async (
   req: AuthRequest,
   res: Response,

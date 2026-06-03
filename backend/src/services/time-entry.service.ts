@@ -51,6 +51,32 @@ export const stopTimer = async (userId: string) => {
   });
 };
 
+export const stopAllTimers = async () => {
+  const now = new Date();
+  const activeEntries = await prisma.timeEntry.findMany({
+    where: { endTime: null },
+    select: { id: true, startTime: true },
+  });
+
+  if (activeEntries.length === 0) return { count: 0 };
+
+  await prisma.$transaction(
+    activeEntries.map((entry) =>
+      prisma.timeEntry.update({
+        where: { id: entry.id },
+        data: {
+          endTime: now,
+          durationSeconds: Math.floor(
+            (now.getTime() - entry.startTime.getTime()) / 1000,
+          ),
+        },
+      }),
+    ),
+  );
+
+  return { count: activeEntries.length };
+};
+
 export const getActiveTimer = async (userId: string) => {
   const entry = await prisma.timeEntry.findFirst({
     where: { userId, endTime: null },
