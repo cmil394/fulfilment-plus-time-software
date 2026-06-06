@@ -4,6 +4,7 @@ import type { Customer } from "../../services/customer.service.ts";
 import styles from "./CustomersModal.module.css";
 import { useNavigate } from "react-router-dom";
 import defaultAvatar from "./../../assets/icons/default_pfp.png";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner.tsx";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3001";
 
 interface Props {
@@ -48,7 +49,7 @@ function CustomersModal({ compact = false, onSelectCustomer }: Props) {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <p>{error}</p>;
 
   return (

@@ -7,6 +7,7 @@ import { useActiveTimer } from "../../context/ActiveTimerContext.tsx";
 import styles from "./TasksModal.module.css";
 import titleStyles from "./../CSS Components/titles.module.css";
 import backarrow from "../../assets/icons/backarrow.svg";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner.tsx";
 
 interface Props {
   customerId: string;
@@ -125,7 +126,7 @@ function TasksModal({
     (t.name ?? "").toLowerCase().includes(search.toLowerCase()),
   );
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <p>{error}</p>;
 
   return (
