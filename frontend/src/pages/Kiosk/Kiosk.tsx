@@ -114,7 +114,10 @@ function PinInput({ onSuccess }: PinInputProps) {
           <input
             ref={codeRef}
             type="text"
-            autoComplete="off"
+            autoComplete="nope"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             value={employeeCode}
             onChange={(e) => handleCodeChange(e.target.value)}
             onKeyDown={handleCodeKey}
@@ -133,7 +136,7 @@ function PinInput({ onSuccess }: PinInputProps) {
             type="password"
             inputMode="numeric"
             pattern="[0-9]*"
-            autoComplete="off"
+            autoComplete="new-password"
             value={pin}
             onChange={(e) => handlePinChange(e.target.value)}
             onKeyDown={handlePinKey}
