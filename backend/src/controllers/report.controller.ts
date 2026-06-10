@@ -54,7 +54,7 @@ export const getEmployeeReport = async (
       await reportService.getEmployeeReport(userId, startDate, endDate);
 
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = "FulfillmentPlus";
+    workbook.creator = "FulfilmentPlus";
 
     const sheet = workbook.addWorksheet("Hours Report", {
       pageSetup: { paperSize: 9, orientation: "portrait", fitToPage: true },
@@ -68,7 +68,7 @@ export const getEmployeeReport = async (
     // Row 1 — near-black banner
     sheet.mergeCells("A1:C1");
     const banner = sheet.getCell("A1");
-    banner.value = "FulfillmentPlus — Hours Report";
+    banner.value = "FulfilmentPlus — Hours Report";
     banner.fill = fill(CHARCOAL);
     banner.font = {
       bold: true,
@@ -359,7 +359,7 @@ export const getCustomerReport = async (
       );
 
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = "FulfillmentPlus";
+    workbook.creator = "FulfilmentPlus";
 
     const sheet = workbook.addWorksheet("Hours Report", {
       pageSetup: { paperSize: 9, orientation: "portrait", fitToPage: true },
@@ -373,7 +373,7 @@ export const getCustomerReport = async (
     // Row 1 — banner
     sheet.mergeCells("A1:C1");
     const banner = sheet.getCell("A1");
-    banner.value = "FulfillmentPlus — Hours Report";
+    banner.value = "FulfilmentPlus — Hours Report";
     banner.fill = fill(CHARCOAL);
     banner.font = {
       bold: true,

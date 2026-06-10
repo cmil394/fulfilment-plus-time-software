@@ -98,7 +98,7 @@ function Auth() {
           className={styles.brandLogo}
         />
         <h1 className={styles.title}>
-          Fulfillment <span className={styles.plus}>Plus</span>
+          Fulfilment <span className={styles.plus}>Plus</span>
         </h1>
         <h4 className={styles.subtitle}>Time Logging Software</h4>
       </div>
