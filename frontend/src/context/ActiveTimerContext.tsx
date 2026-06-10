@@ -19,6 +19,7 @@ interface ActiveTimer {
 interface ActiveTimerContextValue {
   activeTimer: ActiveTimer | null;
   elapsedSeconds: number;
+  timerLoading: boolean;
   widgetVisible: boolean;
   setWidgetVisible: (v: boolean) => void;
   startTimer: (taskId: number) => Promise<void>;
@@ -36,6 +37,7 @@ export function ActiveTimerProvider({
 
   const [activeTimer, setActiveTimer] = useState<ActiveTimer | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [timerLoading, setTimerLoading] = useState(false);
   const [widgetVisible, setWidgetVisible] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -91,39 +93,49 @@ export function ActiveTimerProvider({
 
   const startTimer = useCallback(
     async (taskId: number) => {
-      const entry = await timeEntryService.startTimer(taskId);
-      const taskName = entry.task?.name ?? "Unknown task";
-      const customerName = entry.customer?.name ?? "";
-      setActiveTimer({
-        taskId: entry.taskId,
-        taskName,
-        customerName,
-        startTime: entry.startTime,
-      });
-      setWidgetVisible(true);
-      startTick(entry.startTime);
-      console.log(`[Timer] Started — ${taskName} @ ${customerName}`);
+      setTimerLoading(true);
+      try {
+        const entry = await timeEntryService.startTimer(taskId);
+        const taskName = entry.task?.name ?? "Unknown task";
+        const customerName = entry.customer?.name ?? "";
+        setActiveTimer({
+          taskId: entry.taskId,
+          taskName,
+          customerName,
+          startTime: entry.startTime,
+        });
+        setWidgetVisible(true);
+        startTick(entry.startTime);
+        console.log(`[Timer] Started — ${taskName} @ ${customerName}`);
+      } finally {
+        setTimerLoading(false);
+      }
     },
     [startTick],
   );
 
   const stopTimer = useCallback(async () => {
-    const duration = Math.floor(
-      (Date.now() -
-        (activeTimer
-          ? new Date(activeTimer.startTime).getTime()
-          : Date.now())) /
-        1000,
-    );
-    const mins = Math.floor(duration / 60);
-    const secs = duration % 60;
-    console.log(
-      `[Timer] Stopped — ${activeTimer?.taskName} @ ${activeTimer?.customerName} (${mins}m ${secs}s)`,
-    );
-    await timeEntryService.stopTimer();
-    clearTick();
-    setActiveTimer(null);
-    setElapsedSeconds(0);
+    setTimerLoading(true);
+    try {
+      const duration = Math.floor(
+        (Date.now() -
+          (activeTimer
+            ? new Date(activeTimer.startTime).getTime()
+            : Date.now())) /
+          1000,
+      );
+      const mins = Math.floor(duration / 60);
+      const secs = duration % 60;
+      console.log(
+        `[Timer] Stopped — ${activeTimer?.taskName} @ ${activeTimer?.customerName} (${mins}m ${secs}s)`,
+      );
+      await timeEntryService.stopTimer();
+      clearTick();
+      setActiveTimer(null);
+      setElapsedSeconds(0);
+    } finally {
+      setTimerLoading(false);
+    }
   }, [activeTimer]);
 
   return (
@@ -131,6 +143,7 @@ export function ActiveTimerProvider({
       value={{
         activeTimer,
         elapsedSeconds,
+        timerLoading,
         widgetVisible,
         setWidgetVisible,
         startTimer,

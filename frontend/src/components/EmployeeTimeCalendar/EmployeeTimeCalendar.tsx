@@ -225,9 +225,10 @@ interface GroupChipProps {
   item: GroupItem;
   onSelectEntry: (entry: TimeEntry) => void;
   onDeleteEntry: (id: string) => void;
+  deletingEntryId: string | null;
 }
 
-function GroupChip({ item, onSelectEntry, onDeleteEntry }: GroupChipProps) {
+function GroupChip({ item, onSelectEntry, onDeleteEntry, deletingEntryId }: GroupChipProps) {
   const [open, setOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
   const [openRightAligned, setOpenRightAligned] = useState(false);
@@ -346,12 +347,17 @@ function GroupChip({ item, onSelectEntry, onDeleteEntry }: GroupChipProps) {
                   <button
                     className={styles.groupPopoverDelete}
                     title="Delete"
+                    disabled={deletingEntryId === entry.id}
                     onClick={(e) => {
                       e.stopPropagation();
                       onDeleteEntry(entry.id);
                     }}
                   >
-                    <Trash2 size={11} />
+                    {deletingEntryId === entry.id ? (
+                      <span className={styles.btnSpinner} />
+                    ) : (
+                      <Trash2 size={11} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -480,6 +486,7 @@ interface ListViewProps {
   onSelectEntry: (entry: TimeEntry) => void;
   onDeleteEntry: (id: string) => void;
   viewingEntryId?: string;
+  deletingEntryId: string | null;
 }
 
 function ListView({
@@ -487,6 +494,7 @@ function ListView({
   onSelectEntry,
   onDeleteEntry,
   viewingEntryId,
+  deletingEntryId,
 }: ListViewProps) {
   if (entries.length === 0) {
     return (
@@ -626,12 +634,17 @@ function ListView({
                         <button
                           className={styles.listEntryDelete}
                           title="Delete"
+                          disabled={deletingEntryId === entry.id}
                           onClick={(e) => {
                             e.stopPropagation();
                             onDeleteEntry(entry.id);
                           }}
                         >
-                          <Trash2 size={12} />
+                          {deletingEntryId === entry.id ? (
+                            <span className={styles.btnSpinner} />
+                          ) : (
+                            <Trash2 size={12} />
+                          )}
                         </button>
                       </div>
                     </div>
@@ -699,6 +712,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
 
   // Viewing / editing entry state
   const [viewingEntry, setViewingEntry] = useState<TimeEntry | null>(null);
@@ -1080,6 +1095,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
   };
 
   const handleDeleteEntry = async (entryId: string) => {
+    setDeletingEntryId(entryId);
     try {
       await timeEntryService.deleteEntry(entryId);
       setEntries((prev) => prev.filter((e) => e.id !== entryId));
@@ -1090,6 +1106,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
           err?.message ??
           "Failed to delete entry",
       );
+    } finally {
+      setDeletingEntryId(null);
     }
   };
 
@@ -1420,6 +1438,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
                                   item={item}
                                   onSelectEntry={handleSelectEntry}
                                   onDeleteEntry={handleDeleteEntry}
+                                  deletingEntryId={deletingEntryId}
                                 />
                               );
                             }
@@ -1461,12 +1480,17 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
                                 </div>
                                 <button
                                   className={styles.entryDelete}
+                                  disabled={deletingEntryId === entry.id}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleDeleteEntry(entry.id);
                                   }}
                                 >
-                                  <Trash2 size={11} />
+                                  {deletingEntryId === entry.id ? (
+                                    <span className={styles.btnSpinner} />
+                                  ) : (
+                                    <Trash2 size={11} />
+                                  )}
                                 </button>
                               </div>
                             );
@@ -1488,6 +1512,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
               onSelectEntry={handleSelectEntry}
               onDeleteEntry={handleDeleteEntry}
               viewingEntryId={viewingEntry?.id}
+              deletingEntryId={deletingEntryId}
             />
             {!filterMonthYear && canLoadMoreList && (
               <button
@@ -1526,10 +1551,20 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
                     </button>
                     <button
                       className={styles.discardBtn}
+                      disabled={deletingEntryId === viewingEntry.id}
                       onClick={() => handleDeleteEntry(viewingEntry.id)}
                     >
-                      <Trash2 size={13} style={{ marginRight: 4 }} />
-                      Delete
+                      {deletingEntryId === viewingEntry.id ? (
+                        <>
+                          <span className={styles.btnSpinnerInline} />
+                          Deleting…
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 size={13} style={{ marginRight: 4 }} />
+                          Delete
+                        </>
+                      )}
                     </button>
                     <button
                       className={styles.discardBtn}

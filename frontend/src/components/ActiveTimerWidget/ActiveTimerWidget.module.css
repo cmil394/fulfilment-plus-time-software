@@ -198,3 +198,19 @@
   border-radius: 2px;
   flex-shrink: 0;
 }
+
+.btnSpinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 112, 112, 0.25);
+  border-top-color: #ff7070;
+  border-radius: 50%;
+  animation: btnSpin 0.7s linear infinite;
+}
+
+@keyframes btnSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

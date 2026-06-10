@@ -17,6 +17,7 @@ export default function ActiveTimerWidget() {
   const {
     activeTimer,
     elapsedSeconds,
+    timerLoading,
     widgetVisible,
     setWidgetVisible,
     stopTimer,
@@ -117,9 +118,15 @@ export default function ActiveTimerWidget() {
         )}
       </div>
 
-      <button className={styles.stopBtn} onClick={stopTimer}>
-        <span className={styles.stopIcon} />
-        Stop Timer
+      <button className={styles.stopBtn} onClick={stopTimer} disabled={timerLoading}>
+        {timerLoading ? (
+          <span className={styles.btnSpinner} />
+        ) : (
+          <>
+            <span className={styles.stopIcon} />
+            Stop Timer
+          </>
+        )}
       </button>
     </div>
   );

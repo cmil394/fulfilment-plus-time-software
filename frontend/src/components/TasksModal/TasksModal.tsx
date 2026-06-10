@@ -37,9 +37,10 @@ function TasksModal({
   );
   const [openPopup, setOpenPopup] = useState<PopupState | null>(null);
   const [shakeTaskId, setShakeTaskId] = useState<number | null>(null);
+  const [startingTaskId, setStartingTaskId] = useState<number | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
 
-  const { activeTimer, elapsedSeconds, startTimer, stopTimer } =
+  const { activeTimer, elapsedSeconds, timerLoading, startTimer, stopTimer } =
     useActiveTimer();
 
   useEffect(() => {
@@ -82,11 +83,14 @@ function TasksModal({
       setTimeout(() => setShakeTaskId(null), 450);
       return;
     }
+    setStartingTaskId(taskId);
     try {
       await startTimer(taskId);
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? "Failed to start timer.";
       setError(msg);
+    } finally {
+      setStartingTaskId(null);
     }
   };
 
@@ -193,16 +197,29 @@ function TasksModal({
                       <span className={styles.timer}>
                         {formatTime(elapsedSeconds)}
                       </span>
-                      <button className={styles.stopBtn} onClick={handleStop}>
-                        Stop
+                      <button
+                        className={styles.stopBtn}
+                        onClick={handleStop}
+                        disabled={timerLoading}
+                      >
+                        {timerLoading ? (
+                          <span className={styles.btnSpinner} />
+                        ) : (
+                          "Stop"
+                        )}
                       </button>
                     </>
                   ) : (
                     <button
                       className={`${styles.startBtn} ${shakeTaskId === task.id ? styles.shake : ""}`}
                       onClick={() => handleStart(task.id)}
+                      disabled={startingTaskId !== null || timerLoading}
                     >
-                      Start
+                      {startingTaskId === task.id ? (
+                        <span className={styles.btnSpinner} />
+                      ) : (
+                        "Start"
+                      )}
                     </button>
                   )}
                 </div>
