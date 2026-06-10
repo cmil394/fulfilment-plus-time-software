@@ -19,6 +19,7 @@ import {
 import EmployeeTimeCalendar from "../../../components/EmployeeTimeCalendar/EmployeeTimeCalendar";
 import { timeEntryService } from "../../../services/time-entry.service";
 import type { TimeEntry } from "../../../services/time-entry.service";
+import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 
 type Tab = "employees" | "pending" | "activeEmployees";
 type SortField =
@@ -538,7 +539,7 @@ function Employees() {
           <>
             {saveError && <p className={styles.errorMsg}>{saveError}</p>}
             {loading ? (
-              <p>Loading employees...</p>
+              <LoadingSpinner label="Loading employees…" dark />
             ) : employees.length === 0 ? (
               <p>No employees found</p>
             ) : (

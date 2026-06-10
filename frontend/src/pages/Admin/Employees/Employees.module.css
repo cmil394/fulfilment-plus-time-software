@@ -780,6 +780,20 @@
 @media (max-width: 768px) {
   .tableWrapper {
     margin: 12px 8px;
+    border-radius: 10px;
+  }
+
+  .tableHeader {
+    padding: 14px 16px 0;
+  }
+
+  .tabs {
+    padding: 0 12px;
+  }
+
+  .tab {
+    padding: 9px 14px;
+    font-size: 13px;
   }
 
   .table {
@@ -800,15 +814,87 @@
     min-width: 80px;
   }
 
+  .activeTimersHeader {
+    padding: 12px 16px 0;
+    gap: 10px;
+  }
+
+  .errorMsg {
+    padding: 0 16px;
+  }
+
   .modal {
     width: 92vw;
     padding: 20px 16px 16px;
   }
 }
 
-@media (max-width: 480px) {
+/* Small phone — hide non-essential columns to avoid excess horizontal scroll */
+@media (max-width: 640px) {
+  .tableWrapper {
+    margin: 8px 4px;
+  }
+
+  .tabs {
+    padding: 0 6px;
+  }
+
+  .tab {
+    padding: 8px 11px;
+    font-size: 12.5px;
+  }
+
+  /* Remove forced min-width so hidden columns shrink the table */
   .table {
-    min-width: 620px;
+    min-width: 0;
+  }
+
+  /* Hide # column in all tables */
+  .table th:nth-child(1),
+  .table td:nth-child(1) {
+    display: none;
+  }
+
+  /* Employees: hide Code (col 6) and Date Registered (col 7) */
+  .employeesTable th:nth-child(6),
+  .employeesTable td:nth-child(6),
+  .employeesTable th:nth-child(7),
+  .employeesTable td:nth-child(7) {
+    display: none;
+  }
+
+  /* Pending: hide Date Registered (col 6) and Status (col 7) */
+  .pendingTable th:nth-child(6),
+  .pendingTable td:nth-child(6),
+  .pendingTable th:nth-child(7),
+  .pendingTable td:nth-child(7) {
+    display: none;
+  }
+
+  .refreshBtn,
+  .stopAllBtn {
+    padding: 7px 12px;
+    font-size: 12.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tableWrapper {
+    margin: 4px 0;
+    border-radius: 0;
+  }
+
+  .tableHeader {
+    padding: 12px 12px 0;
+  }
+
+  .tabs {
+    padding: 0 4px;
+  }
+
+  .tab {
+    padding: 7px 9px;
+    font-size: 12px;
   }
 
   .table th,
@@ -817,10 +903,28 @@
     font-size: 12px;
   }
 
+  /* Also hide Email column (col 4) from employees and pending */
+  .employeesTable th:nth-child(4),
+  .employeesTable td:nth-child(4),
+  .pendingTable th:nth-child(4),
+  .pendingTable td:nth-child(4) {
+    display: none;
+  }
+
   .approveBtn,
   .rejectBtn {
     padding: 5px 10px;
     font-size: 12px;
+  }
+
+  .activeTimersHeader {
+    padding: 10px 12px 0;
+    gap: 8px;
+  }
+
+  .lastRefreshed {
+    font-size: 11px;
+    width: 100%;
   }
 
   .modalTitle {

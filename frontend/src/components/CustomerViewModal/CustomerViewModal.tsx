@@ -292,7 +292,10 @@ function CustomerViewModal({ customer, onClose }: Props) {
               </h3>
 
               {tasksLoading ? (
-                <p className={styles.loadingMsg}>Loading tasks…</p>
+                <div className={styles.centeredLoader}>
+                  <Loader2 size={20} className={styles.spin} />
+                  <span>Loading tasks…</span>
+                </div>
               ) : tasksError ? (
                 <p className={styles.errorMsg}>{tasksError}</p>
               ) : tasks.length === 0 ? (

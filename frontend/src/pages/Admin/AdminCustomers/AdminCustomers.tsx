@@ -19,6 +19,7 @@ import {
   GripVertical,
 } from "lucide-react";
 import CustomerViewModal from "./../../../components/CustomerViewModal/CustomerViewModal";
+import LoadingSpinner from "./../../../components/LoadingSpinner/LoadingSpinner";
 import {
   DndContext,
   closestCenter,
@@ -445,7 +446,7 @@ function AdminCustomers() {
         />
 
         {loading ? (
-          <p>Loading customers...</p>
+          <LoadingSpinner label="Loading customers…" dark />
         ) : customers.length === 0 ? (
           <p>No customers found</p>
         ) : (
