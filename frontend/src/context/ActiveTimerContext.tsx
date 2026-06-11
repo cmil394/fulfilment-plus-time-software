@@ -53,7 +53,10 @@ export function ActiveTimerProvider({
       clearTick();
       const tick = () => {
         setElapsedSeconds(
-          Math.floor((Date.now() - new Date(startTime).getTime()) / 1000),
+          Math.max(
+            0,
+            Math.floor((Date.now() - new Date(startTime).getTime()) / 1000),
+          ),
         );
       };
       tick();
