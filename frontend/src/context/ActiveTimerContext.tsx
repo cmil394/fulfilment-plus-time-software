@@ -98,6 +98,8 @@ export function ActiveTimerProvider({
     async (taskId: number) => {
       setTimerLoading(true);
       try {
+        const active = await timeEntryService.getActiveTimer();
+        if (active) await timeEntryService.stopTimer();
         const entry = await timeEntryService.startTimer(taskId);
         const taskName = entry.task?.name ?? "Unknown task";
         const customerName = entry.customer?.name ?? "";
