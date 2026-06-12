@@ -53,7 +53,10 @@ export function ActiveTimerProvider({
       clearTick();
       const tick = () => {
         setElapsedSeconds(
-          Math.floor((Date.now() - new Date(startTime).getTime()) / 1000),
+          Math.max(
+            0,
+            Math.floor((Date.now() - new Date(startTime).getTime()) / 1000),
+          ),
         );
       };
       tick();
@@ -95,6 +98,13 @@ export function ActiveTimerProvider({
     async (taskId: number) => {
       setTimerLoading(true);
       try {
+        if (activeTimer) {
+          await timeEntryService.stopTimer();
+        } else {
+          // Check server to avoid 409
+          const serverActive = await timeEntryService.getActiveTimer();
+          if (serverActive) await timeEntryService.stopTimer();
+        }
         const entry = await timeEntryService.startTimer(taskId);
         const taskName = entry.task?.name ?? "Unknown task";
         const customerName = entry.customer?.name ?? "";
@@ -111,7 +121,7 @@ export function ActiveTimerProvider({
         setTimerLoading(false);
       }
     },
-    [startTick],
+    [startTick, activeTimer],
   );
 
   const stopTimer = useCallback(async () => {

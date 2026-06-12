@@ -36,7 +36,6 @@ function TasksModal({
     customerNameProp ?? "",
   );
   const [openPopup, setOpenPopup] = useState<PopupState | null>(null);
-  const [shakeTaskId, setShakeTaskId] = useState<number | null>(null);
   const [startingTaskId, setStartingTaskId] = useState<number | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
 
@@ -78,11 +77,6 @@ function TasksModal({
   }, []);
 
   const handleStart = async (taskId: number) => {
-    if (activeTimer !== null) {
-      setShakeTaskId(taskId);
-      setTimeout(() => setShakeTaskId(null), 450);
-      return;
-    }
     setStartingTaskId(taskId);
     try {
       await startTimer(taskId);
@@ -211,7 +205,7 @@ function TasksModal({
                     </>
                   ) : (
                     <button
-                      className={`${styles.startBtn} ${shakeTaskId === task.id ? styles.shake : ""}`}
+                      className={styles.startBtn}
                       onClick={() => handleStart(task.id)}
                       disabled={startingTaskId !== null || timerLoading}
                     >
