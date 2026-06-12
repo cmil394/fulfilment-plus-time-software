@@ -1,0 +1,25 @@
+app = "fulfilment-plus-time-software"
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3001"
+
+[[services]]
+  internal_port = 3001
+  protocol = "tcp"
+
+  [services.concurrency]
+    soft_limit = 20
+    hard_limit = 25
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
