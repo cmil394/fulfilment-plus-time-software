@@ -1,25 +1,35 @@
-app = "fulfilment-plus-time-software"
-kill_signal = "SIGINT"
-kill_timeout = 5
+# fly.toml app configuration file generated for fulfilment-plus-time-software-vivid-river-7354 on 2026-06-13T12:36:01+12:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'fulfilment-plus-time-software-vivid-river-7354'
+primary_region = 'syd'
+kill_signal = 'SIGINT'
+kill_timeout = '5s'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
 [env]
-  PORT = "3001"
+  NODE_ENV = 'production'
+  PORT = '3001'
 
-[[services]]
+[http_service]
   internal_port = 3001
-  protocol = "tcp"
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
 
-  [services.concurrency]
-    soft_limit = 20
-    hard_limit = 25
+  [[http_service.checks]]
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '10s'
+    method = 'GET'
+    path = '/api/health'
 
-  [[services.ports]]
-    port = 80
-    handlers = ["http"]
-
-  [[services.ports]]
-    port = 443
-    handlers = ["tls", "http"]
+[[vm]]
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 256
