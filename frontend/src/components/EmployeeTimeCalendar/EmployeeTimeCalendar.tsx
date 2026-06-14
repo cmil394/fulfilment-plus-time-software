@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { extractApiError } from "../../utils/apiError";
 import {
   X,
   Clock,
@@ -228,7 +229,12 @@ interface GroupChipProps {
   deletingEntryId: string | null;
 }
 
-function GroupChip({ item, onSelectEntry, onDeleteEntry, deletingEntryId }: GroupChipProps) {
+function GroupChip({
+  item,
+  onSelectEntry,
+  onDeleteEntry,
+  deletingEntryId,
+}: GroupChipProps) {
   const [open, setOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
   const [openRightAligned, setOpenRightAligned] = useState(false);
@@ -972,12 +978,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
       setEditTaskId("");
       setEditCustomerId("");
       setEditTasks([]);
-    } catch (err: any) {
-      setEditError(
-        err?.response?.data?.message ??
-          err?.message ??
-          "Failed to update entry",
-      );
+    } catch (err: unknown) {
+      setEditError(extractApiError(err, "Failed to update entry"));
     } finally {
       setEditSaving(false);
     }
@@ -1083,12 +1085,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
       setSelectedCustomerId("");
       setSelectedTaskId("");
       setNotes("");
-    } catch (err: any) {
-      setSaveError(
-        err?.response?.data?.message ??
-          err?.message ??
-          "Failed to create entry",
-      );
+    } catch (err: unknown) {
+      setSaveError(extractApiError(err, "Failed to create entry"));
     } finally {
       setSaving(false);
     }

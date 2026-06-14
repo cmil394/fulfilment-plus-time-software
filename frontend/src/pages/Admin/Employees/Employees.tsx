@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Navbar from "../../../components/Navbar/Navbar";
 import styles from "./Employees.module.css";
 import tableStyles from "./../../../components/CSS Components/titles.module.css";
+import { extractApiError } from "../../../utils/apiError";
 import { authService } from "../../../services/auth.service";
 import type { User } from "../../../services/auth.service";
 import {
@@ -242,10 +243,9 @@ function Employees() {
       setEditingId(null);
       setEditDraft(null);
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Failed to save changes. Please try again.";
-      setSaveError(msg);
+      setSaveError(
+        extractApiError(err, "Failed to save changes. Please try again."),
+      );
     } finally {
       setActionLoading(null);
     }
