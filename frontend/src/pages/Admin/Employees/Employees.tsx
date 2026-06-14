@@ -343,9 +343,17 @@ function Employees() {
       setPendingResetId(null);
       setResetNewPassword("");
     } catch (err: unknown) {
+      const data = (
+        err as {
+          response?: {
+            data?: { message?: string; errors?: { message: string }[] };
+          };
+        }
+      )?.response?.data;
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Failed to reset password. Please try again.";
+        data?.errors?.map((e) => e.message).join(", ") ??
+        data?.message ??
+        "Failed to reset password. Please try again.";
       setResetPwError(msg);
     } finally {
       setResetPwLoading(false);
