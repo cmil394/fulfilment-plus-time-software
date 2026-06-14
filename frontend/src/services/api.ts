@@ -27,16 +27,31 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => {
-    const start = (response.config as typeof response.config & { _t: number })._t;
+    const start = (response.config as typeof response.config & { _t: number })
+      ._t;
     const ms = Math.round(performance.now() - start);
-    console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} — ${ms}ms`);
+    console.log(
+      `[API] ${response.config.method?.toUpperCase()} ${response.config.url} — ${ms}ms`,
+    );
     return response;
   },
   (error) => {
-    const config = error.config as (typeof error.config & { _t: number }) | undefined;
+    const config = error.config as
+      | (typeof error.config & { _t: number })
+      | undefined;
     if (config?._t) {
       const ms = Math.round(performance.now() - config._t);
-      console.warn(`[API] ${config.method?.toUpperCase()} ${config.url} — ${ms}ms (error)`);
+      console.warn(
+        `[API] ${config.method?.toUpperCase()} ${config.url} — ${ms}ms (error)`,
+      );
+    }
+    if (
+      error.response?.status === 401 &&
+      !error.config?.url?.includes("/auth/login")
+    ) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   },
