@@ -10,11 +10,12 @@ import AdminTasks from "./Admin/AdminTasks/AdminTasks";
 import Kiosk from "./Kiosk/Kiosk";
 import Profile from "./Profile/Profile";
 import Timesheets from "./Timesheets/Timesheets";
+import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 
 function Home() {
   const { user, loading } = useAuth();
 
-  if (loading) return null;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <Routes>
