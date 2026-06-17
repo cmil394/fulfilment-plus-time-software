@@ -1,7 +1,54 @@
 import { Response, NextFunction } from "express";
 import ExcelJS from "exceljs";
+import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { AuthRequest } from "../middleware/auth.middleware";
 import * as reportService from "../services/report.service";
+
+const PIE_COLORS = [
+  "#4F81BD",
+  "#C0504D",
+  "#9BBB59",
+  "#8064A2",
+  "#4BACC6",
+  "#F79646",
+  "#2C4770",
+  "#772C2A",
+];
+
+async function renderPieChart(
+  segments: { label: string; seconds: number }[],
+  title: string,
+): Promise<Buffer> {
+  const canvas = new ChartJSNodeCanvas({ width: 600, height: 400, backgroundColour: "white" });
+  const total = segments.reduce((s, x) => s + x.seconds, 0);
+  const toHm = (sec: number) => {
+    const h = Math.floor(sec / 3600);
+    const m = Math.round((sec % 3600) / 60);
+    return m === 0 ? `${h}h` : `${h}h ${m}m`;
+  };
+  return canvas.renderToBuffer({
+    type: "pie",
+    data: {
+      labels: segments.map(
+        (s) => `${s.label} (${toHm(s.seconds)} — ${Math.round((s.seconds / total) * 100)}%)`,
+      ),
+      datasets: [
+        {
+          data: segments.map((s) => s.seconds),
+          backgroundColor: segments.map((_, i) => PIE_COLORS[i % PIE_COLORS.length]),
+          borderWidth: 1,
+          borderColor: "#ffffff",
+        },
+      ],
+    },
+    options: {
+      plugins: {
+        title: { display: true, text: title, font: { size: 16 } },
+        legend: { position: "right", labels: { font: { size: 11 }, padding: 14 } },
+      },
+    },
+  });
+}
 
 // Palette
 const CHARCOAL = "FF111827";
@@ -289,6 +336,19 @@ export const getEmployeeReport = async (
     footCell.value = `Generated ${fmtDate(new Date())}`;
     footCell.font = { size: 9, italic: true, color: { argb: TEXT_DIM } };
     footCell.alignment = { horizontal: "right" };
+
+    if (customers.length > 0) {
+      const chartPng = await renderPieChart(
+        customers.map((c) => ({ label: c.customerName, seconds: c.totalSeconds })),
+        `Hours by Customer — ${fmtDate(start)} to ${fmtDate(end)}`,
+      );
+      const imageId = workbook.addImage({ buffer: Buffer.from(chartPng) as any, extension: "png" });
+      const chartSheet = workbook.addWorksheet("Chart");
+      chartSheet.addImage(imageId, {
+        tl: { col: 0.5, row: 0.5 },
+        ext: { width: 600, height: 400 },
+      });
+    }
 
     const safeName = employeeName
       .replace(/[^a-z0-9]/gi, "_")
@@ -601,6 +661,23 @@ export const getCustomerReport = async (
     footCell.value = `Generated ${fmtDate(new Date())}`;
     footCell.font = { size: 9, italic: true, color: { argb: TEXT_DIM } };
     footCell.alignment = { horizontal: "right" };
+
+    if (taskMap.size > 0) {
+      const taskSegments = Array.from(taskMap.values()).map(({ taskName, users }) => ({
+        label: taskName,
+        seconds: Array.from(users.values()).reduce((s, u) => s + u.seconds, 0),
+      }));
+      const chartPng = await renderPieChart(
+        taskSegments,
+        `Hours by Task — ${fmtDate(start)} to ${fmtDate(end)}`,
+      );
+      const imageId = workbook.addImage({ buffer: Buffer.from(chartPng) as any, extension: "png" });
+      const chartSheet = workbook.addWorksheet("Chart");
+      chartSheet.addImage(imageId, {
+        tl: { col: 0.5, row: 0.5 },
+        ext: { width: 600, height: 400 },
+      });
+    }
 
     const safeName = customerName
       .replace(/[^a-z0-9]/gi, "_")
