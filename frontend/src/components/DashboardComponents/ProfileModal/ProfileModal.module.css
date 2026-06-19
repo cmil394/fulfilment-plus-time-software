@@ -99,6 +99,7 @@
   text-decoration: none;
   text-align: center;
   transition: color 0.15s;
+  margin-top: 4px;
 }
 
 .reportIssue:hover {

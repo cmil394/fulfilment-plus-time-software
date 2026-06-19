@@ -181,19 +181,23 @@ function computeColumnLayout(
 
   positioned.sort((a, b) => a.startMins - b.startMins);
 
+  const GROUP_GAP_PX = (GROUP_GAP_MINS / 60) * SLOT_HEIGHT;
   const result: LayoutItem[] = [];
   let i = 0;
 
   while (i < positioned.length) {
     const cluster: Pos[] = [positioned[i]];
-    let clusterEnd = positioned[i].endMins;
+    let clusterVisualBottom = positioned[i].top + positioned[i].height;
     let j = i + 1;
 
     while (j < positioned.length) {
       const next = positioned[j];
-      if (next.startMins <= clusterEnd + GROUP_GAP_MINS) {
+      if (next.top < clusterVisualBottom + GROUP_GAP_PX) {
         cluster.push(next);
-        clusterEnd = Math.max(clusterEnd, next.endMins);
+        clusterVisualBottom = Math.max(
+          clusterVisualBottom,
+          next.top + next.height,
+        );
         j++;
       } else {
         break;
