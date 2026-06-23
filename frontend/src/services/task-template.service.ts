@@ -57,4 +57,9 @@ export const taskTemplateService = {
     const response = await api.post(`/task-templates/${id}/assign`, payload);
     return response.data.data;
   },
+
+  syncDescriptions: async (): Promise<{ updatedCount: number }> => {
+    const response = await api.post("/task-templates/sync-descriptions");
+    return response.data.data;
+  },
 };

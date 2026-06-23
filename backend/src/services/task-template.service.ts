@@ -67,6 +67,23 @@ export const deleteTaskTemplate = async (id: string) => {
   await prisma.taskTemplate.delete({ where: { id } });
 };
 
+export const syncTaskDescriptions = async () => {
+  const templates = await prisma.taskTemplate.findMany({
+    select: { name: true, description: true },
+  });
+
+  let updatedCount = 0;
+  for (const template of templates) {
+    const result = await prisma.task.updateMany({
+      where: { name: template.name },
+      data: { description: template.description },
+    });
+    updatedCount += result.count;
+  }
+
+  return { updatedCount };
+};
+
 export const assignTaskTemplate = async (
   id: string,
   data: AssignTaskTemplateInput,

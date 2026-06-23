@@ -14,10 +14,12 @@ import {
   AlertTriangle,
   Trash2,
   ClipboardList,
+  RefreshCw,
+  CheckCircle,
 } from "lucide-react";
 
 // Types
-type ModalMode = "create" | "edit" | "delete" | null;
+type ModalMode = "create" | "edit" | "delete" | "sync" | "syncSuccess" | null;
 
 interface FormState {
   name: string;
@@ -47,6 +49,7 @@ function AdminTasks() {
   const [selected, setSelected] = useState<TaskTemplate | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [syncCount, setSyncCount] = useState<number>(0);
 
   // Fetch
   const fetchTemplates = async () => {
@@ -160,6 +163,24 @@ function AdminTasks() {
     }
   };
 
+  const handleSync = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const result = await taskTemplateService.syncDescriptions();
+      setSyncCount(result.updatedCount);
+      setModalMode("syncSuccess");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to sync descriptions.";
+      setError(msg);
+      setModalMode(null);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const isCreateOrEdit = modalMode === "create" || modalMode === "edit";
 
   return (
@@ -173,6 +194,15 @@ function AdminTasks() {
               <button className={styles.btnPrimary} onClick={openCreate}>
                 <FilePlus size={15} />
                 New Template
+              </button>
+              <button
+                className={styles.btnGhost}
+                onClick={() => setModalMode("sync")}
+                disabled={templates.length === 0}
+                title="Sync descriptions from templates to existing tasks"
+              >
+                <RefreshCw size={15} />
+                Sync Descriptions
               </button>
               {!loading && (
                 <p className={styles.tableCount}>
@@ -304,6 +334,58 @@ function AdminTasks() {
                   : modalMode === "create"
                     ? "Create Template"
                     : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sync Confirm Modal */}
+      {modalMode === "sync" && (
+        <div className={styles.overlay} onClick={closeModal}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalIconWrap}>
+              <RefreshCw size={22} className={styles.modalIconCreate} />
+            </div>
+            <p className={styles.modalTitle}>Sync Task Descriptions</p>
+            <p className={styles.modalSubtitle}>
+              This will overwrite descriptions on all existing tasks whose name
+              matches a template. This cannot be undone.
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancelBtn}
+                onClick={closeModal}
+                disabled={saving}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.modalConfirmBtn}
+                onClick={handleSync}
+                disabled={saving}
+              >
+                {saving ? "Syncing…" : "Sync Descriptions"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sync Success Modal */}
+      {modalMode === "syncSuccess" && (
+        <div className={styles.overlay} onClick={closeModal}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalIconWrap}>
+              <CheckCircle size={22} className={styles.modalIconCreate} />
+            </div>
+            <p className={styles.modalTitle}>Sync Complete</p>
+            <p className={styles.modalSubtitle}>
+              {syncCount} {syncCount === 1 ? "task" : "tasks"} updated.
+            </p>
+            <div className={styles.modalActions}>
+              <button className={styles.modalConfirmBtn} onClick={closeModal}>
+                Done
               </button>
             </div>
           </div>

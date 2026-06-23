@@ -100,6 +100,23 @@ export const deleteTaskTemplate = async (
   }
 };
 
+export const syncTaskDescriptions = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const result = await taskTemplateService.syncTaskDescriptions();
+    res.status(200).json({
+      status: "success",
+      message: `${result.updatedCount} task(s) updated`,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const assignTaskTemplate = async (
   req: AuthRequest,
   res: Response,
