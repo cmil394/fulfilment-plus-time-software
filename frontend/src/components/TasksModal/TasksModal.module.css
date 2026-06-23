@@ -21,26 +21,25 @@
 .board::-webkit-scrollbar {
   width: 3px;
 }
+
 .board::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .board::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0.5),
-    rgba(255, 255, 255, 0.05)
-  );
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0.05));
   border-radius: 999px;
   box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
 }
+
 .board::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.8),
-    rgba(255, 255, 255, 0.1)
-  );
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.8),
+      rgba(255, 255, 255, 0.1));
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
 }
 
@@ -69,26 +68,25 @@
 .boardCompact::-webkit-scrollbar {
   width: 3px;
 }
+
 .boardCompact::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .boardCompact::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0.5),
-    rgba(255, 255, 255, 0.05)
-  );
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0.05));
   border-radius: 999px;
   box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
 }
+
 .boardCompact::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.8),
-    rgba(255, 255, 255, 0.1)
-  );
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.8),
+      rgba(255, 255, 255, 0.1));
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
 }
 
@@ -271,6 +269,7 @@
     opacity: 0;
     transform: translateY(calc(-100% + 4px));
   }
+
   to {
     opacity: 1;
     transform: translateY(-100%);
@@ -334,18 +333,18 @@
 }
 
 .startBtn {
-  background-color: #244d13;
+  background-color: #1ec426;
 }
 
 .stopBtn {
-  background-color: #580b0b;
+  background-color: #d41818;
 }
 
 .startBtn:hover {
   box-shadow: 0px 0px 8px -3px #6cff78;
   border-color: #6cff78;
   color: #f7f5ff;
-  background-color: #2f753b;
+  background-color: #2a8e3b;
 }
 
 .startBtn:active {
@@ -358,7 +357,7 @@
   box-shadow: 0px 0px 8px -3px #ff6c6c;
   border-color: #ff6c6c;
   color: #f7f5ff;
-  background-color: #7e1811;
+  background-color: #8b1810;
 }
 
 .stopBtn:active {
