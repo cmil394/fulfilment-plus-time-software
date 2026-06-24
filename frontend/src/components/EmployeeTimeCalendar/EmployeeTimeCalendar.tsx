@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { extractApiError } from "../../utils/apiError";
 import {
   X,
   Clock,
@@ -180,19 +181,23 @@ function computeColumnLayout(
 
   positioned.sort((a, b) => a.startMins - b.startMins);
 
+  const GROUP_GAP_PX = (GROUP_GAP_MINS / 60) * SLOT_HEIGHT;
   const result: LayoutItem[] = [];
   let i = 0;
 
   while (i < positioned.length) {
     const cluster: Pos[] = [positioned[i]];
-    let clusterEnd = positioned[i].endMins;
+    let clusterVisualBottom = positioned[i].top + positioned[i].height;
     let j = i + 1;
 
     while (j < positioned.length) {
       const next = positioned[j];
-      if (next.startMins <= clusterEnd + GROUP_GAP_MINS) {
+      if (next.top < clusterVisualBottom + GROUP_GAP_PX) {
         cluster.push(next);
-        clusterEnd = Math.max(clusterEnd, next.endMins);
+        clusterVisualBottom = Math.max(
+          clusterVisualBottom,
+          next.top + next.height,
+        );
         j++;
       } else {
         break;
@@ -228,7 +233,12 @@ interface GroupChipProps {
   deletingEntryId: string | null;
 }
 
-function GroupChip({ item, onSelectEntry, onDeleteEntry, deletingEntryId }: GroupChipProps) {
+function GroupChip({
+  item,
+  onSelectEntry,
+  onDeleteEntry,
+  deletingEntryId,
+}: GroupChipProps) {
   const [open, setOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
   const [openRightAligned, setOpenRightAligned] = useState(false);
@@ -972,12 +982,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
       setEditTaskId("");
       setEditCustomerId("");
       setEditTasks([]);
-    } catch (err: any) {
-      setEditError(
-        err?.response?.data?.message ??
-          err?.message ??
-          "Failed to update entry",
-      );
+    } catch (err: unknown) {
+      setEditError(extractApiError(err, "Failed to update entry"));
     } finally {
       setEditSaving(false);
     }
@@ -1083,12 +1089,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
       setSelectedCustomerId("");
       setSelectedTaskId("");
       setNotes("");
-    } catch (err: any) {
-      setSaveError(
-        err?.response?.data?.message ??
-          err?.message ??
-          "Failed to create entry",
-      );
+    } catch (err: unknown) {
+      setSaveError(extractApiError(err, "Failed to create entry"));
     } finally {
       setSaving(false);
     }

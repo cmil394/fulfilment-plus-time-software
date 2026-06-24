@@ -49,6 +49,15 @@ export default function ProfileModal() {
           <span className={styles.value}>{createdAt}</span>
         </div>
       </div>
+      <hr className={styles.divider} />
+      <a
+        href="https://github.com/cmil394/fulfilment-plus-time-software/issues/new"
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.reportIssue}
+      >
+        Report an issue on GitHub
+      </a>
     </div>
   );
 }

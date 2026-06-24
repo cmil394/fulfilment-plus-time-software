@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Navbar from "../../../components/Navbar/Navbar";
 import styles from "./AdminCustomers.module.css";
 import tableStyles from "./../../../components/CSS Components/titles.module.css";
+import { extractApiError } from "../../../utils/apiError";
 import defaultAvatar from "./../../../assets/icons/default_pfp.png";
 import {
   adminCustomerService,
@@ -250,10 +251,9 @@ function AdminCustomers() {
         `[Admin] Customer created — ${newCustomer.name} (${newCustomer.email})`,
       );
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Failed to create customer. Please try again.";
-      setCreateError(msg);
+      setCreateError(
+        extractApiError(err, "Failed to create customer. Please try again."),
+      );
     } finally {
       setCreateLoading(false);
     }
@@ -307,10 +307,9 @@ function AdminCustomers() {
       setEditingId(null);
       setEditDraft(null);
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Failed to save changes. Please try again.";
-      setSaveError(msg);
+      setSaveError(
+        extractApiError(err, "Failed to save changes. Please try again."),
+      );
     } finally {
       setActionLoading(null);
     }

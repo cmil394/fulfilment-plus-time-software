@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { extractApiError } from "../../utils/apiError";
 import {
   X,
   Building2,
@@ -143,9 +144,9 @@ function CustomerViewModal({ customer, onClose }: Props) {
       setView("details");
     } catch (err: unknown) {
       console.error("Failed to assign template:", err);
-      const message = (err as { response?: { data?: { message?: string } } })
-        ?.response?.data?.message;
-      setSubmitError(message ?? "Could not assign preset. Please try again.");
+      setSubmitError(
+        extractApiError(err, "Could not assign preset. Please try again."),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -167,10 +168,9 @@ function CustomerViewModal({ customer, onClose }: Props) {
       setCustomDescription("");
       setView("details");
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Could not create task. Please try again.";
-      setSubmitError(msg);
+      setSubmitError(
+        extractApiError(err, "Could not create task. Please try again."),
+      );
     } finally {
       setSubmitting(false);
     }

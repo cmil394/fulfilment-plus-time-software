@@ -6,6 +6,7 @@ import {
   updateTaskTemplate,
   deleteTaskTemplate,
   assignTaskTemplate,
+  syncTaskDescriptions,
 } from "../controllers/task-template.controller";
 import { authMiddleware, adminMiddleware } from "../middleware/auth.middleware";
 import { readLimiter, writeLimiter } from "../middleware/rate-limiting.middleware";
@@ -36,6 +37,9 @@ router.delete(
   writeLimiter,
   deleteTaskTemplate,
 );
+
+// Sync descriptions from templates to tasks based on name
+router.post("/task-templates/sync-descriptions", authMiddleware, adminMiddleware, writeLimiter, syncTaskDescriptions);
 
 // Assign template
 router.post("/task-templates/:id/assign", authMiddleware, adminMiddleware, writeLimiter, assignTaskTemplate);

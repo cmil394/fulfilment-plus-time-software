@@ -93,6 +93,20 @@
   word-break: break-all;
 }
 
+.reportIssue {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  text-align: center;
+  transition: color 0.15s;
+  margin-top: 4px;
+}
+
+.reportIssue:hover {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: underline;
+}
+
 @media (max-height: 700px) {
   .card {
     gap: 8px;

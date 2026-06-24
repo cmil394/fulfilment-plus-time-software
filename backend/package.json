@@ -7,6 +7,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
@@ -23,6 +25,8 @@
     "@prisma/adapter-pg": "^7.4.1",
     "@prisma/client": "^7.4.1",
     "bcryptjs": "^2.4.3",
+    "chart.js": "^4.5.1",
+    "chartjs-node-canvas": "^5.0.0",
     "cloudinary": "^2.10.0",
     "cors": "^2.8.5",
     "decimal.js": "^10.6.0",
@@ -43,7 +47,10 @@
     "@types/multer": "^2.1.0",
     "@types/node": "^22.10.1",
     "@types/pg": "^8.16.0",
+    "@types/supertest": "^7.2.0",
     "prisma": "^7.4.1",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.9",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
     "typescript": "^5.9.3"

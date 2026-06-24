@@ -5,6 +5,7 @@ import type { User } from "../../services/auth.service";
 import styles from "./Profile.module.css";
 import titleStyles from "../../components/CSS Components/titles.module.css";
 import { Eye, EyeOff, Lock } from "lucide-react";
+import { extractApiError } from "../../utils/apiError";
 
 function Profile() {
   const [user, setUser] = useState<User | null>(null);
@@ -75,10 +76,7 @@ function Profile() {
       setConfirmNewPassword("");
       setShowPwForm(false);
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Failed to update password.";
-      setPwError(msg);
+      setPwError(extractApiError(err, "Failed to update password."));
     } finally {
       setPwLoading(false);
     }
