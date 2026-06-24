@@ -1,4 +1,4 @@
-import { Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import ExcelJS from "exceljs";
 import { AuthRequest } from "../middleware/auth.middleware";
 import * as reportService from "../services/report.service";
@@ -36,6 +36,20 @@ const fmtDate = (d: Date) =>
     month: "long",
     year: "numeric",
   });
+
+// Pick stats (public aggregate endpoint for warehouse dashboard)
+export const getPickStats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const data = await reportService.getPickStats();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+};
 
 // Employee report
 export const getEmployeeReport = async (

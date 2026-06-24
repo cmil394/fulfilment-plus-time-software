@@ -89,6 +89,90 @@ export type EmployeeReportData = {
   end: Date;
 };
 
+export type PickStatRow = {
+  customerId: string;
+  customerName: string;
+  picking: { count: number; avgSeconds: number; totalSeconds: number } | null;
+  packing: { count: number; avgSeconds: number; totalSeconds: number } | null;
+};
+
+export const getPickStats = async (): Promise<PickStatRow[]> => {
+  const entries = await prisma.timeEntry.findMany({
+    where: {
+      task: { name: { in: ["Picking", "Packing"], mode: "insensitive" } },
+      durationSeconds: { not: null },
+      endTime: { not: null },
+    },
+    select: {
+      customerId: true,
+      durationSeconds: true,
+      customer: { select: { id: true, name: true } },
+      task: { select: { name: true } },
+    },
+  });
+
+  const map = new Map<
+    string,
+    {
+      customerName: string;
+      picking: { count: number; total: number };
+      packing: { count: number; total: number };
+    }
+  >();
+
+  for (const entry of entries) {
+    const cid = entry.customerId;
+    if (!cid || !entry.customer) continue;
+
+    if (!map.has(cid)) {
+      map.set(cid, {
+        customerName: entry.customer.name,
+        picking: { count: 0, total: 0 },
+        packing: { count: 0, total: 0 },
+      });
+    }
+
+    const row = map.get(cid)!;
+    const taskName = entry.task?.name?.toLowerCase() ?? "";
+    const dur = entry.durationSeconds ?? 0;
+
+    if (taskName === "picking") {
+      row.picking.count++;
+      row.picking.total += dur;
+    } else if (taskName === "packing") {
+      row.packing.count++;
+      row.packing.total += dur;
+    }
+  }
+
+  const result: PickStatRow[] = [];
+  for (const [customerId, { customerName, picking, packing }] of map) {
+    result.push({
+      customerId,
+      customerName,
+      picking:
+        picking.count > 0
+          ? {
+              count: picking.count,
+              avgSeconds: Math.round(picking.total / picking.count),
+              totalSeconds: picking.total,
+            }
+          : null,
+      packing:
+        packing.count > 0
+          ? {
+              count: packing.count,
+              avgSeconds: Math.round(packing.total / packing.count),
+              totalSeconds: packing.total,
+            }
+          : null,
+    });
+  }
+
+  result.sort((a, b) => a.customerName.localeCompare(b.customerName));
+  return result;
+};
+
 export const getEmployeeReport = async (
   userId: string,
   startDate?: string,
