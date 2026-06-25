@@ -1,7 +1,7 @@
 import { prisma } from "../lib/prisma";
 import { NotFoundError } from "../utils/errors";
 
-export type UserRow = { userName: string; seconds: number };
+export type UserRow = { userName: string; seconds: number; entryCount: number };
 export type TaskRow = { taskName: string; users: Map<string, UserRow> };
 export type CustomerReportData = {
   customerName: string;
@@ -63,8 +63,9 @@ export const getCustomerReport = async (
       taskMap.set(taskId, { taskName, users: new Map() });
     const taskRow = taskMap.get(taskId)!;
     if (!taskRow.users.has(userId))
-      taskRow.users.set(userId, { userName, seconds: 0 });
+      taskRow.users.set(userId, { userName, seconds: 0, entryCount: 0 });
     taskRow.users.get(userId)!.seconds += duration;
+    taskRow.users.get(userId)!.entryCount += 1;
   }
 
   return { customerName: customer.name, taskMap, start, end };
@@ -74,11 +75,13 @@ export type EmployeeTaskRow = {
   taskId: string;
   taskName: string;
   seconds: number;
+  entryCount: number;
 };
 export type EmployeeCustomerRow = {
   customerId: string;
   customerName: string;
   totalSeconds: number;
+  totalEntries: number;
   tasks: EmployeeTaskRow[];
 };
 export type EmployeeReportData = {
@@ -153,18 +156,18 @@ export const getPickStats = async (): Promise<PickStatRow[]> => {
       picking:
         picking.count > 0
           ? {
-              count: picking.count,
-              avgSeconds: Math.round(picking.total / picking.count),
-              totalSeconds: picking.total,
-            }
+            count: picking.count,
+            avgSeconds: Math.round(picking.total / picking.count),
+            totalSeconds: picking.total,
+          }
           : null,
       packing:
         packing.count > 0
           ? {
-              count: packing.count,
-              avgSeconds: Math.round(packing.total / packing.count),
-              totalSeconds: packing.total,
-            }
+            count: packing.count,
+            avgSeconds: Math.round(packing.total / packing.count),
+            totalSeconds: packing.total,
+          }
           : null,
     });
   }
@@ -214,7 +217,7 @@ export const getEmployeeReport = async (
     string,
     {
       customerName: string;
-      tasks: Map<string, { taskName: string; seconds: number }>;
+      tasks: Map<string, { taskName: string; seconds: number; entryCount: number }>;
     }
   >();
 
@@ -230,8 +233,9 @@ export const getEmployeeReport = async (
 
     const customerRow = customerMap.get(customerId)!;
     if (!customerRow.tasks.has(taskId))
-      customerRow.tasks.set(taskId, { taskName, seconds: 0 });
+      customerRow.tasks.set(taskId, { taskName, seconds: 0, entryCount: 0 });
     customerRow.tasks.get(taskId)!.seconds += duration;
+    customerRow.tasks.get(taskId)!.entryCount += 1;
   }
 
   let totalSeconds = 0;
@@ -240,10 +244,12 @@ export const getEmployeeReport = async (
   for (const [customerId, { customerName, tasks }] of customerMap) {
     const taskList: EmployeeTaskRow[] = [];
     let customerTotal = 0;
+    let customerEntries = 0;
 
-    for (const [taskId, { taskName, seconds }] of tasks) {
-      taskList.push({ taskId, taskName, seconds });
+    for (const [taskId, { taskName, seconds, entryCount }] of tasks) {
+      taskList.push({ taskId, taskName, seconds, entryCount });
       customerTotal += seconds;
+      customerEntries += entryCount;
     }
 
     taskList.sort((a, b) => b.seconds - a.seconds);
@@ -251,6 +257,7 @@ export const getEmployeeReport = async (
       customerId,
       customerName,
       totalSeconds: customerTotal,
+      totalEntries: customerEntries,
       tasks: taskList,
     });
     totalSeconds += customerTotal;
