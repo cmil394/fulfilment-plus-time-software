@@ -13,6 +13,7 @@ import {
   CalendarDays,
   Filter,
   ChevronDown,
+  Download,
 } from "lucide-react";
 import styles from "./EmployeeTimeCalendar.module.css";
 import {
@@ -21,6 +22,8 @@ import {
 } from "../../services/time-entry.service";
 import { customerService } from "../../services/customer.service";
 import { taskService } from "../../services/task.service";
+import { reportService } from "../../services/report.service";
+import { useAuth } from "../../context/AuthContext";
 import type { TimeEntry } from "../../services/time-entry.service";
 import type { Customer } from "../../services/customer.service";
 import type { Task } from "../../services/task.service";
@@ -548,7 +551,7 @@ function ListView({
             Math.round(
               (new Date(e.endTime).getTime() -
                 new Date(e.startTime).getTime()) /
-                60000,
+              60000,
             )
           );
         }, 0);
@@ -671,6 +674,8 @@ function ListView({
 
 // Main component
 export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin" || user?.role === "Owner";
   const [activeTab, setActiveTab] = useState<ViewTab>("calendar");
   const [weekStart, setWeekStart] = useState<Date>(() =>
     getWeekStart(new Date()),
@@ -747,6 +752,25 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
   const [loadingTasks, setLoadingTasks] = useState(false);
   const gridScrollRef = useRef<HTMLDivElement>(null);
 
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadReport = async () => {
+    setDownloading(true);
+    try {
+      const { blob, filename } = await reportService.downloadEmployeeReportAsAdmin(employee.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Failed to download report.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart);
     d.setDate(weekStart.getDate() + i);
@@ -795,8 +819,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
       } catch (err: any) {
         setError(
           err?.response?.data?.message ??
-            err?.message ??
-            "Failed to load time entries",
+          err?.message ??
+          "Failed to load time entries",
         );
       } finally {
         setLoading(false);
@@ -1105,8 +1129,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     } catch (err: any) {
       alert(
         err?.response?.data?.message ??
-          err?.message ??
-          "Failed to delete entry",
+        err?.message ??
+        "Failed to delete entry",
       );
     } finally {
       setDeletingEntryId(null);
@@ -1209,6 +1233,19 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
           </div>
 
           <div className={styles.tabsRowRight}>
+            {/* Download report button — admin only */}
+            {isAdmin && (
+              <button
+                className={styles.downloadBtn}
+                onClick={handleDownloadReport}
+                disabled={downloading}
+                title="Download hours report"
+              >
+                <Download size={13} />
+                {downloading ? "Downloading…" : "Download Report"}
+              </button>
+            )}
+
             {/* Filter button */}
             <div className={styles.filterWrap}>
               <button

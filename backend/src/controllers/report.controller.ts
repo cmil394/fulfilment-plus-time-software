@@ -98,286 +98,293 @@ export const getPickStats = async (
   }
 };
 
-// Employee report
+async function sendEmployeeReport(
+  userId: string,
+  startDate: string | undefined,
+  endDate: string | undefined,
+  res: Response,
+) {
+  const { employeeName, customers, totalSeconds, start, end } =
+    await reportService.getEmployeeReport(userId, startDate, endDate);
+
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "FulfilmentPlus";
+
+  const sheet = workbook.addWorksheet("Hours Report", {
+    pageSetup: { paperSize: 9, orientation: "portrait", fitToPage: true },
+    views: [],
+  });
+
+  sheet.getColumn(1).width = 32;
+  sheet.getColumn(2).width = 28;
+  sheet.getColumn(3).width = 12;
+
+  // Row 1 black banner
+  sheet.mergeCells("A1:C1");
+  const banner = sheet.getCell("A1");
+  banner.value = "FulfilmentPlus — Hours Report";
+  banner.fill = fill(CHARCOAL);
+  banner.font = {
+    bold: true,
+    size: 13,
+    color: { argb: WHITE },
+    name: "Calibri",
+  };
+  banner.alignment = { horizontal: "left", vertical: "middle", indent: 1 };
+  sheet.getRow(1).height = 30;
+
+  // Row 2 employee name
+  sheet.mergeCells("A2:C2");
+  const nameCell = sheet.getCell("A2");
+  nameCell.value = employeeName;
+  nameCell.fill = fill(SLATE);
+  nameCell.font = {
+    bold: true,
+    size: 16,
+    color: { argb: WHITE },
+    name: "Calibri",
+  };
+  nameCell.alignment = { horizontal: "left", vertical: "middle", indent: 1 };
+  sheet.getRow(2).height = 36;
+
+  // Row 3 date range
+  sheet.mergeCells("A3:C3");
+  const rangeCell = sheet.getCell("A3");
+  rangeCell.value = `${fmtDate(start)}  –  ${fmtDate(end)}`;
+  rangeCell.fill = fill(GREY_LT);
+  rangeCell.font = { size: 10, italic: true, color: { argb: TEXT_DIM } };
+  rangeCell.alignment = { horizontal: "left", vertical: "middle", indent: 1 };
+  sheet.getRow(3).height = 20;
+
+  // Row 4 spacer
+  sheet.getRow(4).height = 4;
+
+  // Row 5 column headers
+  const headerRow = sheet.addRow(["Customer / Task", "", "h:mm"]);
+  headerRow.height = 26;
+  headerRow.eachCell((cell, col) => {
+    cell.fill = fill(SLATE);
+    cell.font = {
+      bold: true,
+      size: 11,
+      color: { argb: WHITE },
+      name: "Calibri",
+    };
+    cell.alignment = {
+      vertical: "middle",
+      horizontal: col === 3 ? "center" : "left",
+      indent: col === 1 ? 1 : 0,
+    };
+    cell.border = {
+      top: thin(SLATE),
+      bottom: thin(SLATE),
+      left: thin(SLATE),
+      right: thin(SLATE),
+    };
+  });
+
+  for (const customer of customers) {
+    // Customer section header
+    const secRow = sheet.addRow([
+      customer.customerName.toUpperCase(),
+      "",
+      "",
+    ]);
+    secRow.height = 22;
+    sheet.mergeCells(`A${secRow.number}:C${secRow.number}`);
+    const secCell = sheet.getCell(`A${secRow.number}`);
+    secCell.value = customer.customerName.toUpperCase();
+    secCell.fill = fill(GREY_LT);
+    secCell.font = {
+      bold: true,
+      size: 10,
+      color: { argb: TEXT_DARK },
+      name: "Calibri",
+    };
+    secCell.alignment = { vertical: "middle", indent: 1 };
+    secCell.border = {
+      top: medium(),
+      bottom: thin(),
+      left: medium(),
+      right: medium(),
+    };
+
+    // Task rows
+    customer.tasks.forEach((task) => {
+      const row = sheet.addRow(["", task.taskName, toDay(task.seconds)]);
+      row.height = 21;
+
+      row.getCell(1).fill = fill(WHITE);
+      row.getCell(1).border = {
+        top: thin(),
+        bottom: thin(),
+        left: medium(),
+        right: thin(),
+      };
+
+      row.getCell(2).fill = fill(WHITE);
+      row.getCell(2).font = {
+        size: 10,
+        color: { argb: TEXT_DARK },
+        name: "Calibri",
+      };
+      row.getCell(2).alignment = { vertical: "middle", indent: 1 };
+      row.getCell(2).border = {
+        top: thin(),
+        bottom: thin(),
+        left: thin(),
+        right: thin(),
+      };
+
+      row.getCell(3).fill = fill(WHITE);
+      row.getCell(3).numFmt = "[h]:mm";
+      row.getCell(3).font = {
+        size: 10,
+        color: { argb: TEXT_DARK },
+        name: "Calibri",
+      };
+      row.getCell(3).alignment = { horizontal: "center", vertical: "middle" };
+      row.getCell(3).border = {
+        top: thin(),
+        bottom: thin(),
+        left: thin(),
+        right: medium(),
+      };
+    });
+
+    // Customer subtotal
+    const subRow = sheet.addRow([
+      "",
+      "Subtotal",
+      toDay(customer.totalSeconds),
+    ]);
+    subRow.height = 23;
+
+    subRow.getCell(1).fill = fill(GREY_MD);
+    subRow.getCell(1).border = {
+      top: thin(),
+      bottom: medium(),
+      left: medium(),
+      right: thin(),
+    };
+
+    subRow.getCell(2).fill = fill(GREY_MD);
+    subRow.getCell(2).font = {
+      bold: true,
+      size: 10,
+      color: { argb: TEXT_DARK },
+      italic: true,
+      name: "Calibri",
+    };
+    subRow.getCell(2).alignment = { vertical: "middle", indent: 1 };
+    subRow.getCell(2).border = {
+      top: thin(),
+      bottom: medium(),
+      left: thin(),
+      right: thin(),
+    };
+
+    subRow.getCell(3).fill = fill(GREY_MD);
+    subRow.getCell(3).numFmt = "[h]:mm";
+    subRow.getCell(3).font = {
+      bold: true,
+      size: 10,
+      color: { argb: TEXT_DARK },
+      name: "Calibri",
+    };
+    subRow.getCell(3).alignment = {
+      horizontal: "center",
+      vertical: "middle",
+    };
+    subRow.getCell(3).border = {
+      top: thin(),
+      bottom: medium(),
+      left: thin(),
+      right: medium(),
+    };
+
+    sheet.addRow([]).height = 4;
+  }
+
+  // Grand total
+  const totalRow = sheet.addRow(["TOTAL HOURS", "", toDay(totalSeconds)]);
+  totalRow.height = 30;
+  totalRow.eachCell((cell, col) => {
+    cell.fill = fill(CHARCOAL);
+    cell.font = {
+      bold: true,
+      size: 12,
+      color: { argb: WHITE },
+      name: "Calibri",
+    };
+    cell.border = {
+      top: medium(CHARCOAL),
+      bottom: medium(CHARCOAL),
+      left: thin(CHARCOAL),
+      right: thin(CHARCOAL),
+    };
+    if (col === 3) {
+      cell.numFmt = "[h]:mm";
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+    } else {
+      cell.alignment = {
+        horizontal: "left",
+        vertical: "middle",
+        indent: col === 1 ? 1 : 0,
+      };
+    }
+  });
+
+  // Footer
+  sheet.addRow([]).height = 6;
+  const foot = sheet.addRow([]);
+  sheet.mergeCells(`A${foot.number}:C${foot.number}`);
+  const footCell = sheet.getCell(`A${foot.number}`);
+  footCell.value = `Generated ${fmtDate(new Date())}`;
+  footCell.font = { size: 9, italic: true, color: { argb: TEXT_DIM } };
+  footCell.alignment = { horizontal: "right" };
+
+  if (customers.length > 0) {
+    const chartPng = await renderPieChart(
+      customers.map((c) => ({ label: c.customerName, seconds: c.totalSeconds })),
+      `Hours by Customer — ${fmtDate(start)} to ${fmtDate(end)}`,
+    );
+    const imageId = workbook.addImage({ buffer: Buffer.from(chartPng) as any, extension: "png" });
+    const chartSheet = workbook.addWorksheet("Chart");
+    chartSheet.addImage(imageId, {
+      tl: { col: 0.5, row: 0.5 },
+      ext: { width: 600, height: 400 },
+    });
+  }
+
+  const safeName = employeeName
+    .replace(/[^a-z0-9]/gi, "_")
+    .replace(/_+/g, "_");
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  );
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="${safeName}_hours_report.xlsx"`,
+  );
+  res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+  await workbook.xlsx.write(res);
+  res.end();
+}
+
 export const getEmployeeReport = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const userId = req.user!.userId;
+    const userId = (req.params.userId as string) ?? req.user!.userId;
     const startDate =
       typeof req.query.startDate === "string" ? req.query.startDate : undefined;
     const endDate =
       typeof req.query.endDate === "string" ? req.query.endDate : undefined;
-
-    const { employeeName, customers, totalSeconds, start, end } =
-      await reportService.getEmployeeReport(userId, startDate, endDate);
-
-    const workbook = new ExcelJS.Workbook();
-    workbook.creator = "FulfilmentPlus";
-
-    const sheet = workbook.addWorksheet("Hours Report", {
-      pageSetup: { paperSize: 9, orientation: "portrait", fitToPage: true },
-      views: [{ state: "frozen", xSplit: 0, ySplit: 5 }],
-    });
-
-    sheet.getColumn(1).width = 32;
-    sheet.getColumn(2).width = 28;
-    sheet.getColumn(3).width = 12;
-
-    // Row 1 — near-black banner
-    sheet.mergeCells("A1:C1");
-    const banner = sheet.getCell("A1");
-    banner.value = "FulfilmentPlus — Hours Report";
-    banner.fill = fill(CHARCOAL);
-    banner.font = {
-      bold: true,
-      size: 13,
-      color: { argb: WHITE },
-      name: "Calibri",
-    };
-    banner.alignment = { horizontal: "left", vertical: "middle", indent: 1 };
-    sheet.getRow(1).height = 30;
-
-    // Row 2 — employee name
-    sheet.mergeCells("A2:C2");
-    const nameCell = sheet.getCell("A2");
-    nameCell.value = employeeName;
-    nameCell.fill = fill(SLATE);
-    nameCell.font = {
-      bold: true,
-      size: 16,
-      color: { argb: WHITE },
-      name: "Calibri",
-    };
-    nameCell.alignment = { horizontal: "left", vertical: "middle", indent: 1 };
-    sheet.getRow(2).height = 36;
-
-    // Row 3 — date range
-    sheet.mergeCells("A3:C3");
-    const rangeCell = sheet.getCell("A3");
-    rangeCell.value = `${fmtDate(start)}  –  ${fmtDate(end)}`;
-    rangeCell.fill = fill(GREY_LT);
-    rangeCell.font = { size: 10, italic: true, color: { argb: TEXT_DIM } };
-    rangeCell.alignment = { horizontal: "left", vertical: "middle", indent: 1 };
-    sheet.getRow(3).height = 20;
-
-    // Row 4 — spacer
-    sheet.getRow(4).height = 4;
-
-    // Row 5 — column headers
-    const headerRow = sheet.addRow(["Customer / Task", "", "h:mm"]);
-    headerRow.height = 26;
-    headerRow.eachCell((cell, col) => {
-      cell.fill = fill(SLATE);
-      cell.font = {
-        bold: true,
-        size: 11,
-        color: { argb: WHITE },
-        name: "Calibri",
-      };
-      cell.alignment = {
-        vertical: "middle",
-        horizontal: col === 3 ? "center" : "left",
-        indent: col === 1 ? 1 : 0,
-      };
-      cell.border = {
-        top: thin(SLATE),
-        bottom: thin(SLATE),
-        left: thin(SLATE),
-        right: thin(SLATE),
-      };
-    });
-
-    for (const customer of customers) {
-      // Customer section header
-      const secRow = sheet.addRow([
-        customer.customerName.toUpperCase(),
-        "",
-        "",
-      ]);
-      secRow.height = 22;
-      sheet.mergeCells(`A${secRow.number}:C${secRow.number}`);
-      const secCell = sheet.getCell(`A${secRow.number}`);
-      secCell.value = customer.customerName.toUpperCase();
-      secCell.fill = fill(GREY_LT);
-      secCell.font = {
-        bold: true,
-        size: 10,
-        color: { argb: TEXT_DARK },
-        name: "Calibri",
-      };
-      secCell.alignment = { vertical: "middle", indent: 1 };
-      secCell.border = {
-        top: medium(),
-        bottom: thin(),
-        left: medium(),
-        right: medium(),
-      };
-
-      // Task rows
-      customer.tasks.forEach((task) => {
-        const row = sheet.addRow(["", task.taskName, toDay(task.seconds)]);
-        row.height = 21;
-
-        row.getCell(1).fill = fill(WHITE);
-        row.getCell(1).border = {
-          top: thin(),
-          bottom: thin(),
-          left: medium(),
-          right: thin(),
-        };
-
-        row.getCell(2).fill = fill(WHITE);
-        row.getCell(2).font = {
-          size: 10,
-          color: { argb: TEXT_DARK },
-          name: "Calibri",
-        };
-        row.getCell(2).alignment = { vertical: "middle", indent: 1 };
-        row.getCell(2).border = {
-          top: thin(),
-          bottom: thin(),
-          left: thin(),
-          right: thin(),
-        };
-
-        row.getCell(3).fill = fill(WHITE);
-        row.getCell(3).numFmt = "[h]:mm";
-        row.getCell(3).font = {
-          size: 10,
-          color: { argb: TEXT_DARK },
-          name: "Calibri",
-        };
-        row.getCell(3).alignment = { horizontal: "center", vertical: "middle" };
-        row.getCell(3).border = {
-          top: thin(),
-          bottom: thin(),
-          left: thin(),
-          right: medium(),
-        };
-      });
-
-      // Customer subtotal
-      const subRow = sheet.addRow([
-        "",
-        "Subtotal",
-        toDay(customer.totalSeconds),
-      ]);
-      subRow.height = 23;
-
-      subRow.getCell(1).fill = fill(GREY_MD);
-      subRow.getCell(1).border = {
-        top: thin(),
-        bottom: medium(),
-        left: medium(),
-        right: thin(),
-      };
-
-      subRow.getCell(2).fill = fill(GREY_MD);
-      subRow.getCell(2).font = {
-        bold: true,
-        size: 10,
-        color: { argb: TEXT_DARK },
-        italic: true,
-        name: "Calibri",
-      };
-      subRow.getCell(2).alignment = { vertical: "middle", indent: 1 };
-      subRow.getCell(2).border = {
-        top: thin(),
-        bottom: medium(),
-        left: thin(),
-        right: thin(),
-      };
-
-      subRow.getCell(3).fill = fill(GREY_MD);
-      subRow.getCell(3).numFmt = "[h]:mm";
-      subRow.getCell(3).font = {
-        bold: true,
-        size: 10,
-        color: { argb: TEXT_DARK },
-        name: "Calibri",
-      };
-      subRow.getCell(3).alignment = {
-        horizontal: "center",
-        vertical: "middle",
-      };
-      subRow.getCell(3).border = {
-        top: thin(),
-        bottom: medium(),
-        left: thin(),
-        right: medium(),
-      };
-
-      sheet.addRow([]).height = 4;
-    }
-
-    // Grand total
-    const totalRow = sheet.addRow(["TOTAL HOURS", "", toDay(totalSeconds)]);
-    totalRow.height = 30;
-    totalRow.eachCell((cell, col) => {
-      cell.fill = fill(CHARCOAL);
-      cell.font = {
-        bold: true,
-        size: 12,
-        color: { argb: WHITE },
-        name: "Calibri",
-      };
-      cell.border = {
-        top: medium(CHARCOAL),
-        bottom: medium(CHARCOAL),
-        left: thin(CHARCOAL),
-        right: thin(CHARCOAL),
-      };
-      if (col === 3) {
-        cell.numFmt = "[h]:mm";
-        cell.alignment = { horizontal: "center", vertical: "middle" };
-      } else {
-        cell.alignment = {
-          horizontal: "left",
-          vertical: "middle",
-          indent: col === 1 ? 1 : 0,
-        };
-      }
-    });
-
-    // Footer
-    sheet.addRow([]).height = 6;
-    const foot = sheet.addRow([]);
-    sheet.mergeCells(`A${foot.number}:C${foot.number}`);
-    const footCell = sheet.getCell(`A${foot.number}`);
-    footCell.value = `Generated ${fmtDate(new Date())}`;
-    footCell.font = { size: 9, italic: true, color: { argb: TEXT_DIM } };
-    footCell.alignment = { horizontal: "right" };
-
-    if (customers.length > 0) {
-      const chartPng = await renderPieChart(
-        customers.map((c) => ({ label: c.customerName, seconds: c.totalSeconds })),
-        `Hours by Customer — ${fmtDate(start)} to ${fmtDate(end)}`,
-      );
-      const imageId = workbook.addImage({ buffer: Buffer.from(chartPng) as any, extension: "png" });
-      const chartSheet = workbook.addWorksheet("Chart");
-      chartSheet.addImage(imageId, {
-        tl: { col: 0.5, row: 0.5 },
-        ext: { width: 600, height: 400 },
-      });
-    }
-
-    const safeName = employeeName
-      .replace(/[^a-z0-9]/gi, "_")
-      .replace(/_+/g, "_");
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    );
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${safeName}_hours_report.xlsx"`,
-    );
-    res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-    await workbook.xlsx.write(res);
-    res.end();
+    await sendEmployeeReport(userId, startDate, endDate, res);
   } catch (err) {
     next(err);
   }
@@ -437,7 +444,7 @@ export const getCustomerReport = async (
 
     const sheet = workbook.addWorksheet("Hours Report", {
       pageSetup: { paperSize: 9, orientation: "portrait", fitToPage: true },
-      views: [{ state: "frozen", xSplit: 0, ySplit: 5 }],
+      views: [],
     });
 
     sheet.getColumn(1).width = 36;

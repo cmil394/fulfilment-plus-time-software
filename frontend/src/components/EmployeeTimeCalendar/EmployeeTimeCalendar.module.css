@@ -149,6 +149,37 @@
   flex-wrap: wrap;
 }
 
+.downloadBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 8px;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.downloadBtn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.downloadBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .filterWrap {
   position: relative;
 }
@@ -482,9 +513,11 @@
 .gridScroll::-webkit-scrollbar {
   width: 6px;
 }
+
 .gridScroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .gridScroll::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
@@ -576,11 +609,9 @@
   position: absolute;
   left: 3px;
   right: 3px;
-  background: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.25),
-    rgba(59, 130, 246, 0.2)
-  );
+  background: linear-gradient(135deg,
+      rgba(99, 102, 241, 0.25),
+      rgba(59, 130, 246, 0.2));
   border: 1px solid rgba(99, 102, 241, 0.4);
   border-left: 3px solid #6366f1;
   border-radius: 6px;
@@ -596,11 +627,9 @@
 
 .entryBlock:hover {
   border-color: rgba(99, 102, 241, 0.7);
-  background: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.35),
-    rgba(59, 130, 246, 0.28)
-  );
+  background: linear-gradient(135deg,
+      rgba(99, 102, 241, 0.35),
+      rgba(59, 130, 246, 0.28));
 }
 
 .entryInner {
@@ -674,9 +703,11 @@
 .listViewOuter::-webkit-scrollbar {
   width: 6px;
 }
+
 .listViewOuter::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .listViewOuter::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
@@ -1331,6 +1362,7 @@
 .groupPopover::-webkit-scrollbar {
   width: 4px;
 }
+
 .groupPopover::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;

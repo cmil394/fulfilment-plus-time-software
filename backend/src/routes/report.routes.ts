@@ -29,6 +29,14 @@ router.get(
 );
 
 router.get(
+  "/reports/employee/:userId",
+  authMiddleware,
+  adminMiddleware,
+  readLimiter,
+  reportController.getEmployeeReport,
+);
+
+router.get(
   "/reports/customer/:customerId",
   authMiddleware,
   adminMiddleware,
