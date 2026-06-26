@@ -234,6 +234,9 @@ interface GroupChipProps {
   onSelectEntry: (entry: TimeEntry) => void;
   onDeleteEntry: (id: string) => void;
   deletingEntryId: string | null;
+  isOpen: boolean;
+  onOpen: () => void;
+  onClose: () => void;
 }
 
 function GroupChip({
@@ -241,31 +244,33 @@ function GroupChip({
   onSelectEntry,
   onDeleteEntry,
   deletingEntryId,
+  isOpen,
+  onOpen,
+  onClose,
 }: GroupChipProps) {
-  const [open, setOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
   const [openRightAligned, setOpenRightAligned] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const chipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!isOpen) return;
     const handler = (e: MouseEvent) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node))
-        setOpen(false);
+        onClose();
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+  }, [isOpen, onClose]);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!open && chipRef.current) {
+    if (!isOpen && chipRef.current) {
       const rect = chipRef.current.getBoundingClientRect();
       setOpenUpward(rect.bottom > window.innerHeight * 0.65);
       setOpenRightAligned(rect.left + 270 > window.innerWidth - 16);
     }
-    setOpen((v) => !v);
+    isOpen ? onClose() : onOpen();
   };
 
   const sorted = item.entries
@@ -285,12 +290,16 @@ function GroupChip({
     <div
       ref={wrapRef}
       className={styles.groupChipWrap}
-      style={{ top: item.top, height: item.height }}
+      style={{
+        top: item.top,
+        height: item.height,
+        zIndex: isOpen ? 100 : undefined,
+      }}
       onMouseDown={(e) => e.stopPropagation()}
     >
       <div
         ref={chipRef}
-        className={`${styles.groupChip} ${open ? styles.groupChipOpen : ""}`}
+        className={`${styles.groupChip} ${isOpen ? styles.groupChipOpen : ""}`}
         onClick={handleToggle}
       >
         <span className={styles.groupChipBadge}>{item.entries.length}</span>
@@ -306,7 +315,7 @@ function GroupChip({
         </div>
       </div>
 
-      {open && (
+      {isOpen && (
         <div
           className={`${styles.groupPopover} ${openUpward ? styles.groupPopoverUp : ""} ${openRightAligned ? styles.groupPopoverRight : ""}`}
         >
@@ -351,7 +360,7 @@ function GroupChip({
                     title="View / edit"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setOpen(false);
+                      onClose();
                       onSelectEntry(entry);
                     }}
                   >
@@ -551,7 +560,7 @@ function ListView({
             Math.round(
               (new Date(e.endTime).getTime() -
                 new Date(e.startTime).getTime()) /
-              60000,
+                60000,
             )
           );
         }, 0);
@@ -729,6 +738,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
+  const [openGroupKey, setOpenGroupKey] = useState<string | null>(null);
 
   // Viewing / editing entry state
   const [viewingEntry, setViewingEntry] = useState<TimeEntry | null>(null);
@@ -757,7 +767,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
   const handleDownloadReport = async () => {
     setDownloading(true);
     try {
-      const { blob, filename } = await reportService.downloadEmployeeReportAsAdmin(employee.id);
+      const { blob, filename } =
+        await reportService.downloadEmployeeReportAsAdmin(employee.id);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -819,8 +830,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
       } catch (err: any) {
         setError(
           err?.response?.data?.message ??
-          err?.message ??
-          "Failed to load time entries",
+            err?.message ??
+            "Failed to load time entries",
         );
       } finally {
         setLoading(false);
@@ -1129,8 +1140,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     } catch (err: any) {
       alert(
         err?.response?.data?.message ??
-        err?.message ??
-        "Failed to delete entry",
+          err?.message ??
+          "Failed to delete entry",
       );
     } finally {
       setDeletingEntryId(null);
@@ -1471,6 +1482,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
 
                           {layoutItems.map((item, idx) => {
                             if (item.type === "group") {
+                              const groupKey = `${colIdx}-${item.entries[0].id}`;
                               return (
                                 <GroupChip
                                   key={`group-${idx}`}
@@ -1478,6 +1490,9 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
                                   onSelectEntry={handleSelectEntry}
                                   onDeleteEntry={handleDeleteEntry}
                                   deletingEntryId={deletingEntryId}
+                                  isOpen={openGroupKey === groupKey}
+                                  onOpen={() => setOpenGroupKey(groupKey)}
+                                  onClose={() => setOpenGroupKey(null)}
                                 />
                               );
                             }
