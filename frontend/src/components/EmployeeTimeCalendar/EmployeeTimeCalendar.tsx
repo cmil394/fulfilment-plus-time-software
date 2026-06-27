@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { extractApiError } from "../../utils/apiError";
 import {
   X,
@@ -237,6 +238,7 @@ interface GroupChipProps {
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 function GroupChip({
@@ -247,29 +249,65 @@ function GroupChip({
   isOpen,
   onOpen,
   onClose,
+  scrollContainerRef,
 }: GroupChipProps) {
-  const [openUpward, setOpenUpward] = useState(false);
-  const [openRightAligned, setOpenRightAligned] = useState(false);
+  const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
   const wrapRef = useRef<HTMLDivElement>(null);
   const chipRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  const updatePosition = useCallback(() => {
+    if (!chipRef.current) return;
+    const rect = chipRef.current.getBoundingClientRect();
+    const popoverWidth = 270;
+    const popoverMaxHeight = 340;
+    const spaceBelow = window.innerHeight - rect.bottom - 8;
+    const spaceAbove = rect.top - 8;
+    const openUpward = spaceBelow < popoverMaxHeight && spaceAbove > spaceBelow;
+    const left =
+      rect.left + popoverWidth > window.innerWidth - 16
+        ? rect.right - popoverWidth
+        : rect.left;
+    const top = openUpward
+      ? rect.top - Math.min(popoverMaxHeight, spaceAbove) - 6
+      : rect.bottom + 6;
+    setPopoverStyle({
+      position: "fixed",
+      top,
+      left,
+      zIndex: 9999,
+      width: popoverWidth,
+    });
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node))
+      const target = e.target as Node;
+      if (
+        wrapRef.current &&
+        !wrapRef.current.contains(target) &&
+        popoverRef.current &&
+        !popoverRef.current.contains(target)
+      ) {
         onClose();
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const scrollEl = scrollContainerRef.current;
+    if (!scrollEl) return;
+    scrollEl.addEventListener("scroll", updatePosition);
+    return () => scrollEl.removeEventListener("scroll", updatePosition);
+  }, [isOpen, scrollContainerRef, updatePosition]);
+
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isOpen && chipRef.current) {
-      const rect = chipRef.current.getBoundingClientRect();
-      setOpenUpward(rect.bottom > window.innerHeight * 0.65);
-      setOpenRightAligned(rect.left + 270 > window.innerWidth - 16);
-    }
+    if (!isOpen) updatePosition();
     isOpen ? onClose() : onOpen();
   };
 
@@ -315,78 +353,83 @@ function GroupChip({
         </div>
       </div>
 
-      {isOpen && (
-        <div
-          className={`${styles.groupPopover} ${openUpward ? styles.groupPopoverUp : ""} ${openRightAligned ? styles.groupPopoverRight : ""}`}
-        >
-          <div className={styles.groupPopoverHeader}>
-            {item.entries.length} entries
-          </div>
-          {sorted.map((entry) => {
-            const start = new Date(entry.startTime);
-            const end = entry.endTime ? new Date(entry.endTime) : null;
-            const dur = end
-              ? Math.round((end.getTime() - start.getTime()) / 60000)
-              : null;
-            return (
-              <div key={entry.id} className={styles.groupPopoverItem}>
-                <div className={styles.groupPopoverInfo}>
-                  <div className={styles.groupPopoverTop}>
-                    <span className={styles.groupPopoverTime}>
-                      {formatTime(start)}
-                      {end ? ` – ${formatTime(end)}` : ""}
+      {isOpen &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            className={styles.groupPopover}
+            style={popoverStyle}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div className={styles.groupPopoverHeader}>
+              {item.entries.length} entries
+            </div>
+            {sorted.map((entry) => {
+              const start = new Date(entry.startTime);
+              const end = entry.endTime ? new Date(entry.endTime) : null;
+              const dur = end
+                ? Math.round((end.getTime() - start.getTime()) / 60000)
+                : null;
+              return (
+                <div key={entry.id} className={styles.groupPopoverItem}>
+                  <div className={styles.groupPopoverInfo}>
+                    <div className={styles.groupPopoverTop}>
+                      <span className={styles.groupPopoverTime}>
+                        {formatTime(start)}
+                        {end ? ` – ${formatTime(end)}` : ""}
+                      </span>
+                      {dur !== null && (
+                        <span className={styles.groupPopoverDur}>{dur}m</span>
+                      )}
+                    </div>
+                    <span className={styles.groupPopoverTask}>
+                      {entry.task?.name ?? "—"}
                     </span>
-                    {dur !== null && (
-                      <span className={styles.groupPopoverDur}>{dur}m</span>
+                    {entry.customer?.name && (
+                      <span className={styles.groupPopoverCustomer}>
+                        {entry.customer.name}
+                      </span>
+                    )}
+                    {entry.notes && (
+                      <span className={styles.groupPopoverNotes}>
+                        {entry.notes}
+                      </span>
                     )}
                   </div>
-                  <span className={styles.groupPopoverTask}>
-                    {entry.task?.name ?? "—"}
-                  </span>
-                  {entry.customer?.name && (
-                    <span className={styles.groupPopoverCustomer}>
-                      {entry.customer.name}
-                    </span>
-                  )}
-                  {entry.notes && (
-                    <span className={styles.groupPopoverNotes}>
-                      {entry.notes}
-                    </span>
-                  )}
+                  <div className={styles.groupPopoverActions}>
+                    <button
+                      className={styles.groupPopoverEdit}
+                      title="View / edit"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onClose();
+                        onSelectEntry(entry);
+                      }}
+                    >
+                      <Pencil size={11} />
+                    </button>
+                    <button
+                      className={styles.groupPopoverDelete}
+                      title="Delete"
+                      disabled={deletingEntryId === entry.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteEntry(entry.id);
+                      }}
+                    >
+                      {deletingEntryId === entry.id ? (
+                        <span className={styles.btnSpinner} />
+                      ) : (
+                        <Trash2 size={11} />
+                      )}
+                    </button>
+                  </div>
                 </div>
-                <div className={styles.groupPopoverActions}>
-                  <button
-                    className={styles.groupPopoverEdit}
-                    title="View / edit"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onClose();
-                      onSelectEntry(entry);
-                    }}
-                  >
-                    <Pencil size={11} />
-                  </button>
-                  <button
-                    className={styles.groupPopoverDelete}
-                    title="Delete"
-                    disabled={deletingEntryId === entry.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteEntry(entry.id);
-                    }}
-                  >
-                    {deletingEntryId === entry.id ? (
-                      <span className={styles.btnSpinner} />
-                    ) : (
-                      <Trash2 size={11} />
-                    )}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
@@ -1493,6 +1536,7 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
                                   isOpen={openGroupKey === groupKey}
                                   onOpen={() => setOpenGroupKey(groupKey)}
                                   onClose={() => setOpenGroupKey(null)}
+                                  scrollContainerRef={gridScrollRef}
                                 />
                               );
                             }
