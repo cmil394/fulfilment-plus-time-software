@@ -148,6 +148,13 @@ const fmtDate = (d: Date) =>
     year: "numeric",
   });
 
+const fmtFilenameDate = (d: Date) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${day}-${month}-${year}`;
+};
+
 // Pick stats (public aggregate endpoint for warehouse dashboard)
 export const getPickStats = async (
   req: Request,
@@ -372,7 +379,7 @@ async function sendEmployeeReport(
   );
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename="${safeName}_hours_report.xlsx"`,
+    `attachment; filename="${safeName}_${fmtFilenameDate(start)}_to_${fmtFilenameDate(end)}.xlsx"`,
   );
   res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
   await workbook.xlsx.write(res);
@@ -656,7 +663,7 @@ export const getCustomerReport = async (
     );
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${safeName}_hours_report.xlsx"`,
+      `attachment; filename="${safeName}_${fmtFilenameDate(start)}_to_${fmtFilenameDate(end)}.xlsx"`,
     );
     res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
     await workbook.xlsx.write(res);
