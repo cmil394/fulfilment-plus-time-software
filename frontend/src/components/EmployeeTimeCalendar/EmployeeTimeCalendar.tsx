@@ -603,7 +603,7 @@ function ListView({
             Math.round(
               (new Date(e.endTime).getTime() -
                 new Date(e.startTime).getTime()) /
-                60000,
+              60000,
             )
           );
         }, 0);
@@ -806,18 +806,47 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
   const gridScrollRef = useRef<HTMLDivElement>(null);
 
   const [downloading, setDownloading] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const reportWrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!reportOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (!reportWrapRef.current?.contains(e.target as Node)) {
+        setReportOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [reportOpen]);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const firstOfMonth = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth(),
+    1,
+  )
+    .toISOString()
+    .slice(0, 10);
+  const [reportStart, setReportStart] = useState(firstOfMonth);
+  const [reportEnd, setReportEnd] = useState(today);
 
   const handleDownloadReport = async () => {
     setDownloading(true);
     try {
       const { blob, filename } =
-        await reportService.downloadEmployeeReportAsAdmin(employee.id);
+        await reportService.downloadEmployeeReportAsAdmin(
+          employee.id,
+          reportStart,
+          reportEnd,
+        );
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
+      setReportOpen(false);
     } catch {
       setError("Failed to download report.");
     } finally {
@@ -873,8 +902,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
       } catch (err: any) {
         setError(
           err?.response?.data?.message ??
-            err?.message ??
-            "Failed to load time entries",
+          err?.message ??
+          "Failed to load time entries",
         );
       } finally {
         setLoading(false);
@@ -1183,8 +1212,8 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     } catch (err: any) {
       alert(
         err?.response?.data?.message ??
-          err?.message ??
-          "Failed to delete entry",
+        err?.message ??
+        "Failed to delete entry",
       );
     } finally {
       setDeletingEntryId(null);
@@ -1287,17 +1316,58 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
           </div>
 
           <div className={styles.tabsRowRight}>
-            {/* Download report button — admin only */}
+            {/* Download report button */}
             {isAdmin && (
-              <button
-                className={styles.downloadBtn}
-                onClick={handleDownloadReport}
-                disabled={downloading}
-                title="Download hours report"
-              >
-                <Download size={13} />
-                {downloading ? "Downloading…" : "Download Report"}
-              </button>
+              <div className={styles.reportWrap} ref={reportWrapRef}>
+                <button
+                  className={styles.downloadBtn}
+                  onClick={() => setReportOpen((v) => !v)}
+                  title="Download hours report"
+                >
+                  <Download size={13} />
+                  Download Report
+                  <ChevronDown
+                    size={12}
+                    className={reportOpen ? styles.filterChevronOpen : ""}
+                  />
+                </button>
+                {reportOpen && (
+                  <div className={styles.reportPopover}>
+                    <div className={styles.reportPopoverDates}>
+                      <div className={styles.reportDateGroup}>
+                        <label className={styles.reportLabel}>From</label>
+                        <input
+                          type="date"
+                          className={styles.reportDateInput}
+                          value={reportStart}
+                          max={reportEnd}
+                          onChange={(e) => setReportStart(e.target.value)}
+                          disabled={downloading}
+                        />
+                      </div>
+                      <div className={styles.reportDateGroup}>
+                        <label className={styles.reportLabel}>To</label>
+                        <input
+                          type="date"
+                          className={styles.reportDateInput}
+                          value={reportEnd}
+                          min={reportStart}
+                          onChange={(e) => setReportEnd(e.target.value)}
+                          disabled={downloading}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      className={styles.reportPopoverBtn}
+                      onClick={handleDownloadReport}
+                      disabled={downloading || !reportStart || !reportEnd}
+                    >
+                      <Download size={13} />
+                      {downloading ? "Downloading…" : "Download .xlsx"}
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Filter button */}
@@ -1406,7 +1476,6 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
 
         {activeTab === "calendar" && (
           <>
-            {/* Hint */}
             <p className={styles.hint}>
               <Plus size={13} /> Drag on the calendar to create a time entry
             </p>

@@ -180,6 +180,100 @@
   cursor: default;
 }
 
+.reportWrap {
+  position: relative;
+}
+
+.reportPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  width: 240px;
+  background: #151720;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reportPopoverDates {
+  display: flex;
+  gap: 10px;
+}
+
+.reportDateGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.reportLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.reportDateInput {
+  padding: 7px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  color-scheme: dark;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.reportDateInput:focus {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.reportDateInput:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.reportPopoverBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.12);
+  color: #818cf8;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.reportPopoverBtn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.22);
+  color: #a5b4fc;
+  border-color: rgba(99, 102, 241, 0.45);
+}
+
+.reportPopoverBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .filterWrap {
   position: relative;
 }
