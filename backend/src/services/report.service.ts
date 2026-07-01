@@ -3,9 +3,17 @@ import { NotFoundError } from "../utils/errors";
 
 export type UserRow = { userName: string; seconds: number; entryCount: number };
 export type TaskRow = { taskName: string; users: Map<string, UserRow> };
+export type CustomerEntryRow = {
+  startTime: Date;
+  endTime: Date;
+  durationSeconds: number;
+  userName: string;
+  taskName: string;
+};
 export type CustomerReportData = {
   customerName: string;
   taskMap: Map<string, TaskRow>;
+  entries: CustomerEntryRow[];
   start: Date;
   end: Date;
 };
@@ -68,7 +76,20 @@ export const getCustomerReport = async (
     taskRow.users.get(userId)!.entryCount += 1;
   }
 
-  return { customerName: customer.name, taskMap, start, end };
+  const customerEntryRows: CustomerEntryRow[] = entries
+    .filter((e) => e.endTime !== null)
+    .map((e) => ({
+      startTime: e.startTime,
+      endTime: e.endTime!,
+      durationSeconds: e.durationSeconds ?? 0,
+      userName:
+        e.user.fullName ||
+        `${e.user.firstName ?? ""} ${e.user.lastName ?? ""}`.trim() ||
+        e.user.email,
+      taskName: e.task?.name ?? "Unassigned",
+    }));
+
+  return { customerName: customer.name, taskMap, entries: customerEntryRows, start, end };
 };
 
 export type EmployeeTaskRow = {
@@ -84,10 +105,18 @@ export type EmployeeCustomerRow = {
   totalEntries: number;
   tasks: EmployeeTaskRow[];
 };
+export type EmployeeEntryRow = {
+  startTime: Date;
+  endTime: Date;
+  durationSeconds: number;
+  customerName: string;
+  taskName: string;
+};
 export type EmployeeReportData = {
   employeeName: string;
   totalSeconds: number;
   customers: EmployeeCustomerRow[];
+  entries: EmployeeEntryRow[];
   start: Date;
   end: Date;
 };
@@ -265,5 +294,15 @@ export const getEmployeeReport = async (
 
   customers.sort((a, b) => b.totalSeconds - a.totalSeconds);
 
-  return { employeeName, totalSeconds, customers, start, end };
+  const entryRows: EmployeeEntryRow[] = entries
+    .filter((e) => e.endTime !== null)
+    .map((e) => ({
+      startTime: e.startTime,
+      endTime: e.endTime!,
+      durationSeconds: e.durationSeconds ?? 0,
+      customerName: e.customer?.name ?? "Unknown",
+      taskName: e.task?.name ?? "Unassigned",
+    }));
+
+  return { employeeName, totalSeconds, customers, entries: entryRows, start, end };
 };

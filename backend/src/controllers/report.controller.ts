@@ -77,6 +77,70 @@ const fill = (argb: string): ExcelJS.FillPattern => ({
 
 const toDay = (seconds: number) => seconds / 86400;
 
+type EntrySheetRow = {
+  startTime: Date;
+  endTime: Date;
+  durationSeconds: number;
+  groupName: string;
+  taskName: string;
+};
+
+function buildEntriesSheet(
+  workbook: ExcelJS.Workbook,
+  col2Label: string,
+  entries: EntrySheetRow[],
+): void {
+  const s = workbook.addWorksheet("All Entries");
+  s.getColumn(1).width = 16;
+  s.getColumn(2).width = 26;
+  s.getColumn(3).width = 22;
+  s.getColumn(4).width = 22;
+  s.getColumn(5).width = 12;
+
+  const hdr = s.addRow(["Date", col2Label, "Task", "Start – End", "Duration"]);
+  hdr.height = 26;
+  hdr.eachCell((cell, col) => {
+    cell.fill = fill(SLATE);
+    cell.font = { bold: true, size: 11, color: { argb: WHITE }, name: "Calibri" };
+    cell.alignment = { vertical: "middle", horizontal: col >= 4 ? "center" : "left", indent: col <= 3 ? 1 : 0 };
+    cell.border = { top: thin(SLATE), bottom: thin(SLATE), left: thin(SLATE), right: thin(SLATE) };
+  });
+
+  for (const entry of entries) {
+    const dateStr = entry.startTime.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    const startStr = entry.startTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const endStr = entry.endTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const row = s.addRow([dateStr, entry.groupName, entry.taskName, `${startStr} – ${endStr}`, toDay(entry.durationSeconds)]);
+    row.height = 19;
+
+    row.getCell(1).fill = fill(WHITE);
+    row.getCell(1).font = { size: 10, color: { argb: TEXT_DARK }, name: "Calibri" };
+    row.getCell(1).alignment = { vertical: "middle", indent: 1 };
+    row.getCell(1).border = { top: thin(), bottom: thin(), left: medium(), right: thin() };
+
+    row.getCell(2).fill = fill(WHITE);
+    row.getCell(2).font = { size: 10, color: { argb: TEXT_DARK }, name: "Calibri" };
+    row.getCell(2).alignment = { vertical: "middle", indent: 1 };
+    row.getCell(2).border = { top: thin(), bottom: thin(), left: thin(), right: thin() };
+
+    row.getCell(3).fill = fill(WHITE);
+    row.getCell(3).font = { size: 10, color: { argb: TEXT_DARK }, name: "Calibri" };
+    row.getCell(3).alignment = { vertical: "middle", indent: 1 };
+    row.getCell(3).border = { top: thin(), bottom: thin(), left: thin(), right: thin() };
+
+    row.getCell(4).fill = fill(WHITE);
+    row.getCell(4).font = { size: 10, color: { argb: TEXT_DIM }, name: "Calibri" };
+    row.getCell(4).alignment = { horizontal: "center", vertical: "middle" };
+    row.getCell(4).border = { top: thin(), bottom: thin(), left: thin(), right: thin() };
+
+    row.getCell(5).fill = fill(WHITE);
+    row.getCell(5).numFmt = "[h]:mm";
+    row.getCell(5).font = { size: 10, color: { argb: TEXT_DARK }, name: "Calibri" };
+    row.getCell(5).alignment = { horizontal: "center", vertical: "middle" };
+    row.getCell(5).border = { top: thin(), bottom: thin(), left: thin(), right: medium() };
+  }
+}
+
 const fmtDate = (d: Date) =>
   d.toLocaleDateString("en-NZ", {
     day: "numeric",
@@ -104,7 +168,7 @@ async function sendEmployeeReport(
   endDate: string | undefined,
   res: Response,
 ) {
-  const { employeeName, customers, totalSeconds, start, end } =
+  const { employeeName, customers, totalSeconds, entries, start, end } =
     await reportService.getEmployeeReport(userId, startDate, endDate);
 
   const workbook = new ExcelJS.Workbook();
@@ -115,11 +179,11 @@ async function sendEmployeeReport(
     views: [{ state: "normal" }],
   });
 
-  sheet.getColumn(1).width = 32;
+  sheet.getColumn(1).width = 16;
   sheet.getColumn(2).width = 26;
-  sheet.getColumn(3).width = 10;
-  sheet.getColumn(4).width = 12;
-  sheet.getColumn(5).width = 14;
+  sheet.getColumn(3).width = 22;
+  sheet.getColumn(4).width = 20;
+  sheet.getColumn(5).width = 12;
 
   // Row 1 black banner
   sheet.mergeCells("A1:E1");
@@ -278,6 +342,14 @@ async function sendEmployeeReport(
   footCell.font = { size: 9, italic: true, color: { argb: TEXT_DIM } };
   footCell.alignment = { horizontal: "right" };
 
+  if (entries.length > 0) {
+    const sorted = [...entries].sort((a, b) => {
+      const c = a.customerName.localeCompare(b.customerName);
+      return c !== 0 ? c : a.startTime.getTime() - b.startTime.getTime();
+    });
+    buildEntriesSheet(workbook, "Customer", sorted.map((e) => ({ ...e, groupName: e.customerName })));
+  }
+
   if (customers.length > 0) {
     const chartPng = await renderPieChart(
       customers.map((c) => ({ label: c.customerName, seconds: c.totalSeconds })),
@@ -366,7 +438,7 @@ export const getCustomerReport = async (
     const endDate =
       typeof req.query.endDate === "string" ? req.query.endDate : undefined;
 
-    const { customerName, taskMap, start, end } =
+    const { customerName, taskMap, entries: customerEntries, start, end } =
       await reportService.getCustomerReport(
         customerId as string,
         startDate,
@@ -549,6 +621,14 @@ export const getCustomerReport = async (
     footCell.value = `Generated ${fmtDate(new Date())}`;
     footCell.font = { size: 9, italic: true, color: { argb: TEXT_DIM } };
     footCell.alignment = { horizontal: "right" };
+
+    if (customerEntries.length > 0) {
+      const sorted = [...customerEntries].sort((a, b) => {
+        const c = a.userName.localeCompare(b.userName);
+        return c !== 0 ? c : a.startTime.getTime() - b.startTime.getTime();
+      });
+      buildEntriesSheet(workbook, "Employee", sorted.map((e) => ({ ...e, groupName: e.userName })));
+    }
 
     if (taskMap.size > 0) {
       const taskSegments = Array.from(taskMap.values()).map(({ taskName, users }) => ({
