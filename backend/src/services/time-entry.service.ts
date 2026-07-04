@@ -5,6 +5,7 @@ import {
   AdminUpdateEntryInput,
 } from "../validators/time-entry.validator";
 import { NotFoundError, ConflictError, AppError } from "../utils/errors";
+import { startOfDayInReportTz, endOfDayInReportTz } from "../utils/timezone";
 
 // Timer
 export const startTimer = async (userId: string, data: StartTimerInput) => {
@@ -118,8 +119,8 @@ export const getMyEntries = async (
       ...(startDate || endDate
         ? {
             startTime: {
-              ...(startDate && { gte: new Date(startDate) }),
-              ...(endDate && { lte: new Date(endDate) }),
+              ...(startDate && { gte: startOfDayInReportTz(startDate) }),
+              ...(endDate && { lte: endOfDayInReportTz(endDate) }),
             },
           }
         : {}),
@@ -145,8 +146,8 @@ export const getEntriesByUser = async (
       ...(startDate || endDate
         ? {
             startTime: {
-              ...(startDate && { gte: new Date(startDate) }),
-              ...(endDate && { lte: new Date(endDate) }),
+              ...(startDate && { gte: startOfDayInReportTz(startDate) }),
+              ...(endDate && { lte: endOfDayInReportTz(endDate) }),
             },
           }
         : {}),
@@ -190,8 +191,8 @@ export const getEntriesByCustomer = async (
       ...(startDate || endDate
         ? {
             startTime: {
-              ...(startDate && { gte: new Date(startDate) }),
-              ...(endDate && { lte: new Date(endDate) }),
+              ...(startDate && { gte: startOfDayInReportTz(startDate) }),
+              ...(endDate && { lte: endOfDayInReportTz(endDate) }),
             },
           }
         : {}),

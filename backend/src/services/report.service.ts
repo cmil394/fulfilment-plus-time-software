@@ -1,5 +1,10 @@
 import { prisma } from "../lib/prisma";
 import { NotFoundError } from "../utils/errors";
+import {
+  startOfDayInReportTz,
+  endOfDayInReportTz,
+  todayInReportTz,
+} from "../utils/timezone";
 
 export type UserRow = { userName: string; seconds: number; entryCount: number };
 export type TaskRow = { taskName: string; users: Map<string, UserRow> };
@@ -23,12 +28,11 @@ export const getCustomerReport = async (
   startDate?: string,
   endDate?: string,
 ): Promise<CustomerReportData> => {
-  const now = new Date();
+  const today = todayInReportTz();
   const start = startDate
-    ? new Date(startDate)
-    : new Date(now.getFullYear(), now.getMonth(), 1);
-  const end = endDate ? new Date(endDate) : new Date(now);
-  end.setHours(23, 59, 59, 999);
+    ? startOfDayInReportTz(startDate)
+    : startOfDayInReportTz(`${today.slice(0, 7)}-01`);
+  const end = endDate ? endOfDayInReportTz(endDate) : endOfDayInReportTz(today);
 
   const customer = await prisma.customer.findUnique({
     where: { id: customerId },
@@ -210,12 +214,11 @@ export const getEmployeeReport = async (
   startDate?: string,
   endDate?: string,
 ): Promise<EmployeeReportData> => {
-  const now = new Date();
+  const today = todayInReportTz();
   const start = startDate
-    ? new Date(startDate)
-    : new Date(now.getFullYear(), now.getMonth(), 1);
-  const end = endDate ? new Date(endDate) : new Date(now);
-  end.setHours(23, 59, 59, 999);
+    ? startOfDayInReportTz(startDate)
+    : startOfDayInReportTz(`${today.slice(0, 7)}-01`);
+  const end = endDate ? endOfDayInReportTz(endDate) : endOfDayInReportTz(today);
 
   const [user, entries] = await Promise.all([
     prisma.user.findUnique({
