@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
 } from "react";
+import axios from "axios";
 import { timeEntryService } from "../services/time-entry.service";
 import { useAuth } from "./AuthContext";
 
@@ -98,12 +99,16 @@ export function ActiveTimerProvider({
     async (taskId: number) => {
       setTimerLoading(true);
       try {
-        if (activeTimer) {
-          await timeEntryService.stopTimer();
-        } else {
-          // Check server to avoid 409
-          const serverActive = await timeEntryService.getActiveTimer();
-          if (serverActive) await timeEntryService.stopTimer();
+        // Always check with server for active timer
+        const serverActive = await timeEntryService.getActiveTimer();
+        if (serverActive) {
+          try {
+            await timeEntryService.stopTimer();
+          } catch (err) {
+            if (!axios.isAxiosError(err) || err.response?.status !== 404) {
+              throw err;
+            }
+          }
         }
         const entry = await timeEntryService.startTimer(taskId);
         const taskName = entry.task?.name ?? "Unknown task";
@@ -121,7 +126,7 @@ export function ActiveTimerProvider({
         setTimerLoading(false);
       }
     },
-    [startTick, activeTimer],
+    [startTick],
   );
 
   const stopTimer = useCallback(async () => {
@@ -139,7 +144,13 @@ export function ActiveTimerProvider({
       console.log(
         `[Timer] Stopped — ${activeTimer?.taskName} @ ${activeTimer?.customerName} (${mins}m ${secs}s)`,
       );
-      await timeEntryService.stopTimer();
+      try {
+        await timeEntryService.stopTimer();
+      } catch (err) {
+        if (!axios.isAxiosError(err) || err.response?.status !== 404) {
+          throw err;
+        }
+      }
       clearTick();
       setActiveTimer(null);
       setElapsedSeconds(0);
