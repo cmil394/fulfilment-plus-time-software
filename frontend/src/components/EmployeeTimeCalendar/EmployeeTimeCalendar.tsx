@@ -1070,10 +1070,22 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     setEditSaving(true);
     setEditError(null);
     try {
+      // Preserve original seconds precision when the admin didn't actually
+      // change the minute-granularity value shown in the datetime-local input.
       const payload: Record<string, string> = {
-        startTime: new Date(editStartTime).toISOString(),
+        startTime:
+          editStartTime ===
+          toLocalDatetimeValue(new Date(viewingEntry.startTime))
+            ? viewingEntry.startTime
+            : new Date(editStartTime).toISOString(),
       };
-      if (editEndTime) payload.endTime = new Date(editEndTime).toISOString();
+      if (editEndTime) {
+        payload.endTime =
+          viewingEntry.endTime &&
+          editEndTime === toLocalDatetimeValue(new Date(viewingEntry.endTime))
+            ? viewingEntry.endTime
+            : new Date(editEndTime).toISOString();
+      }
       if (editNotes.trim()) payload.notes = editNotes.trim();
       if (editTaskId) payload.taskId = editTaskId;
       const updated = await timeEntryService.updateEntry(
