@@ -357,10 +357,9 @@ async function sendEmployeeReport(
   footCell.alignment = { horizontal: "right" };
 
   if (entries.length > 0) {
-    const sorted = [...entries].sort((a, b) => {
-      const c = a.customerName.localeCompare(b.customerName);
-      return c !== 0 ? c : a.startTime.getTime() - b.startTime.getTime();
-    });
+    const sorted = [...entries].sort(
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
+    );
     buildEntriesSheet(workbook, "Customer", sorted.map((e) => ({ ...e, groupName: e.customerName })));
   }
 

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { extractApiError } from "../../utils/apiError";
+import { toLocalDateStr } from "../../utils/date";
 import {
   X,
   Clock,
@@ -820,14 +821,10 @@ export default function EmployeeTimeCalendar({ employee, onClose }: Props) {
     return () => document.removeEventListener("mousedown", handler);
   }, [reportOpen]);
 
-  const today = new Date().toISOString().slice(0, 10);
-  const firstOfMonth = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth(),
-    1,
-  )
-    .toISOString()
-    .slice(0, 10);
+  const today = toLocalDateStr(new Date());
+  const firstOfMonth = toLocalDateStr(
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+  );
   const [reportStart, setReportStart] = useState(firstOfMonth);
   const [reportEnd, setReportEnd] = useState(today);
 

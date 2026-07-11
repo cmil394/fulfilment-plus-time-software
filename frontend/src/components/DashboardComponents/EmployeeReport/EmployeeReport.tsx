@@ -193,7 +193,7 @@ export default function EmployeeReport() {
       {!loading && summary && (
         <>
           <div className={styles.totalCard}>
-            <span className={styles.totalLabel}>Total hours</span>
+            <span className={styles.totalLabel}>Total</span>
             <span className={styles.totalHours}>
               {fmtHours(summary.totalSeconds)}
             </span>

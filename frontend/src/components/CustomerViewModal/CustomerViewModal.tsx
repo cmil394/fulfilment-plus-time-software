@@ -25,6 +25,7 @@ import {
   type TaskTemplate,
 } from "./../../services/task-template.service";
 import { reportService } from "./../../services/report.service";
+import { toLocalDateStr } from "./../../utils/date";
 import styles from "./CustomerViewModal.module.css";
 
 // Types
@@ -53,14 +54,10 @@ function CustomerViewModal({ customer, onClose }: Props) {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Report state
-  const today = new Date().toISOString().slice(0, 10);
-  const firstOfMonth = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth(),
-    1,
-  )
-    .toISOString()
-    .slice(0, 10);
+  const today = toLocalDateStr(new Date());
+  const firstOfMonth = toLocalDateStr(
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+  );
   const [reportStart, setReportStart] = useState(firstOfMonth);
   const [reportEnd, setReportEnd] = useState(today);
   const [reportLoading, setReportLoading] = useState(false);
