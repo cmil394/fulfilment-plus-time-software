@@ -3,6 +3,7 @@ import ExcelJS from "exceljs";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { AuthRequest } from "../middleware/auth.middleware";
 import * as reportService from "../services/report.service";
+import { REPORT_TIMEZONE } from "../utils/timezone";
 
 const PIE_COLORS = [
   "#4F81BD",
@@ -107,9 +108,9 @@ function buildEntriesSheet(
   });
 
   for (const entry of entries) {
-    const dateStr = entry.startTime.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-    const startStr = entry.startTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-    const endStr = entry.endTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const dateStr = entry.startTime.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: REPORT_TIMEZONE });
+    const startStr = entry.startTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: REPORT_TIMEZONE });
+    const endStr = entry.endTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: REPORT_TIMEZONE });
     const row = s.addRow([dateStr, entry.groupName, entry.taskName, `${startStr} – ${endStr}`, toDay(entry.durationSeconds)]);
     row.height = 19;
 
@@ -146,13 +147,19 @@ const fmtDate = (d: Date) =>
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: REPORT_TIMEZONE,
   });
 
 const fmtFilenameDate = (d: Date) => {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${day}-${month}-${year}`;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: REPORT_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+  const map: Record<string, string> = {};
+  for (const p of parts) if (p.type !== "literal") map[p.type] = p.value;
+  return `${map.day}-${map.month}-${map.year}`;
 };
 
 // Pick stats (public aggregate endpoint for warehouse dashboard)

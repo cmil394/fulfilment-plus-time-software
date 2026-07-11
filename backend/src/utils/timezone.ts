@@ -1,4 +1,4 @@
-const REPORT_TIMEZONE = "Pacific/Auckland";
+export const REPORT_TIMEZONE = "Pacific/Auckland";
 
 function offsetMsAt(utcMs: number, timeZone: string): number {
   const dtf = new Intl.DateTimeFormat("en-US", {
