@@ -31,6 +31,17 @@ export const loginLimiter = rateLimit({
   },
 });
 
+// Password re-verification endpoints (reveal PIN, change password) — as strict as login
+export const passwordVerifyLimiter = rateLimit({
+  windowMs: 30 * 60 * 1000, // 30 minutes
+  max: 10,
+  skipSuccessfulRequests: true,
+  message: {
+    status: "error",
+    message: "Too many attempts. Please try again in 30 minutes.",
+  },
+});
+
 export const uploadLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
   max: 10, // max 10 uploads per user/admin

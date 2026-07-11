@@ -16,7 +16,7 @@ import {
   clockOut,
 } from "../controllers/auth.controller";
 import { authMiddleware, adminMiddleware } from "../middleware/auth.middleware";
-import { readLimiter, writeLimiter, loginLimiter } from "../middleware/rate-limiting.middleware";
+import { readLimiter, writeLimiter, loginLimiter, passwordVerifyLimiter } from "../middleware/rate-limiting.middleware";
 
 const router = express.Router();
 
@@ -28,8 +28,8 @@ router.post("/auth/logout/pin", authMiddleware, clockOut);
 
 // Protected
 router.get("/auth/profile", authMiddleware, readLimiter, getProfile);
-router.post("/auth/profile/reveal-pin", authMiddleware, writeLimiter, revealPin);
-router.patch("/auth/change-password", authMiddleware, writeLimiter, changePassword);
+router.post("/auth/profile/reveal-pin", authMiddleware, passwordVerifyLimiter, revealPin);
+router.patch("/auth/change-password", authMiddleware, passwordVerifyLimiter, changePassword);
 
 // Admin
 router.get("/auth/admin/users", authMiddleware, adminMiddleware, readLimiter, getAllAcceptedUsers);

@@ -14,8 +14,8 @@ function monthToRange(month: string): { startDate: string; endDate: string } {
   const pad = (n: number) => String(n).padStart(2, "0");
   const lastDay = new Date(year, mon, 0).getDate();
   return {
-    startDate: `${year}-${pad(mon)}-01T00:00:00.000Z`,
-    endDate: `${year}-${pad(mon)}-${pad(lastDay)}T23:59:59.999Z`,
+    startDate: `${year}-${pad(mon)}-01`,
+    endDate: `${year}-${pad(mon)}-${pad(lastDay)}`,
   };
 }
 
@@ -386,7 +386,8 @@ function Timesheets() {
                           {hasActive ? "Live" : fmtHours(daySecs)}
                         </span>
                         <span className={styles.dayEntryCount}>
-                          {dayEntries.length} {dayEntries.length === 1 ? "entry" : "entries"}
+                          {dayEntries.length}{" "}
+                          {dayEntries.length === 1 ? "entry" : "entries"}
                         </span>
                       </div>
                     )}
