@@ -305,8 +305,60 @@ function UserRow({
   );
 }
 
+const STORAGE_KEY = "kioskSessions";
+
+function loadStoredUsers(): LoggedInUser[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (u): u is LoggedInUser =>
+        u && typeof u.id === "string" && typeof u.token === "string",
+    );
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredUsers(users: LoggedInUser[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+}
+
+function placeholderSession(u: LoggedInUser): UserSession {
+  return {
+    ...u,
+    customers: [],
+    selectedCustomerId: "",
+    tasks: [],
+    selectedTaskId: "",
+    loadingCustomers: true,
+    loadingTasks: false,
+    timerRunning: false,
+    timerStartTime: null,
+    elapsed: 0,
+  };
+}
+
 export default function Kiosk() {
-  const [sessions, setSessions] = useState<UserSession[]>([]);
+  // Seed synchronously from localStorage so the persist effect below never
+  // fires with an empty array first and wipes out the stored sessions.
+  const [sessions, setSessions] = useState<UserSession[]>(() =>
+    loadStoredUsers().map(placeholderSession),
+  );
+
+  // Persist the minimal info needed to restore sessions across a refresh/close.
+  useEffect(() => {
+    saveStoredUsers(
+      sessions.map((s) => ({
+        id: s.id,
+        firstName: s.firstName,
+        lastName: s.lastName,
+        token: s.token,
+      })),
+    );
+  }, [sessions]);
 
   // Tick all running timers every second
   useEffect(() => {
@@ -315,11 +367,11 @@ export default function Kiosk() {
         prev.map((s) =>
           s.timerRunning && s.timerStartTime
             ? {
-                ...s,
-                elapsed: Math.floor(
-                  (Date.now() - s.timerStartTime.getTime()) / 1000,
-                ),
-              }
+              ...s,
+              elapsed: Math.floor(
+                (Date.now() - s.timerStartTime.getTime()) / 1000,
+              ),
+            }
             : s,
         ),
       );
@@ -327,25 +379,7 @@ export default function Kiosk() {
     return () => clearInterval(interval);
   }, []);
 
-  const handlePinSuccess = async (user: LoggedInUser) => {
-    if (sessions.find((s) => s.id === user.id)) return;
-
-    setSessions((prev) => [
-      ...prev,
-      {
-        ...user,
-        customers: [],
-        selectedCustomerId: "",
-        tasks: [],
-        selectedTaskId: "",
-        loadingCustomers: true,
-        loadingTasks: false,
-        timerRunning: false,
-        timerStartTime: null,
-        elapsed: 0,
-      },
-    ]);
-
+  const hydrateSession = async (user: LoggedInUser) => {
     const authedApi = createAuthedApi(user.token);
 
     try {
@@ -367,22 +401,22 @@ export default function Kiosk() {
             `/tasks/customer/${active.customerId}`,
           );
           tasks = Array.isArray(tasksRes.data.data) ? tasksRes.data.data : [];
-        } catch {}
+        } catch { }
 
         setSessions((prev) =>
           prev.map((s) =>
             s.id === user.id
               ? {
-                  ...s,
-                  customers,
-                  loadingCustomers: false,
-                  tasks,
-                  selectedCustomerId: active.customerId,
-                  selectedTaskId: String(active.taskId),
-                  timerRunning: true,
-                  timerStartTime: startTime,
-                  elapsed,
-                }
+                ...s,
+                customers,
+                loadingCustomers: false,
+                tasks,
+                selectedCustomerId: active.customerId,
+                selectedTaskId: String(active.taskId),
+                timerRunning: true,
+                timerStartTime: startTime,
+                elapsed,
+              }
               : s,
           ),
         );
@@ -393,13 +427,37 @@ export default function Kiosk() {
           ),
         );
       }
-    } catch {
-      setSessions((prev) =>
-        prev.map((s) =>
-          s.id === user.id ? { ...s, loadingCustomers: false } : s,
-        ),
-      );
+    } catch (err: unknown) {
+      // Token likely expired/invalid — drop the stale session instead of
+      // leaving it stuck in a loading state.
+      const status = (err as { response?: { status?: number } })?.response
+        ?.status;
+      if (status === 401 || status === 403) {
+        setSessions((prev) => prev.filter((s) => s.id !== user.id));
+      } else {
+        setSessions((prev) =>
+          prev.map((s) =>
+            s.id === user.id ? { ...s, loadingCustomers: false } : s,
+          ),
+        );
+      }
     }
+  };
+
+  // Fetch live state (active timer, customer, task) for any sessions that
+  // were restored from localStorage on mount. The placeholders themselves
+  // are already in `sessions` via the lazy useState initializer above.
+  useEffect(() => {
+    sessions.forEach((s) => hydrateSession(s));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handlePinSuccess = async (user: LoggedInUser) => {
+    if (sessions.find((s) => s.id === user.id)) return;
+
+    setSessions((prev) => [...prev, placeholderSession(user)]);
+
+    await hydrateSession(user);
   };
 
   const handleCustomerChange = async (userId: string, customerId: string) => {
@@ -407,12 +465,12 @@ export default function Kiosk() {
       prev.map((s) =>
         s.id === userId
           ? {
-              ...s,
-              selectedCustomerId: customerId,
-              selectedTaskId: "",
-              tasks: [],
-              loadingTasks: customerId !== "",
-            }
+            ...s,
+            selectedCustomerId: customerId,
+            selectedTaskId: "",
+            tasks: [],
+            loadingTasks: customerId !== "",
+          }
           : s,
       ),
     );
@@ -457,15 +515,15 @@ export default function Kiosk() {
         prev.map((s) =>
           s.id === userId
             ? {
-                ...s,
-                timerRunning: true,
-                timerStartTime: new Date(),
-                elapsed: 0,
-              }
+              ...s,
+              timerRunning: true,
+              timerStartTime: new Date(),
+              elapsed: 0,
+            }
             : s,
         ),
       );
-    } catch {}
+    } catch { }
   };
 
   const handleStop = async (userId: string) => {
@@ -482,7 +540,7 @@ export default function Kiosk() {
             : s,
         ),
       );
-    } catch {}
+    } catch { }
   };
 
   const handleClockOut = (userId: string) => {
