@@ -93,7 +93,13 @@ export const getCustomerReport = async (
       taskName: e.task?.name ?? "Unassigned",
     }));
 
-  return { customerName: customer.name, taskMap, entries: customerEntryRows, start, end };
+  return {
+    customerName: customer.name,
+    taskMap,
+    entries: customerEntryRows,
+    start,
+    end,
+  };
 };
 
 export type EmployeeTaskRow = {
@@ -125,22 +131,59 @@ export type EmployeeReportData = {
   end: Date;
 };
 
+export type PickStatBucket = {
+  count: number;
+  avgSeconds: number;
+  totalSeconds: number;
+} | null;
+
+export type PickStatPeriod = {
+  picking: PickStatBucket;
+  packing: PickStatBucket;
+};
+
 export type PickStatRow = {
   customerId: string;
   customerName: string;
-  picking: { count: number; avgSeconds: number; totalSeconds: number } | null;
-  packing: { count: number; avgSeconds: number; totalSeconds: number } | null;
+  previousMonth: PickStatPeriod;
+  currentMonthToDate: PickStatPeriod;
 };
 
+type RunningBucket = { count: number; total: number };
+const emptyRunningBucket = (): RunningBucket => ({ count: 0, total: 0 });
+
+const finalizeBucket = (bucket: RunningBucket): PickStatBucket =>
+  bucket.count > 0
+    ? {
+        count: bucket.count,
+        avgSeconds: Math.round(bucket.total / bucket.count),
+        totalSeconds: bucket.total,
+      }
+    : null;
+
 export const getPickStats = async (): Promise<PickStatRow[]> => {
+  const today = todayInReportTz();
+  const [year, month] = today.slice(0, 7).split("-").map(Number);
+
+  const currentMonthStart = startOfDayInReportTz(`${today.slice(0, 7)}-01`);
+  const currentMonthEnd = endOfDayInReportTz(today);
+
+  const prevMonthLastDay = new Date(Date.UTC(year, month - 1, 0));
+  const prevMonthStr = `${prevMonthLastDay.getUTCFullYear()}-${String(
+    prevMonthLastDay.getUTCMonth() + 1,
+  ).padStart(2, "0")}`;
+  const prevMonthStart = startOfDayInReportTz(`${prevMonthStr}-01`);
+
   const entries = await prisma.timeEntry.findMany({
     where: {
       task: { name: { in: ["Picking", "Packing"], mode: "insensitive" } },
       durationSeconds: { not: null },
       endTime: { not: null },
+      startTime: { gte: prevMonthStart, lte: currentMonthEnd },
     },
     select: {
       customerId: true,
+      startTime: true,
       durationSeconds: true,
       customer: { select: { id: true, name: true } },
       task: { select: { name: true } },
@@ -151,8 +194,8 @@ export const getPickStats = async (): Promise<PickStatRow[]> => {
     string,
     {
       customerName: string;
-      picking: { count: number; total: number };
-      packing: { count: number; total: number };
+      previousMonth: { picking: RunningBucket; packing: RunningBucket };
+      currentMonthToDate: { picking: RunningBucket; packing: RunningBucket };
     }
   >();
 
@@ -163,45 +206,50 @@ export const getPickStats = async (): Promise<PickStatRow[]> => {
     if (!map.has(cid)) {
       map.set(cid, {
         customerName: entry.customer.name,
-        picking: { count: 0, total: 0 },
-        packing: { count: 0, total: 0 },
+        previousMonth: {
+          picking: emptyRunningBucket(),
+          packing: emptyRunningBucket(),
+        },
+        currentMonthToDate: {
+          picking: emptyRunningBucket(),
+          packing: emptyRunningBucket(),
+        },
       });
     }
 
     const row = map.get(cid)!;
+    const period =
+      entry.startTime >= currentMonthStart
+        ? row.currentMonthToDate
+        : row.previousMonth;
     const taskName = entry.task?.name?.toLowerCase() ?? "";
     const dur = entry.durationSeconds ?? 0;
 
     if (taskName === "picking") {
-      row.picking.count++;
-      row.picking.total += dur;
+      period.picking.count++;
+      period.picking.total += dur;
     } else if (taskName === "packing") {
-      row.packing.count++;
-      row.packing.total += dur;
+      period.packing.count++;
+      period.packing.total += dur;
     }
   }
 
   const result: PickStatRow[] = [];
-  for (const [customerId, { customerName, picking, packing }] of map) {
+  for (const [
+    customerId,
+    { customerName, previousMonth, currentMonthToDate },
+  ] of map) {
     result.push({
       customerId,
       customerName,
-      picking:
-        picking.count > 0
-          ? {
-            count: picking.count,
-            avgSeconds: Math.round(picking.total / picking.count),
-            totalSeconds: picking.total,
-          }
-          : null,
-      packing:
-        packing.count > 0
-          ? {
-            count: packing.count,
-            avgSeconds: Math.round(packing.total / packing.count),
-            totalSeconds: packing.total,
-          }
-          : null,
+      previousMonth: {
+        picking: finalizeBucket(previousMonth.picking),
+        packing: finalizeBucket(previousMonth.packing),
+      },
+      currentMonthToDate: {
+        picking: finalizeBucket(currentMonthToDate.picking),
+        packing: finalizeBucket(currentMonthToDate.packing),
+      },
     });
   }
 
@@ -249,7 +297,10 @@ export const getEmployeeReport = async (
     string,
     {
       customerName: string;
-      tasks: Map<string, { taskName: string; seconds: number; entryCount: number }>;
+      tasks: Map<
+        string,
+        { taskName: string; seconds: number; entryCount: number }
+      >;
     }
   >();
 
@@ -307,5 +358,12 @@ export const getEmployeeReport = async (
       taskName: e.task?.name ?? "Unassigned",
     }));
 
-  return { employeeName, totalSeconds, customers, entries: entryRows, start, end };
+  return {
+    employeeName,
+    totalSeconds,
+    customers,
+    entries: entryRows,
+    start,
+    end,
+  };
 };
