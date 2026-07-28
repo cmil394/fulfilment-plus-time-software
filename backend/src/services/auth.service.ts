@@ -150,11 +150,14 @@ export const loginWithPin = async (employeeCode: string, pin: string) => {
     throw new AppError(403, "Account not approved");
   }
 
-  const token = generateToken({
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-  });
+  const token = generateToken(
+    {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    },
+    null,
+  );
 
   return {
     token,

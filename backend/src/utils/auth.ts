@@ -26,10 +26,15 @@ export const comparePassword = async (
   return bcrypt.compare(password, hashedPassword);
 };
 
-export const generateToken = (payload: JWTPayload): string => {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+export const generateToken = (
+  payload: JWTPayload,
+  expiresIn: SignOptions["expiresIn"] | null = JWT_EXPIRES_IN,
+): string => {
+  return jwt.sign(
+    payload,
+    JWT_SECRET,
+    expiresIn ? { expiresIn } : {},
+  );
 };
 
 export const verifyToken = (token: string): JWTPayload | null => {
