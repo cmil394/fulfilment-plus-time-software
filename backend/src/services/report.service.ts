@@ -176,7 +176,7 @@ export const getPickStats = async (): Promise<PickStatRow[]> => {
 
   const entries = await prisma.timeEntry.findMany({
     where: {
-      task: { name: { in: ["Picking", "Packing"], mode: "insensitive" } },
+      task: { name: { in: ["Picking", "Packing"] } },
       durationSeconds: { not: null },
       endTime: { not: null },
       startTime: { gte: prevMonthStart, lte: currentMonthEnd },
