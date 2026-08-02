@@ -59,7 +59,9 @@
   border: 1px solid #e8e8e4;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
 }
 
 .table {
@@ -85,15 +87,33 @@
 }
 
 .thSeq {
-  width: 56px;
   text-align: center;
   padding-left: 0;
   padding-right: 0;
 }
 
 .thActions {
-  width: 180px;
   text-align: right;
+}
+
+.colSeq {
+  width: 56px;
+}
+
+.colName {
+  width: 17%;
+}
+
+.colSelect {
+  width: 26%;
+}
+
+.colActions {
+  width: 180px;
+}
+
+.colClockOut {
+  width: 110px;
 }
 
 .cell {
@@ -106,7 +126,6 @@
 
 .cellSeq {
   text-align: center;
-  width: 56px;
   padding-left: 0;
   padding-right: 0;
 }
@@ -128,7 +147,6 @@
 
 .cellActions {
   text-align: right;
-  width: 180px;
 }
 
 .seqNum {
@@ -226,7 +244,6 @@
 }
 
 .cellClockOut {
-  width: 110px;
   text-align: right;
   padding-right: 12px;
 }
@@ -244,6 +261,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .pinLabel {
@@ -264,9 +282,13 @@
   font-size: 16px;
   letter-spacing: 0.25em;
   padding: 0.45rem 0.75rem;
-  width: 130px;
+  flex: 1 1 60px;
+  min-width: 0;
+  max-width: 170px;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 .pinInput::placeholder {
@@ -287,9 +309,16 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
 }
 
 .pinError {
@@ -355,7 +384,9 @@
   font-size: 13px;
   cursor: pointer;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888880' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -389,4 +420,82 @@
   color: #b0b0a8;
   font-family: "Geist Mono", monospace;
   font-style: italic;
+}
+
+/* Tablet: tighten spacing and let the PIN inputs shrink instead of
+   overflowing into neighboring cells (table-layout:fixed doesn't clip). */
+@media (max-width: 1024px) {
+  .subheader {
+    padding: 0.6rem 1.25rem;
+  }
+
+  .content {
+    padding: 1.25rem 1rem;
+  }
+
+  .th {
+    padding: 0.5rem 0.6rem;
+    font-size: 10px;
+  }
+
+  .cell {
+    padding: 0.65rem 0.6rem;
+    font-size: 13px;
+  }
+
+  .colSeq {
+    width: 36px;
+  }
+
+  .colActions {
+    width: 128px;
+  }
+
+  .colClockOut {
+    width: 84px;
+  }
+
+  .cellClockOut {
+    padding-right: 6px;
+  }
+
+  .actions {
+    gap: 4px;
+  }
+
+  .btn {
+    padding: 0.4rem 0.55rem;
+    font-size: 12px;
+  }
+
+  .elapsed {
+    font-size: 11px;
+    padding: 0.15rem 0.35rem;
+    letter-spacing: 0;
+  }
+
+  .select {
+    font-size: 12px;
+    padding: 6px 22px 6px 8px;
+    background-position: right 8px center;
+  }
+
+  .pinWrap {
+    gap: 6px;
+  }
+
+  .pinLabel {
+    font-size: 10px;
+  }
+
+  .pinInput {
+    flex-basis: 40px;
+    padding: 0.4rem 0.6rem;
+    font-size: 14px;
+  }
+
+  .btnConfirm {
+    padding: 0.4rem 0.75rem;
+    white-space: nowrap;
+  }
 }

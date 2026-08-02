@@ -568,6 +568,15 @@ export default function Kiosk() {
       <div className={styles.content}>
         <div className={styles.tableCard}>
           <table className={styles.table} aria-label="Active employee sessions">
+            <colgroup>
+              <col className={styles.colSeq} />
+              <col className={styles.colName} />
+              <col className={styles.colName} />
+              <col className={styles.colSelect} />
+              <col className={styles.colSelect} />
+              <col className={styles.colActions} />
+              <col className={styles.colClockOut} />
+            </colgroup>
             <thead className={styles.thead}>
               <tr>
                 <th className={`${styles.th} ${styles.thSeq}`}>#</th>
