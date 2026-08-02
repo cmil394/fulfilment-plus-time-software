@@ -108,58 +108,61 @@ function PinInput({ onSuccess }: PinInputProps) {
       <td className={`${styles.cell} ${styles.cellSeq}`}>
         <span className={styles.seqPlus}>+</span>
       </td>
-      <td className={styles.cell}>
-        <div className={styles.pinWrap}>
-          <span className={styles.pinLabel}>Code</span>
-          <input
-            ref={codeRef}
-            type="text"
-            autoComplete="nope"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            value={employeeCode}
-            onChange={(e) => handleCodeChange(e.target.value)}
-            onKeyDown={handleCodeKey}
-            placeholder="Employee code"
-            className={`${styles.pinInput} ${state === "error" ? styles.pinInputError : ""}`}
-            disabled={state === "loading"}
-            aria-label="Employee code"
-          />
+      <td className={styles.cell} colSpan={6}>
+        {/* Grouped in one flex row (rather than one field per table column)
+            so Code/PIN/button stay next to each other instead of spreading
+            out across the row's full width on wide screens. */}
+        <div className={styles.pinFields}>
+          <div className={styles.pinWrap}>
+            <span className={styles.pinLabel}>Code</span>
+            <input
+              ref={codeRef}
+              type="text"
+              autoComplete="nope"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              value={employeeCode}
+              onChange={(e) => handleCodeChange(e.target.value)}
+              onKeyDown={handleCodeKey}
+              placeholder="Employee code"
+              className={`${styles.pinInput} ${state === "error" ? styles.pinInputError : ""}`}
+              disabled={state === "loading"}
+              aria-label="Employee code"
+            />
+          </div>
+          <div className={styles.pinWrap}>
+            <span className={styles.pinLabel}>PIN</span>
+            <input
+              ref={pinRef}
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="new-password"
+              value={pin}
+              onChange={(e) => handlePinChange(e.target.value)}
+              onKeyDown={handlePinKey}
+              placeholder="4-digit PIN"
+              className={`${styles.pinInput} ${state === "error" ? styles.pinInputError : ""}`}
+              disabled={state === "loading"}
+              aria-label="Employee PIN"
+            />
+            {state === "error" && (
+              <span className={styles.pinError}>{errorMsg}</span>
+            )}
+          </div>
+          <button
+            className={`${styles.btn} ${styles.btnConfirm}`}
+            onClick={handleSubmit}
+            disabled={
+              employeeCode.length != 4 ||
+              pin.length !== 4 ||
+              state === "loading"
+            }
+          >
+            {state === "loading" ? "Verifying…" : "Clock In →"}
+          </button>
         </div>
-      </td>
-      <td className={styles.cell}>
-        <div className={styles.pinWrap}>
-          <span className={styles.pinLabel}>PIN</span>
-          <input
-            ref={pinRef}
-            type="password"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            autoComplete="new-password"
-            value={pin}
-            onChange={(e) => handlePinChange(e.target.value)}
-            onKeyDown={handlePinKey}
-            placeholder="4-digit PIN"
-            className={`${styles.pinInput} ${state === "error" ? styles.pinInputError : ""}`}
-            disabled={state === "loading"}
-            aria-label="Employee PIN"
-          />
-          {state === "error" && (
-            <span className={styles.pinError}>{errorMsg}</span>
-          )}
-        </div>
-      </td>
-      <td className={styles.cell} colSpan={4}>
-        <button
-          className={`${styles.btn} ${styles.btnConfirm}`}
-          onClick={handleSubmit}
-          disabled={
-            employeeCode.length != 4 || pin.length !== 4 || state === "loading"
-          }
-        >
-          {state === "loading" ? "Verifying…" : "Clock In →"}
-        </button>
       </td>
     </tr>
   );
@@ -347,6 +350,14 @@ export default function Kiosk() {
   const [sessions, setSessions] = useState<UserSession[]>(() =>
     loadStoredUsers().map(placeholderSession),
   );
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = (message: string) => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setToast(message);
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
+  };
 
   // Persist the minimal info needed to restore sessions across a refresh/close.
   useEffect(() => {
@@ -367,11 +378,11 @@ export default function Kiosk() {
         prev.map((s) =>
           s.timerRunning && s.timerStartTime
             ? {
-              ...s,
-              elapsed: Math.floor(
-                (Date.now() - s.timerStartTime.getTime()) / 1000,
-              ),
-            }
+                ...s,
+                elapsed: Math.floor(
+                  (Date.now() - s.timerStartTime.getTime()) / 1000,
+                ),
+              }
             : s,
         ),
       );
@@ -401,22 +412,22 @@ export default function Kiosk() {
             `/tasks/customer/${active.customerId}`,
           );
           tasks = Array.isArray(tasksRes.data.data) ? tasksRes.data.data : [];
-        } catch { }
+        } catch {}
 
         setSessions((prev) =>
           prev.map((s) =>
             s.id === user.id
               ? {
-                ...s,
-                customers,
-                loadingCustomers: false,
-                tasks,
-                selectedCustomerId: active.customerId,
-                selectedTaskId: String(active.taskId),
-                timerRunning: true,
-                timerStartTime: startTime,
-                elapsed,
-              }
+                  ...s,
+                  customers,
+                  loadingCustomers: false,
+                  tasks,
+                  selectedCustomerId: active.customerId,
+                  selectedTaskId: String(active.taskId),
+                  timerRunning: true,
+                  timerStartTime: startTime,
+                  elapsed,
+                }
               : s,
           ),
         );
@@ -465,12 +476,12 @@ export default function Kiosk() {
       prev.map((s) =>
         s.id === userId
           ? {
-            ...s,
-            selectedCustomerId: customerId,
-            selectedTaskId: "",
-            tasks: [],
-            loadingTasks: customerId !== "",
-          }
+              ...s,
+              selectedCustomerId: customerId,
+              selectedTaskId: "",
+              tasks: [],
+              loadingTasks: customerId !== "",
+            }
           : s,
       ),
     );
@@ -515,15 +526,27 @@ export default function Kiosk() {
         prev.map((s) =>
           s.id === userId
             ? {
-              ...s,
-              timerRunning: true,
-              timerStartTime: new Date(),
-              elapsed: 0,
-            }
+                ...s,
+                timerRunning: true,
+                timerStartTime: new Date(),
+                elapsed: 0,
+              }
             : s,
         ),
       );
-    } catch { }
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response
+        ?.status;
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Couldn't start the timer";
+      showToast(`${session.firstName}: ${message}`);
+
+      // Server disagrees about whether a timer is already running (e.g. a
+      // previous stop didn't reach it) — resync instead of leaving the row
+      // stuck showing the wrong state.
+      if (status === 409) hydrateSession(session);
+    }
   };
 
   const handleStop = async (userId: string) => {
@@ -540,7 +563,13 @@ export default function Kiosk() {
             : s,
         ),
       );
-    } catch { }
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Couldn't stop the timer";
+      showToast(`${session.firstName}: ${message}`);
+      hydrateSession(session);
+    }
   };
 
   const handleClockOut = (userId: string) => {
@@ -552,6 +581,8 @@ export default function Kiosk() {
   return (
     <div className={styles.root}>
       <Navbar />
+
+      {toast && <div className={styles.toast}>{toast}</div>}
 
       <div className={styles.subheader}>
         <span className={styles.subheaderTitle}>Kiosk</span>
